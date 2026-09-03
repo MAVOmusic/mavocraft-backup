@@ -1,0 +1,22 @@
+name: MAVOGuide
+version: 2.6.0
+main: mavo.guide.Guide
+api-version: '1.13'
+description: Server guide GUI, tutorial and update showcase for MAVOcraft
+author: MAVO
+commands:
+  updates:
+    description: Open the MAVOcraft guide and update notes
+    aliases: [guide, mods, features]
+    usage: /updates [reload]
+  tutorial:
+    description: Open the step-by-step tutorial
+    aliases: [howto, help2]
+    usage: /tutorial
+  whatsnew:
+    description: Read the latest update notes
+    usage: /whatsnew
+permissions:
+  mavoguide.admin:
+    description: Allows /updates reload
+    default: op

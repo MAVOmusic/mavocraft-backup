@@ -1,0 +1,593 @@
+# MAVOGuide - server guide + tutorial + update showcase
+# Bump 'version' every time you change something and the GUI will
+# auto-open ONCE for every player next time they log in.
+version: 13
+
+# Shown when clicking the "What's New" star (newest first, keep it short)
+changelog:
+  - "&c&lv13 &7- Casino results + real Mob Farm bays!"
+  - "&7- Dice, Hi-Lo, RPS & Blackjack show &eyour result&7 for &f5s&7 (or hit CLOSE)"
+  - "&7- Mob Farm rebuilt: &fevery mob gets its own bay&7 - spawn room, kill cell & chest"
+  - "&7- Kill cells feed hopper->chest directly - &ecollect at the front&7, safe stand back"
+  - "&7- &e/mobfarm info&7 shows each bay's stand & loot spot"
+  - ""
+  - "&c&lv11 &7- /holoreset - refresh all plaza floating signs"
+  - "&7- Stand at spawn: &e/holoreset&7 (60 block radius)"
+  - "&7- Fixes stale Wild Portal 2k-5k text after updates"
+  - ""
+  - "&c&lv10 &7- Wild range, Vault multi-room, chest signs!"
+  - "&7- Wild Portal: &e2,000-400,000&7 blocks (was 2k-5k)"
+  - "&7- Recent wild zones blacklisted 200m for 50 warps"
+  - "&7- Vault: fill all 15 chests → claim another room"
+  - "&7- Or sneak-door &eExpand Up&7 (2× price + ladder)"
+  - "&7- Every chest has a renameable/recolorable sign"
+  - "&7- Guide cleaned: vault/portal rooms are LIVE"
+  - ""
+  - "&c&lv9 &7- Spawn Tavern!"
+  - "&7- Pay &e100 \u26C3&7 at the plaza tavern bed to skip the night"
+  - "&7- Safe - no villager risk. Locks for you until noon."
+  - "&7- &e/tavern &7- check if your rest is available"
+  - ""
+  - "&c&lv8 &7- Every wish prize is shop-sellable!"
+  - "&7- Well only drops items listed in /shop (sell > 0)"
+  - "&7- Added shelves, firefly bush, mangrove plate, etc."
+  - "&7- Heads / god apples / wet sponge now sellable"
+  - ""
+  - "&c&lv7 &7- Economy + Wishing Well rebalance!"
+  - "&7- Netherite shop prices = &e8x diamond&7 (ore/ingot/block)"
+  - "&7- Wishing Well: weighted tiers, amount caps"
+  - "&7- &cNo more netherite block/ingot jackpots&7 from wishes"
+  - ""
+  - "&c&lv6 &7- Vault Rooms & Jump Portals are LIVE!"
+  - "&7- &6\u2666 THE VAULT&7: 96 private rooms over 6 floors!"
+  - "&7  Claim a room (&e5,000 \u26C3&7): your key only, name on door"
+  - "&7  15 chest slots: 1st &aFREE&7, then 1k/2.5k/5k/10k ladder"
+  - "&7- &b\u25C9 PORTAL ROOM&7: 26 jump portals now ACTIVE"
+  - "&7  13 biome jumps + 13 danger dives, 1,000-15,000 \u26C3"
+  - "&7  Fresh far-away zone every jump - never repeats!"
+  - "&7- Plaza portals teleport you in (3s), green portals return"
+  - ""
+  - "&c&lv5 &7- The Vault & Portal Room!"
+  - "&7- &6\u2666 THE VAULT&7: 50,000 \u26C3 one-time entry."
+  - "&7- &b\u25C9 PORTAL ROOM&7: 25,000 \u26C3 one-time entry."
+  - "&7- &e/vaultroom &7- check your access"
+  - ""
+  - "&c&lv4 &7- The Museum opens!"
+  - "&7- &fThe Curator&7 at spawn wants ONE of every item"
+  - "&7- Complete a section: &e1,000 \u26C3 per item&7 in it!"
+  - "&7- &e/museum &7- browse your collection anywhere"
+  - ""
+  - "&c&lv3 &7- Lucky Louie (10 games, coin+lucky attempts)'s Casino!"
+  - "&7- &fCasino villager&7 at spawn: 5 games of chance"
+  - "&7- &f10 attempts &7every 10 MC days - use them wisely"
+  - ""
+  - "&c&lv2 &7- Spawn plaza update!"
+  - "&7- &fSpawn Portals&7: Wild Portal & Home Portal"
+  - "&7- &fWishing Well&7, &fMaster Trader stalls&7, &fTutorial&7"
+
+# auto-open the guide for players when version is new to them
+auto-open: true
+
+# ---------------- step-by-step tutorial chapters ----------------
+tutorial:
+  - name: "&c&lSpawn Tavern"
+    icon: RED_BED
+    lines:
+      - "&7Need to skip the night without leaving the plaza?"
+      - "&7Right-click the &cTavern bed&7 at spawn."
+      - "&7Costs &e100 \u26C3&7, works at night only."
+      - "&7Then it locks for you until &enoon&7 - one rest each night."
+  - name: "&a&lYour First Steps"
+    icon: OAK_SAPLING
+    lines:
+      - "&7You spawn at the &fsky plaza&7. Look around:"
+      - "&7portals, trader stalls and the wishing well."
+      - ""
+      - "&71. Read the signs above the two portals"
+      - "&72. When ready, step into the &c&lWILD PORTAL"
+      - "&7   and stand still for 3 seconds"
+      - "&73. You'll be flung 2,000-5,000 blocks out"
+      - "&7   into untouched wilderness. &cNo way back!"
+      - ""
+      - "&7Want a fresh wild spot later? Come BACK to spawn"
+      - "&7and use the portal again (5 min cooldown)."
+  - name: "&2&lSurvive & Grind"
+    icon: IRON_PICKAXE
+    lines:
+      - "&7Punch trees, build a shelter - classic start."
+      - "&7Then open &e/prof &7and pick professions:"
+      - ""
+      - "&7Each gives you a &fBOUND TOOL&7. Only grinding"
+      - "&7with bound tools earns profession XP."
+      - "&7Level up = better tools + enchants (up to L999)."
+      - ""
+      - "&7Everything you do also counts toward &e/ach"
+      - "&7achievements - lifetime milestones + pocket money."
+      - ""
+      - "&c\u26A0 Only SURVIVAL mode progress counts!"
+  - name: "&e&lEarn Coins"
+    icon: SUNFLOWER
+    lines:
+      - "&7Coins (&e\u26C3&7) are the server currency. Sources:"
+      - ""
+      - "&7- &fProfessions &7- coin bonus per action"
+      - "&7- &fDaily quests &7- &e/quest &7(10 fresh per day)"
+      - "&7- &fAchievements &7- milestone rewards"
+      - "&7- &fLogin streaks &7- &e/streak"
+      - "&7- &fSelling raw materials &7- &e/shop &7or &e/sell hand"
+      - ""
+      - "&7The shop is EXPENSIVE on purpose - villager"
+      - "&7trading is the smart way to gear up!"
+  - name: "&2&lVillagers = Progression"
+    icon: EMERALD
+    lines:
+      - "&7This server is a &fvillager-first economy&7:"
+      - ""
+      - "&71. Farm crops, trade to farmers for emeralds"
+      - "&72. Cure zombie villagers for discounts"
+      - "&73. Build a trading hall with librarians & smiths"
+      - "&74. Buy gear with emeralds, not coins"
+      - ""
+      - "&7Master Traders at spawn take emeralds for"
+      - "&7premium stock (Mending books, templates...)."
+      - "&7Check wandering traders - only useful items now!"
+  - name: "&a&lClaim Your Land"
+    icon: GRASS_BLOCK
+    lines:
+      - "&7Protect your base with chunk claims:"
+      - ""
+      - "&e/chunk claim &7- claim the chunk you stand in"
+      - "&7First chunk is &aFREE&7, prices rise in tiers."
+      - "&7Max 51 chunks per player."
+      - ""
+      - "&e/chunk access <player> &7- let a friend build"
+      - "&e/chunkprice &7- price tiers and your progress"
+      - "&e/borders &7- toggle the red/blue border display"
+      - ""
+      - "&7A 1-chunk buffer around your claim stops"
+      - "&7strangers from building right at your edge."
+  - name: "&9&lHome & Travel"
+    icon: RED_BED
+    lines:
+      - "&7Homes are bound to beds in YOUR claimed chunks:"
+      - ""
+      - "&71. Claim a chunk, place a bed, right-click it"
+      - "&72. &e/home &7teleports you back (renameable)"
+      - ""
+      - "&7The &a&lHOME PORTAL &7at spawn also takes you"
+      - "&7to your first home. &e/spawn &7returns to spawn."
+      - ""
+      - "&c\u26A0 ALL teleports take 3 seconds. Moving cancels."
+      - "&c   Monsters within 12 blocks BLOCK the teleport -"
+      - "&c   you cannot teleport out of a fight!"
+  - name: "&6&lLucky Coins & Wishes"
+    icon: GOLD_NUGGET
+    lines:
+      - "&7Mining, fighting and fishing have a 1% chance"
+      - "&7to drop a &6\u26C0 Lucky Coin&7."
+      - ""
+      - "&7Take it to the &bWishing Well &7at spawn and"
+      - "&7toss it in with &eQ&7. A random prize appears:"
+      - "&7Every prize is also &esellable in /shop&7 - no junk traps."
+      - "&7~18% enchanted gear (from the shop gear list)."
+      - "&cNo netherite blocks/ingots from the well."
+      - ""
+      - "&e/ccollect &7- free coin every 10 in-game days"
+  - name: "&d&lDying & Graves"
+    icon: CHEST
+    lines:
+      - "&7When you die, your items go into a locked"
+      - "&7grave chest only YOU can open."
+      - ""
+      - "&7You have &f30 minutes &7to run back before it"
+      - "&7bursts open for anyone to loot."
+      - ""
+      - "&e/grave &7- see where your graves are"
+      - ""
+      - "&7Tip: sleep at your bed so night doesn't kill"
+      - "&7your villagers - watch the HUD clock!"
+  - name: "&6&lLucky Louie (10 games, coin+lucky attempts)'s Casino"
+    icon: GOLD_NUGGET
+    lines:
+      - "&7Find &c&l\u2663 LUCKY LOUIE \u2660 &7at spawn and"
+      - "&7right-click him to gamble... if you dare."
+      - ""
+      - "&75 games: &fPick a Cup&7, &fCoin Flip&7, &fDice Duel&7,"
+      - "&fCrystal Wheel &7and &fTNT Tiles &7(cash out or boom)."
+      - ""
+      - "&7Bet &e\u26C3 coins &7(100-5,000) or &6\u26C0 Lucky Coins &7(1-10)."
+      - "&7You get &f10 attempts &7every &f10 MC days&7."
+      - ""
+      - "&6\u2660 Pro tip: &7start the &6Gambler &7profession in &e/prof&7."
+      - "&7HOLD your bound lucky stick while betting:"
+      - "&7- every bet earns Gambler XP"
+      - "&7- the stick adds &aWIN LUCK &7- +1% at L0 up to"
+      - "&7  &a+15% &7with the L1000 &c\u2660&f\u2665 Blaze of Fate &c\u2666&f\u2663"
+      - ""
+      - "&c\u26A0 The house edge is real. Never bet the rent."
+  - name: "&d&lThe Museum"
+    icon: WRITABLE_BOOK
+    lines:
+      - "&7Find &d&l\u2726 THE CURATOR \u2726 &7at spawn. She wants"
+      - "&7ONE of every item in the game for her museum."
+      - ""
+      - "&7~90 exhibit sections: helmets, pants, flowers,"
+      - "&7music discs, ores, mob heads... 1,300+ items."
+      - ""
+      - "&7Two ways to donate:"
+      - "&71. Click a grey item in an exhibit - takes 1"
+      - "&7   matching item from your inventory"
+      - "&72. &aDeposit Crate &7- toss a whole haul in,"
+      - "&7   close it, every NEW item registers and"
+      - "&7   duplicates bounce straight back"
+      - ""
+      - "&7Complete a section: &e1,000 \u26C3 &7per item in it."
+      - "&7Museum ranks at &f25/50/75/100% &7completion."
+      - ""
+      - "&e/museum &7- browse your collection anywhere"
+      - "&7Perfect loop: check what's grey, go wild,"
+      - "&7come back with a crate-load!"
+  - name: "&c&lEvents & Community"
+    icon: FIREWORK_ROCKET
+    lines:
+      - "&7Random events fire while people are online:"
+      - "&6\u26C0 Lucky Hour &7- 5x coin drops"
+      - "&e\u26C3 Coin Rain &7- free coins"
+      - "&c\u2694 Mob Hunt &7- bonus coins per kill"
+      - "&e/event &7- see what's live"
+      - ""
+      - "&7Community goals: &e/goal &7- donate coins,"
+      - "&7when the pot fills EVERYONE gets the reward."
+      - ""
+      - "&7Live 3D map: &fmavocraft.my.pebble.host:8156"
+
+# ---------------- feature catalog (main guide grid) ----------------
+features:
+  - id: professions
+    icon: IRON_PICKAXE
+    name: "&c&lProfessions"
+    short: "Level 9 professions by grinding with bound tools"
+    info:
+      - "&7Long-haul grind: iron@10, diamond@25, netherite@50."
+      - "&79 professions: Lumberjack, Miner, Excavator, Farmer,"
+      - "&7Hunter, Archer, Fisherman, Guardian &7and &6Gambler&7."
+      - "&7Grind with your BOUND tool to earn XP. Tier rewards:"
+      - "&7Stone > Iron (L5) > Diamond (L15) > Netherite (L30),"
+      - "&7then enchant upgrades all the way to level 999."
+      - "&7Prestige: &fFLEXER 250 &7> &aYE MAN 420 &7> &cSATAN 666 &7> &6GOD 999"
+      - ""
+      - "&6\u2660 Gambler &7is special: XP comes from BETTING at"
+      - "&7Lucky Louie (10 games, coin+lucky attempts)'s while holding your bound lucky stick."
+      - "&7The stick adds WIN LUCK - up to +15% at level 1000."
+      - ""
+      - "&e/prof &7- menu (each icon shows a full deep-dive)"
+      - "&e/prof top <profession> &7- leaderboards"
+  - id: museum
+    icon: WRITABLE_BOOK
+    name: "&d&lThe Museum"
+    short: "Donate one of every item - complete exhibits for coins"
+    info:
+      - "&7The Curator catalogues EVERYTHING. Donate one of"
+      - "&7every survival-obtainable item (1,300+) across"
+      - "&7~90 exhibit sections."
+      - ""
+      - "&7Green &a\u2714 &7= exhibited, grey = missing. Complete a"
+      - "&7section and earn &e1,000 \u26C3 per item &7in it - the"
+      - "&7Pants exhibit (7) pays 7,000, Music Discs pay big!"
+      - ""
+      - "&7Donate by clicking grey items, or open the"
+      - "&aDeposit Crate&7, dump your haul, close it."
+      - "&7Duplicates and custom/bound items bounce back."
+      - ""
+      - "&7Ranks: &f25% &7/ &f50% &7/ &f75% &7/ &6100% THE CURATOR"
+      - "&7Each pays a coin bonus + a chat title."
+      - ""
+      - "&e/museum &7- your collection book. SURVIVAL only."
+  - id: vaultrooms
+    icon: GOLD_BLOCK
+    name: "&6&lThe Vault - Private Rooms"
+    short: "96 private lockable rooms, 6 floors"
+    info:
+      - "&6\u2666 THE VAULT &7- &e50,000 \u26C3 &7one-time entry."
+      - "&7Enter via the black plaza portal (3s countdown)."
+      - ""
+      - "&7Inside: &f6 floors&7, ladders at both ends,"
+      - "&f96 private rooms&7 in gold, diamond, emerald,"
+      - "&7netherite... each with a door + 15 double chests."
+      - ""
+      - "&fClaim a room: &e5,000 \u26C3 &7- right-click any"
+      - "&7unclaimed door. Your name on the sign, only YOUR key."
+      - ""
+      - "&fChest slots &7unlock one by one:"
+      - "&7#1 &aFREE &8| &7#2-3 &e1,000 &8| &7#4-6 &e2,500"
+      - "&7#7-10 &e5,000 &8| &7#11-15 &e10,000"
+      - "&7Right-click a sealed chest to unlock the next slot."
+      - "&7Each unlocked chest gets a &fsign&7: sneak-click to"
+      - "&7rename it and pick a &ccolour&7."
+      - ""
+      - "&aMulti-room: &7fill ALL 15 chests, then claim another"
+      - "&7free room elsewhere - OR sneak-click your door to"
+      - "&eExpand Upward&7 (2\u00D7 what you paid + ladder between floors)."
+      - "&7Walking to buy the upper room separately = no ladder."
+      - ""
+      - "&7Green portal inside = back to spawn."
+      - "&e/vaultroom &7- see your access"
+  - id: portaljumps
+    icon: ENDER_PEARL
+    name: "&b&lPortal Room - 26 Jumps"
+    short: "Biome jumps & danger dives, pay per jump"
+    info:
+      - "&b\u25C9 PORTAL ROOM &7- &e25,000 \u26C3 &7one-time entry,"
+      - "&7then pay per jump. Red plaza portal takes you in."
+      - ""
+      - "&a\u25B6 NORTH wall - 13 BIOME jumps &7(&e1,000-10,000 \u26C3&7)"
+      - "&7Desert, Swamp, Jungle, Ice Spikes, Cherry"
+      - "&7Blossom, Badlands... up to rare &cMushroom Isle&7."
+      - ""
+      - "&c\u25B6 SOUTH wall - 13 DANGER dives &7(&e1,500-15,000 \u26C3&7)"
+      - "&7Mineshaft, Witch Hut, Ocean Monument, Stronghold,"
+      - "&7Trial Chambers... up to &3THE DEEP DARK &7(Ancient City)."
+      - ""
+      - "&7Stand in a portal: &f7s countdown&7, step out = cancel."
+      - "&7Coins are only taken when the jump succeeds."
+      - "&7EVERY jump lands in a FRESH zone 25k-400k blocks"
+      - "&7out - the last 50 zones per portal are never reused."
+      - ""
+      - "&cOne-way trip! &7Return: beds, death... or the grind."
+  - id: casino
+    icon: GOLD_NUGGET
+    name: "&6&lLucky Louie (10 games, coin+lucky attempts)'s Casino"
+    short: "5 games of chance - coins or Lucky Coins"
+    info:
+      - "&7Right-click &c&l\u2663 LUCKY LOUIE \u2660 &7at spawn."
+      - "&7Pick a game, pick a bet, pray to RNGesus:"
+      - ""
+      - "&e\u26B1 Pick a Cup &7- find the pearl, &a2.7x"
+      - "&6\u26C0 Coin Flip &7- call it, &a2x"
+      - "&f\u2680 Dice Duel &7- beat Louie's roll, &a2.3x &7(ties lose)"
+      - "&d\u2740 Crystal Wheel &7- 0x to &b10x"
+      - "&c\u2620 TNT Tiles &7- reveal safe tiles up to &c32x&7, cash"
+      - "&7out any time or lose it all"
+      - "&b\u2195 Higher or Lower &7- streak it, up to &b4x"
+      - "&cRocket Crash &7- cash before the boom, &b10x"
+      - "&6Lucky Slots &7- match 3, &b8x"
+      - "&fRock Paper Scissors &7- best of 3, &a2x"
+      - "&2Blackjack 21 &7- beat the dealer, &a2.5x"
+      - ""
+      - "&7Wins show on a &f5s result screen&7 - or hit &fCLOSE&7 to skip ahead."
+      - "&7Bets: &e\u26C3 100-5,000 coins &7or &6\u26C0 1-10 Lucky Coins&7."
+      - "&710 attempts per 10 MC days. SURVIVAL only."
+      - "&7Hold a &6Gambler &7lucky stick for bonus win luck!"
+      - ""
+      - "&e/casino &7- also opens Louie's menu (at his table)"
+  - id: achievements
+    icon: GOLD_INGOT
+    name: "&6&lAchievements"
+    short: "Lifetime milestones with pocket-money rewards"
+    info:
+      - "&7Every block mined, log chopped, mob killed counts"
+      - "&7forever. Levels rise as your lifetime totals grow."
+      - "&7Milestone every 5 levels pays coins. Top players"
+      - "&7flex their maxed categories."
+      - ""
+      - "&76 gambling categories too: coins/lucky coins"
+      - "&7wagered, casino winnings, and record balances."
+      - ""
+      - "&e/ach &7- open the achievements menu"
+      - "&7Progress counts in SURVIVAL only."
+  - id: quests
+    icon: OAK_SIGN
+    name: "&e&lDaily Quests"
+    short: "10 fresh quests every day for coins"
+    info:
+      - "&7The quest board refreshes DAILY with 10 random quests."
+      - "&7Complete them for coins and the occasional mystery item."
+      - "&e/quest &7- open the quest board"
+  - id: chunks
+    icon: GRASS_BLOCK
+    name: "&a&lChunk Claims"
+    short: "Buy protected land with coins"
+    info:
+      - "&7Claim chunks so only you (and your trusted friends) can build."
+      - "&7First chunk is FREE, prices rise in tiers up to 51 chunks."
+      - "&7Claims show red/blue borders. A 1-chunk buffer ring around"
+      - "&7claims blocks strangers from building right at your edge."
+      - "&e/chunk claim &7- claim the chunk you stand in"
+      - "&e/chunk access <player> &7- let a friend build"
+      - "&e/chunkprice &7- see the price tiers and your progress"
+      - "&e/borders &7- toggle border display"
+  - id: economy
+    icon: SUNFLOWER
+    name: "&e&lCoins & Shop"
+    short: "Earn coins, spend them wisely"
+    info:
+      - "&7Coins (&e\u26C3&7) come from professions, quests, achievements,"
+      - "&7streaks and selling raw materials in the shop."
+      - "&7The shop SELLS finished goods at steep prices - villager"
+      - "&7trading is the smart way to gear up."
+      - "&e/shop &7- open the shop &8| &e/sell hand &7- quick-sell"
+      - "&e/bal &7- your balance &8| &e/pay <player> <amt> &7- send coins"
+  - id: villagers
+    icon: EMERALD
+    name: "&2&lVillager Economy"
+    short: "Villagers are the heart of progression"
+    info:
+      - "&7Farm crops > trade to farmer villagers for emeralds >"
+      - "&7buy gear from librarians & smiths. Build a trading hall!"
+      - "&7Master Traders at the spawn stalls offer premium trades"
+      - "&7(Mending books, netherite templates...) for serious emeralds."
+      - "&7Wandering traders now sell ONLY useful stuff - check them!"
+  - id: portals
+    icon: CRYING_OBSIDIAN
+    name: "&c&lSpawn Portals"
+    short: "Wild Portal & Home Portal at the plaza"
+    info:
+      - "&c&lWILD PORTAL &7- stand inside 3s, get flung"
+      - "&e2,000-400,000&7 blocks into the wild. No way back!"
+      - "&7Last 50 landings blacklisted (200-block bubble)."
+      - "&a&lHOME PORTAL &7- stand inside 3s, travel to"
+      - "&7your first bed-home."
+      - ""
+      - "&7Stepping out cancels instantly. Monsters within"
+      - "&712 blocks cancel too - no escaping fights."
+  - id: luckycoins
+    icon: GOLD_NUGGET
+    name: "&6&lLucky Coins"
+    short: "1% drops and the Wishing Well"
+    info:
+      - "&7Mining, fighting and fishing have a 1% chance to drop a"
+      - "&7Lucky Coin. Take it to the &bWishing Well &7at spawn and"
+      - "&7toss it in with &eQ&7:"
+      - "&7Pool = every /shop item with a sell price (weighted)."
+      - "&7~18% enchanted gear. Amount caps scale with value."
+      - "&cNetherite blocks/ingots never drop from the well."
+      - "&e/ccollect &7- free coin every 10 in-game days (don't miss it!)"
+  - id: tavern
+    icon: RED_BED
+    name: "&c&lSpawn Tavern"
+    short: "Pay 100 coins to skip the night safely"
+    info:
+      - "&7At the plaza &cTavern&7, right-click the marked bed"
+      - "&7at &bnight&7 (or during a thunderstorm)."
+      - "&7Cost: &e100 \u26C3&7. Dawn breaks for the whole server."
+      - "&7One rest per player - bed locks for you until &enoon&7."
+      - "&7No more running outside spawn just to sleep."
+      - "&e/tavern &7- see if your rest is available"
+
+  - id: goals
+    icon: BEACON
+    name: "&b&lCommunity Goals"
+    short: "Donate coins, everyone wins"
+    info:
+      - "&7Server-wide donation goals. When the pot fills up,"
+      - "&7EVERYONE gets the reward. No taxes here - ever."
+      - "&e/goal &7- view goals &8| &e/donate <goal> <amount>"
+  - id: events
+    icon: FIREWORK_ROCKET
+    name: "&c&lServer Events"
+    short: "Random events with bonus rewards"
+    info:
+      - "&7Random events fire while people are online:"
+      - "&6\u26C0 Lucky Hour &7- 5x Lucky Coin drops"
+      - "&e\u26C3 Coin Rain &7- free coins for online players"
+      - "&c\u2694 Mob Hunt &7- bonus coins per hostile kill"
+      - "&9\uD83C\uDFA3 Fishing Frenzy &7- bonus coins per catch"
+      - "&b\u26CF Miner's Rush &7- bonus coins for natural ores"
+      - "&e/event &7- see what's live right now"
+  - id: streaks
+    icon: BLAZE_POWDER
+    name: "&c&lLogin Streaks"
+    short: "Log in daily, earn growing rewards"
+    info:
+      - "&7Every day you log in extends your streak and pays coins."
+      - "&7Rewards grow with the streak, big bonus every 7th day."
+      - "&7Miss a day and the streak resets!"
+      - "&e/streak &7- your streak &8| &e/streak top &7- leaderboard"
+  - id: pets
+    icon: BONE
+    name: "&d&lPets"
+    short: "Cosmetic companions (coin sink!)"
+    info:
+      - "&7Buy cute pets that follow you around. Pure flex -"
+      - "&7they can't fight or die. One active at a time."
+      - "&e/pets &7- open the pet shop"
+  - id: deathchest
+    icon: CHEST
+    name: "&4&lDeath Chests"
+    short: "Die without losing everything"
+    info:
+      - "&7When you die, your items go into a locked grave chest"
+      - "&7only YOU can open. You have 30 minutes to get back"
+      - "&7before it bursts open for anyone to loot."
+      - "&e/grave &7- see where your graves are"
+  - id: wild
+    icon: COMPASS
+    name: "&a&lWild Teleport"
+    short: "The Wild Portal is the only way out"
+    info:
+      - "&7The &c&lWILD PORTAL &7at spawn flings you to a random"
+      - "&7safe spot &e2,000-400,000&7 blocks out. 5-min cooldown."
+      - "&7Recent landings (last 50) + 200 blocks around them"
+      - "&7are blacklisted so you don't pile on the same spot."
+      - "&7Stand inside 3s - stepping out or monsters cancel it."
+      - "&7There is NO /wild command - travel out at spawn only."
+      - "&7Stock up at the traders before you go!"
+  - id: homes
+    icon: RED_BED
+    name: "&9&lHomes & Teleports"
+    short: "Get around the world"
+    info:
+      - "&7Homes are bound to beds in YOUR claimed chunks:"
+      - "&7place a bed in a claimed chunk and right-click it."
+      - "&e/home &7- teleport back &8| &e/homes &7- list & rename"
+      - "&e/spawn &7- back to the sky plaza"
+      - ""
+      - "&c\u26A0 Every teleport takes 3s: moving cancels, and"
+      - "&cmonsters within 12 blocks block it entirely."
+  - id: clock
+    icon: CLOCK
+    name: "&f&lHUD Clock"
+    short: "Day counter + time above your hotbar"
+    info:
+      - "&7Above your hotbar you always see:"
+      - "&fXYZ position &8| &fDay number &8| &ftime of day"
+      - "&7Icons: \u2600 day, \u26C5 sunset, \u263D night (sleep!), \u2665 sunrise"
+      - "&7Great for knowing when to sleep so your villagers"
+      - "&7survive the night while you're deep in a mine."
+      - "&e/hud &7- toggle it on/off"
+  - id: map
+    icon: FILLED_MAP
+    name: "&3&lLive Web Map"
+    short: "See the whole world in your browser"
+    info:
+      - "&7BlueMap renders the world in 3D, live:"
+      - "&fhttp://mavocraft.my.pebble.host:8156"
+  - id: guide
+    icon: BOOK
+    name: "&f&lThis Guide"
+    short: "Reopen any time"
+    info:
+      - "&e/updates &7(or &e/guide&7) - this menu"
+      - "&e/tutorial &7- step-by-step chapters"
+      - "&e/whatsnew &7- latest update notes"
+      - "&7It pops up automatically when the server gets an update."
+
+  - id: mobfarm
+    icon: SPAWNER
+    title: "&c&lMob Farm"
+    short: "Paid spawner rooms — 5k entry, 30 min"
+    pages:
+      - "&c&lMob Farm Zone"
+      - "&7Every mob has its own bay - spawn room, kill cell & chest."
+      - "&e/mobfarm enter &7- &f5000 coins&7, 10s don't-move,"
+      - "&7then &f30 min &7session (timer keeps running if you leave)."
+      - "&7Mobs drop into the hopper feed - &ecollect &7at the front chest."
+      - "&7Each bay has a marked &fsafe stand spot&7 (see &e/mobfarm info&7)."
+      - "&e/mobfarm leave &7- stash trip; &e/mobfarm buy &7extra spawners"
+      - "&7(10k/20k/40k\u2026). Extras wipe when the event ends."
+      - "&7Hunter/Archer XP inside = &c30%&7. Non-PVP."
+      - "&7Community chest funds more base spawners forever."
+
+  - id: playerlevel
+    icon: EXPERIENCE_BOTTLE
+    title: "&e&lPlayer Level"
+    short: "Average of all professions + achievements"
+    pages:
+      - "&e&lPlayer Level"
+      - "&7Your level is the &faverage &7of every profession"
+      - "&7and achievement level. Everyone starts at &aLv 1&7."
+      - "&7TAB shows: rank, name, level + % bar, coords,"
+      - "&7Day counter, and &cdeath count&7."
+      - "&7Deaths come from vanilla stats — day vs deaths flex."
+
+  - id: tavernbar
+    icon: SWEET_BERRIES
+    title: "&c&lTavern Inn"
+    short: "20x20 inn, 4 beds, soulbound food & drink"
+    pages:
+      - "&c&lTavern"
+      - "&7Four beds — paid night skip locks until &enoon&7."
+      - "&7Right-click the &6Innkeeper &7for bar food/drink:"
+      - "&7&f1 each per MC day&7, &dsoulbound &7(can't shop-sell)."
+      - "&7Affordable heal + refresh for the grind."
+

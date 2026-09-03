@@ -2,8 +2,8 @@ name: Build MAVO plugins
 
 # Builds the MAVO plugin sources with JDK 25 and commits the resulting jars
 # straight back into the repo (root + jars/). Trigger by pushing to a branch,
-# or manually with "Run workflow". The same-branch push does not re-trigger
-# because this workflow only watches sources/** and workflow files.
+# or manually with "Run workflow". Same-branch pushes do not re-trigger this
+# workflow (it only watches sources/** and workflow files).
 on:
   push:
     branches: [ 'arena/**' ]
@@ -30,16 +30,18 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Build plugins (casino, mobfarm)
+      - name: Build plugins (casino, mobfarm, guide)
         run: |
           set -eo pipefail
-          for d in sources/src-casino sources/src-mobfarm; do
+          for d in sources/src-casino sources/src-mobfarm sources/src-guide; do
             echo "== Building $d =="
             (cd "$d" && mvn -B package -DskipTests) || true
           done
-          ls -la sources/src-casino/target/ sources/src-mobfarm/target/ 2>/dev/null || true
+          ls -la sources/src-casino/target/ sources/src-mobfarm/target/ sources/src-guide/target/ 2>/dev/null || true
           # fail if any plugin jar is missing
-          for f in sources/src-casino/target/MAVOCasino-*.jar sources/src-mobfarm/target/MAVOMobFarm-*.jar; do
+          for f in sources/src-casino/target/MAVOCasino-*.jar \
+                   sources/src-mobfarm/target/MAVOMobFarm-*.jar \
+                   sources/src-guide/target/MAVOGuide-*.jar; do
             if [ ! -f "$f" ] || [[ "$f" == *original-* ]]; then
               echo "MISSING BUILT JAR: $f"
               exit 1
@@ -53,7 +55,7 @@ jobs:
           git config user.email "ci@mavocraft.local"
           {
             echo "## build log $(date -u)"
-            for d in sources/src-casino sources/src-mobfarm; do
+            for d in sources/src-casino sources/src-mobfarm sources/src-guide; do
               echo "== $d =="
               (cd "$d" && mvn -B package -DskipTests) 2>&1 || true
             done
@@ -66,7 +68,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p jars
-          for f in sources/src-casino/target/MAVOCasino-*.jar sources/src-mobfarm/target/MAVOMobFarm-*.jar; do
+          for f in sources/src-casino/target/MAVOCasino-*.jar \
+                   sources/src-mobfarm/target/MAVOMobFarm-*.jar \
+                   sources/src-guide/target/MAVOGuide-*.jar; do
             [ -f "$f" ] || continue
             case "$(basename "$f")" in
               *original-*|*-sources.jar|*-javadoc.jar) continue;;
@@ -79,16 +83,16 @@ jobs:
                 jars/MAVOCasino-1.2.0.jar jars/MAVOCasino-1.2.1.jar jars/MAVOCasino-1.2.2.jar
           rm -f MAVOMobFarm-2.4.0.jar MAVOMobFarm-2.3.0.jar MAVOMobFarm-2.2.5.jar \
                 jars/MAVOMobFarm-2.4.0.jar jars/MAVOMobFarm-2.3.0.jar jars/MAVOMobFarm-2.2.5.jar
-          ls -la MAVOCasino-*.jar MAVOMobFarm-*.jar jars/ | tail -20
+          ls -la MAVOCasino-*.jar MAVOMobFarm-*.jar MAVOGuide-*.jar jars/ | tail -25
 
       - name: Commit rebuilt jars
         run: |
           git config user.name "mavocraft-ci"
           git config user.email "ci@mavocraft.local"
-          git add -A MAVOCasino-*.jar MAVOMobFarm-*.jar jars/
+          git add -A MAVOCasino-*.jar MAVOMobFarm-*.jar MAVOGuide-*.jar jars/
           if git diff --cached --quiet; then
             echo "No jar changes to commit"
             exit 0
           fi
-          git commit -m "ci: rebuilt MAVOCasino $(basename sources/src-casino/target/MAVOCasino-*.jar | sed 's/MAVOCasino-//;s/.jar//') + MAVOMobFarm $(basename sources/src-mobfarm/target/MAVOMobFarm-*.jar | sed 's/MAVOMobFarm-//;s/.jar//')"
+          git commit -m "ci: rebuilt plugin jars"
           git push origin HEAD:"${GITHUB_REF_NAME}"
