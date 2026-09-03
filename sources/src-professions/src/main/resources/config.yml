@@ -1,0 +1,258 @@
+# MAVOProfessions v3.0 - tool-bound professions with branches
+#
+# HOW IT WORKS
+#  - Players START a profession by taking the free starter tool(s) from /profession.
+#  - ONLY actions performed with a bound profession tool give XP.
+#  - Level completion pauses XP until claimed in /profession; claiming upgrades
+#    ALL of the profession's bound tools IN PLACE (fresh durability).
+#  - Non-tier levels: enchant-chances table (40% early, tapering to 15%) per tool to gain ONE new enchant or +1
+#    to an existing one. Enchants are cumulative and NEVER conflict (the game's
+#    own conflict registry is consulted: Fortune/Silk, Mending/Infinity,
+#    Multishot/Piercing, Sharpness/Smite/Bane, etc).
+#  - branches: professions can have multiple tools (e.g. Fortune pick + Silk pick,
+#    Bow + Crossbow). All branches level together on one claim. Each branch can
+#    exclude enchants and add its own baseline bonuses at tier levels.
+#  - Tier levels (10/25/50) replace tools with the next material and reset enchants
+#    to tier baseline + branch bonus. Diamond+ baselines include Mending.
+#  - Over-vanilla caps by tier: stone/iron = vanilla only; diamond = vanilla+1;
+#    netherite/top = vanilla+2, plus +1 more per 50 levels past over-vanilla-level
+#    (e.g. Efficiency cap 7 at Lv 30, 8 at Lv 100, 9 at Lv 150). Over-cap = Masterwork.
+#    Single-level enchants (mending/silk touch/infinity) never exceed 1.
+coin-bonus-chance: 0.10
+# Chance to gain an enchant on claim, by level bracket (key = bracket upper bound)
+enchant-chances:
+  30: 0.22
+  50: 0.20
+  100: 0.18
+  150: 0.15
+  200: 0.12
+  250: 0.10
+  400: 0.08
+# fallback if the table above is removed
+enchant-chance: 0.40
+over-vanilla-level: 100   # top-tier caps rise past this level
+cap-step: 50             # +1 cap per this many levels past over-vanilla-level (netherite+)
+xp-flatten-level: 400    # xp requirement stops growing at this level (keeps 999 humanly possible)
+
+# Prestige sets (name + look changes on the bound tools):
+#   Lv 250 = FLEXER SET (gold)   Lv 420 = YE MAN SET (rasta cycle)
+#   Lv 666 = SATAN SET (red/black cycle)   Lv 999 = GOD SET (white/gold, 255 enchants)
+# Console commands run when a player CLAIMS these levels (any profession):
+rank-commands:
+  250:
+    - "lp user %player% parent add flex"
+  420:
+    - "lp user %player% parent add yeman"
+  666:
+    - "lp user %player% parent add satan"
+  999:
+    - "lp user %player% parent add god"
+
+professions:
+  lumberjack:
+    display: "&2🪓 Lumberjack"
+    action: "logs chopped"
+    icon: OAK_LOG
+    # REBALANCE 3.14: ~4-5x slower early. 12h play ~Lv8-12 not 30+.
+    xp-base: 350
+    xp-growth: 1.035
+    max-level: 999
+    coin-bonus: 0.25
+    enchant-pool: [efficiency, unbreaking, fortune, silk_touch]
+    tiers:
+      0: { tool: STONE_AXE, enchants: [] }
+      10: { tool: IRON_AXE, enchants: ["efficiency:1"] }
+      25: { tool: DIAMOND_AXE, enchants: ["efficiency:2", "unbreaking:1"] }
+      50: { tool: NETHERITE_AXE, enchants: ["efficiency:3", "mending:1"] }
+  miner:
+    display: "&7⛏ Miner"
+    action: "blocks mined"
+    icon: STONE
+    # REBALANCE 3.14: stone/dirt stay slow much longer. Eff5 only at netherite L50+.
+    xp-base: 700
+    xp-growth: 1.032
+    max-level: 999
+    coin-bonus: 0.08
+    enchant-pool: [efficiency, unbreaking, fortune, silk_touch]
+    tiers:
+      0: { tool: STONE_PICKAXE, enchants: [] }
+      10: { tool: IRON_PICKAXE, enchants: ["efficiency:1"] }
+      25: { tool: DIAMOND_PICKAXE, enchants: ["efficiency:2", "unbreaking:1"] }
+      50: { tool: NETHERITE_PICKAXE, enchants: ["efficiency:3", "mending:1"] }
+    branches:
+      fortune:
+        name: "Fortune Pick"
+        exclude: [silk_touch]
+        bonus:
+          25: ["fortune:1"]
+          50: ["fortune:2"]
+      silk:
+        name: "Silk Pick"
+        exclude: [fortune]
+        bonus:
+          25: ["silk_touch:1"]
+          50: ["silk_touch:1"]
+  excavator:
+    display: "&6⛏️ Excavator"
+    action: "blocks dug"
+    icon: SAND
+    xp-base: 500
+    xp-growth: 1.032
+    max-level: 999
+    coin-bonus: 0.12
+    enchant-pool: [efficiency, unbreaking, fortune, silk_touch]
+    tiers:
+      0: { tool: STONE_SHOVEL, enchants: [] }
+      10: { tool: IRON_SHOVEL, enchants: ["efficiency:1"] }
+      25: { tool: DIAMOND_SHOVEL, enchants: ["efficiency:2", "unbreaking:1"] }
+      50: { tool: NETHERITE_SHOVEL, enchants: ["efficiency:3", "mending:1"] }
+    branches:
+      fortune:
+        name: "Fortune Shovel"
+        exclude: [silk_touch]
+        bonus:
+          25: ["fortune:1"]
+          50: ["fortune:2"]
+      silk:
+        name: "Silk Shovel"
+        exclude: [fortune]
+        bonus:
+          25: ["silk_touch:1"]
+          50: ["silk_touch:1"]
+  farmer:
+    display: "&e🌾 Farmer"
+    action: "crops harvested"
+    icon: WHEAT
+    xp-base: 400
+    xp-growth: 1.03
+    max-level: 999
+    coin-bonus: 0.20
+    enchant-pool: [efficiency, unbreaking, fortune]
+    tiers:
+      0: { tool: STONE_HOE, enchants: [] }
+      10: { tool: IRON_HOE, enchants: ["efficiency:1"] }
+      25: { tool: DIAMOND_HOE, enchants: ["efficiency:2", "unbreaking:1"] }
+      50: { tool: NETHERITE_HOE, enchants: ["efficiency:3", "mending:1"] }
+  hunter:
+    display: "&4⚔ Hunter"
+    action: "mobs slain"
+    icon: BONE
+    xp-base: 250
+    xp-growth: 1.03
+    max-level: 999
+    coin-bonus: 0.40
+    enchant-pool: [sharpness, looting, unbreaking, fire_aspect, knockback]
+    tiers:
+      0: { tool: STONE_SWORD, enchants: [] }
+      10: { tool: IRON_SWORD, enchants: ["sharpness:1"] }
+      25: { tool: DIAMOND_SWORD, enchants: ["sharpness:2", "unbreaking:1"] }
+      50: { tool: NETHERITE_SWORD, enchants: ["sharpness:3", "mending:1"] }
+    branches:
+      sword:
+        name: "Hunter Sword"
+      axe:
+        name: "Hunter Axe"
+        tools:
+          0: STONE_AXE
+          10: IRON_AXE
+          25: DIAMOND_AXE
+          50: NETHERITE_AXE
+  archer:
+    display: "&6🏹 Archer"
+    action: "mobs shot"
+    icon: ARROW
+    xp-base: 120
+    xp-growth: 1.03
+    max-level: 999
+    coin-bonus: 0.60
+    enchant-pool: [power, punch, flame, unbreaking, infinity, mending, quick_charge, piercing, multishot]
+    tiers:
+      0: { tool: BOW, enchants: [] }
+      10: { tool: BOW, enchants: [] }
+      25: { tool: BOW, enchants: [] }
+      50: { tool: BOW, enchants: [] }
+    branches:
+      infbow:
+        name: "Infinity Bow"
+        tool: BOW
+        exclude: [mending, quick_charge, piercing, multishot]
+        bonus:
+          10: ["power:1"]
+          25: ["power:2", "infinity:1"]
+          50: ["power:3", "infinity:1"]
+      mendbow:
+        name: "Mending Bow"
+        tool: BOW
+        exclude: [infinity, quick_charge, piercing, multishot]
+        bonus:
+          10: ["power:1"]
+          25: ["power:2", "mending:1"]
+          50: ["power:3", "mending:1"]
+      crossbow:
+        name: "Crossbow"
+        tool: CROSSBOW
+        exclude: [power, punch, flame, infinity]
+        bonus:
+          10: ["quick_charge:1"]
+          25: ["quick_charge:2", "mending:1"]
+          50: ["quick_charge:3", "mending:1"]
+  fisherman:
+    display: "&b🎣 Fisherman"
+    action: "fish caught"
+    icon: COD
+    xp-base: 80
+    xp-growth: 1.03
+    max-level: 999
+    coin-bonus: 1.00
+    enchant-pool: [lure, luck_of_the_sea, unbreaking]
+    tiers:
+      0: { tool: FISHING_ROD, enchants: [] }
+      10: { tool: FISHING_ROD, enchants: ["lure:1"] }
+      25: { tool: FISHING_ROD, enchants: ["lure:2", "unbreaking:1"] }
+      50: { tool: FISHING_ROD, enchants: ["lure:3", "mending:1"] }
+  guardian:
+    display: "&9🛡 Guardian"
+    action: "hits blocked"
+    icon: SHIELD
+    xp-base: 100
+    xp-growth: 1.03
+    max-level: 999
+    coin-bonus: 0.25
+    enchant-pool: [unbreaking]
+    tiers:
+      0: { tool: SHIELD, enchants: [] }
+      10: { tool: SHIELD, enchants: ["unbreaking:1"] }
+      25: { tool: SHIELD, enchants: ["unbreaking:2"] }
+      50: { tool: SHIELD, enchants: ["unbreaking:3", "mending:1"] }
+  # ---- GAMBLER ----
+  # XP comes from Lucky Louie's Casino (MAVOCasino) - you must HOLD your bound
+  # lucky stick while betting. XP scales with bet size (bet/100 coins, bet*5 lucky).
+  # The stick's tier gives bonus WIN LUCK at every casino game (read by MAVOCasino
+  # from the stick MATERIAL - keep the tier tools below in sync with the casino).
+  # Max level 1000: the Blaze of Fate, +15% luck, ultimate gambler.
+  gambler:
+    display: "&6♠ Gambler"
+    action: "bets placed at Louie's"
+    icon: GOLD_NUGGET
+    xp-base: 5
+    xp-growth: 1.008
+    max-level: 1000
+    coin-bonus: 0.0
+    enchant-pool: [unbreaking]
+    rank-commands:
+      250:
+        - "lp user %player% parent add gambler"
+      500:
+        - "lp user %player% parent add 777"
+      1000:
+        - "lp user %player% permission set mavocasino.pokercards true"
+    tiers:
+      0:    { tool: STICK,              name: "Lucky Twig",           enchants: [],               note: "&6\u2660 Casino luck: &e+1%" }
+      5:    { tool: BAMBOO,             name: "Lucky Bamboo",         enchants: [],               note: "&6\u2660 Casino luck: &e+2%" }
+      15:   { tool: BONE,               name: "Bone of Fortune",      enchants: ["unbreaking:1"], note: "&6\u2660 Casino luck: &e+3.5%" }
+      30:   { tool: SUGAR_CANE,         name: "Sweet Streak Cane",    enchants: ["unbreaking:1"], note: "&6\u2660 Casino luck: &e+5%" }
+      50:   { tool: POINTED_DRIPSTONE,  name: "Dripstone of Destiny", enchants: ["unbreaking:2"], note: "&6\u2660 Casino luck: &e+6.5%" }
+      100:  { tool: BREEZE_ROD,         name: "Breeze of Chance",     enchants: ["unbreaking:2"], note: "&6\u2660 Casino luck: &e+8%" }
+      250:  { tool: END_ROD,            name: "Gambler's Rod",        enchants: ["unbreaking:3"], note: "&6\u2660 Casino luck: &e+10%" }
+      500:  { tool: LIGHTNING_ROD,      name: "777 Rod",              enchants: ["unbreaking:3"], note: "&6\u2660 Casino luck: &e+12%" }
+      1000: { tool: BLAZE_ROD,          name: "Blaze of Fate",        enchants: ["unbreaking:3"], note: "&c\u2660&f\u2665 BLAZE OF FATE &c\u2666&f\u2663 &e+15% luck" }

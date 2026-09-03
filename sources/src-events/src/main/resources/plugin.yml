@@ -1,0 +1,16 @@
+name: MAVOEvents
+version: 1.2.0
+main: mavo.events.Events
+api-version: '1.13'
+description: Random server events for MAVOcraft
+author: MAVO
+softdepend: [Vault, MAVOLuckyCoins]
+commands:
+  event:
+    description: Show or manage server events
+    aliases: [events]
+    usage: /event [start <name>|stop|list]
+permissions:
+  mavoevents.admin:
+    description: Start/stop events
+    default: op

@@ -1,0 +1,16 @@
+name: MAVOAchievements
+version: 1.7.2
+main: mavo.achievements.Achievements
+api-version: '1.13'
+description: Tab-based progression achievements with milestone rewards (MAVOcraft)
+author: MAVO
+softdepend: [Vault]
+commands:
+  ach:
+    description: Open the achievements menu
+    aliases: [achievements, achieve]
+    usage: /ach [reload]
+permissions:
+  mavoach.admin:
+    description: Allows /ach reload
+    default: op

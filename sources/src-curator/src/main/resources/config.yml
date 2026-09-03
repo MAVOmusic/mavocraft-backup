@@ -1,0 +1,26 @@
+# MAVOCurator - The Museum
+#
+# Categories/items are built automatically from the game's item registry
+# (~90 sections, 1300+ survival-obtainable items). Spawn eggs, creative-only
+# and technical blocks are excluded.
+#
+# section-coin-per-item: completing a section pays  items-in-section x this
+#   e.g. Pants exhibit has 7 items -> 7,000 coins on completion.
+section-coin-per-item: 1000
+
+# Fired ONCE per player when their overall museum completion crosses each
+# percentage. %player% is replaced. Requires the LP groups to exist:
+#   lp creategroup curator25   (etc - see deploy notes)
+completion-rewards:
+  25:
+    - "lp user %player% parent add curator25"
+    - "eco give %player% 10000"
+  50:
+    - "lp user %player% parent add curator50"
+    - "eco give %player% 25000"
+  75:
+    - "lp user %player% parent add curator75"
+    - "eco give %player% 50000"
+  100:
+    - "lp user %player% parent add curator100"
+    - "eco give %player% 250000"

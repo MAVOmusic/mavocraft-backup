@@ -1,0 +1,17 @@
+name: MAVOLuckyCoins
+version: 1.5.5
+main: mavo.lucky.LuckyCoins
+api-version: '1.13'
+description: Lucky coins - drop, collect, wish at the wishing well for MAVOcraft
+author: MAVO
+commands:
+  wish:
+    description: Wish info (wishes are made at the Wishing Well). Admin - /wish well sets the well here
+    usage: /wish
+  ccollect:
+    description: Collect your free lucky coin (every 10 MC days). Admin - /ccollect give [amount]
+    usage: /ccollect
+permissions:
+  mavolucky.admin:
+    description: Set the wishing well location with /wish well
+    default: op

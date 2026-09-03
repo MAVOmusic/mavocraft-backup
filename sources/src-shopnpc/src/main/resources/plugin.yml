@@ -1,0 +1,15 @@
+name: MAVOShopNPC
+version: 1.3.3
+main: mavo.shopnpc.ShopNPC
+api-version: '1.13'
+description: Citizens-free shop NPCs for MAVOcraft
+author: MAVO
+commands:
+  shopnpc:
+    description: Manage shop NPCs
+    usage: /shopnpc <spawn|remove|list|holo|resholo> [name] [command]
+    permission: mavoshopnpc.admin
+permissions:
+  mavoshopnpc.admin:
+    description: Manage shop NPCs
+    default: op

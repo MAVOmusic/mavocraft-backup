@@ -1,0 +1,16 @@
+name: MAVOProfessions
+version: 3.14.1
+main: mavo.professions.Professions
+api-version: '1.13'
+description: Grind professions with tiered tool rewards (MAVOcraft)
+author: MAVO
+softdepend: [Vault, PlaceholderAPI, MAVOMobFarm]
+commands:
+  profession:
+    description: Open the professions menu / leaderboard
+    aliases: [prof, professions]
+    usage: /profession [check|top <prof>|almost <prof>|addxp <prof> <n>|reload]
+permissions:
+  mavoprof.admin:
+    description: Allows /profession reload
+    default: op

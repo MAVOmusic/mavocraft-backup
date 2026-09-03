@@ -1,0 +1,23 @@
+name: MAVOWild
+version: 1.7.4
+main: mavo.wild.Wild
+api-version: '1.13'
+description: Random wilderness teleport + Wild Portal for MAVOcraft
+author: MAVO
+commands:
+  wild:
+    description: Wild portal admin + holoreset. Player /wild is retired (use the portal).
+    aliases: [rtp]
+    usage: /wild [portal|homeportal|holoreset]
+  holoreset:
+    description: Wipe and respawn MAVO floating holos within radius (default 60)
+    usage: /holoreset [radius]
+    permission: mavowild.admin
+    aliases: [resetholo, mavoholo]
+permissions:
+  mavowild.admin:
+    description: Configure the Wild Portal + holoreset
+    default: op
+  mavowild.nocooldown:
+    description: Skip the wild teleport cooldown
+    default: op

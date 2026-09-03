@@ -1,0 +1,458 @@
+# MAVOAchievements - progression categories
+#
+# Each category levels up when your lifetime count reaches:
+#   threshold(level) = base * growth ^ (level - 1)
+#
+# REBALANCED v1.1: max-level 100, requirements halved, growth softened to 1.10
+# so level 100 is actually reachable in a lifetime of grinding
+# (growth 2.0 at 100 levels would need more blocks than exist in the world).
+#   mining: L1=500, L10=1.2k, L25=5.4k, L50=53k, L75=573k, L100=6.2M
+#
+# Logs now count to WOODCUTTING, not mining.
+#
+# Every reward-every levels the player gets:
+#   coins = milestone-coins * level      (e.g. 400 * level 10 = 4,000)
+#   plus every command in milestone-commands (%player%, %level%, %category%)
+#
+# Level-ups print ONE chat line to the player only. Milestones broadcast. No popup spam.
+
+reward-every: 5
+
+categories:
+  mining:
+    display: "&c⛏ Mining"
+    icon: IRON_PICKAXE
+    what: "blocks mined"
+    base: 2500
+    growth: 1.14
+    max-level: 100
+    milestone-coins: 500
+    milestone-commands: []
+  woodcutting:
+    display: "&2🪓 Woodcutting"
+    icon: IRON_AXE
+    what: "logs chopped"
+    base: 1200
+    growth: 1.14
+    max-level: 100
+    milestone-coins: 500
+    milestone-commands: []
+  building:
+    display: "&9🧱 Building"
+    icon: BRICKS
+    what: "blocks placed"
+    base: 2500
+    growth: 1.14
+    max-level: 100
+    milestone-coins: 500
+    milestone-commands: []
+  combat:
+    display: "&4⚔ Combat"
+    icon: IRON_SWORD
+    what: "mobs slain"
+    base: 400
+    growth: 1.13
+    max-level: 100
+    milestone-coins: 600
+    milestone-commands: []
+  farming:
+    display: "&e🌾 Farming"
+    icon: WHEAT
+    what: "crops harvested"
+    base: 1000
+    growth: 1.13
+    max-level: 100
+    milestone-coins: 500
+    milestone-commands: []
+  fishing:
+    display: "&b🎣 Fishing"
+    icon: FISHING_ROD
+    what: "fish caught"
+    base: 200
+    growth: 1.13
+    max-level: 100
+    milestone-coins: 600
+    milestone-commands: []
+  travel:
+    display: "&a👢 Travel"
+    icon: LEATHER_BOOTS
+    what: "metres travelled"
+    base: 10000
+    growth: 1.12
+    max-level: 100
+    milestone-coins: 500
+    milestone-commands: []
+  betting:
+    display: "&6♠ High Roller"
+    icon: GOLD_NUGGET
+    what: "coins wagered at Louie's"
+    base: 1000
+    growth: 1.5
+    max-level: 100
+    milestone-coins: 50
+    milestone-commands: []
+  luckybets:
+    display: "&e♦ Lucky Plunger"
+    icon: SUNFLOWER
+    what: "lucky coins wagered"
+    base: 5
+    growth: 1.4
+    max-level: 100
+    milestone-coins: 50
+    milestone-commands: []
+  winnings:
+    display: "&a♥ Cashout King"
+    icon: GOLD_INGOT
+    what: "coins collected from Louie"
+    base: 750
+    growth: 1.5
+    max-level: 100
+    milestone-coins: 50
+    milestone-commands: []
+  luckywins:
+    display: "&b♣ Charm Collector"
+    icon: GOLD_BLOCK
+    what: "lucky coins won at the casino"
+    base: 4
+    growth: 1.4
+    max-level: 100
+    milestone-coins: 50
+    milestone-commands: []
+  fortune:
+    display: "&e⛃ Fortune"
+    icon: EMERALD
+    what: "coins (record balance)"
+    base: 2500
+    growth: 1.5
+    max-level: 100
+    milestone-coins: 40
+    milestone-commands: []
+  luckyhoard:
+    display: "&6⛀ Lucky Hoard"
+    icon: RAW_GOLD
+    what: "lucky coins carried at once (record)"
+    base: 3
+    growth: 1.3
+    max-level: 100
+    milestone-coins: 40
+    milestone-commands: []
+  museum:
+    display: "&d✦ Museum Donor"
+    icon: WRITABLE_BOOK
+    what: "items donated to the Museum"
+    base: 10
+    growth: 1.35
+    max-level: 100
+    milestone-coins: 100
+    milestone-commands: []
+
+  # ---- Mob mastery (mobfarm-scaled, slow) ----
+  # L1~80 kills, L25 huge, ranks at 25/50/100/250/500/999 via max-level 999
+  # milestone every 5: 5000 coins (free mobfarm entry key)
+  kill_zombie:
+    display: "&2☠ Zombie Slayer"
+    icon: ZOMBIE_HEAD
+    what: "zombies slain"
+    base: 80
+    growth: 1.18
+    max-level: 999
+    milestone-coins: 1000
+    milestone-commands: []
+  kill_skeleton:
+    display: "&f☠ Skeleton Hunter"
+    icon: SKELETON_SKULL
+    what: "skeletons slain"
+    base: 80
+    growth: 1.18
+    max-level: 999
+    milestone-coins: 1000
+  kill_spider:
+    display: "&8🕷 Spider Crusher"
+    icon: SPIDER_EYE
+    what: "spiders slain"
+    base: 70
+    growth: 1.18
+    max-level: 999
+    milestone-coins: 1000
+  kill_creeper:
+    display: "&a💥 Creeper Defuser"
+    icon: CREEPER_HEAD
+    what: "creepers slain"
+    base: 60
+    growth: 1.19
+    max-level: 999
+    milestone-coins: 1000
+  kill_enderman:
+    display: "&5👁 Enderman Bane"
+    icon: ENDER_PEARL
+    what: "endermen slain"
+    base: 40
+    growth: 1.20
+    max-level: 999
+    milestone-coins: 1200
+  kill_blaze:
+    display: "&6🔥 Blaze Hunter"
+    icon: BLAZE_ROD
+    what: "blazes slain"
+    base: 50
+    growth: 1.19
+    max-level: 999
+    milestone-coins: 1200
+  kill_pig:
+    display: "&d🐷 Pig Rancher"
+    icon: PORKCHOP
+    what: "pigs slain"
+    base: 100
+    growth: 1.17
+    max-level: 999
+    milestone-coins: 800
+  kill_cow:
+    display: "&f🐮 Cow Rancher"
+    icon: BEEF
+    what: "cows slain"
+    base: 100
+    growth: 1.17
+    max-level: 999
+    milestone-coins: 800
+  kill_chicken:
+    display: "&e🐔 Chicken Rancher"
+    icon: CHICKEN
+    what: "chickens slain"
+    base: 120
+    growth: 1.16
+    max-level: 999
+    milestone-coins: 800
+  kill_sheep:
+    display: "&7🐑 Sheep Rancher"
+    icon: MUTTON
+    what: "sheep slain"
+    base: 100
+    growth: 1.17
+    max-level: 999
+    milestone-coins: 800
+  kill_iron_golem:
+    display: "&f🛡 Golem Breaker"
+    icon: IRON_BLOCK
+    what: "iron golems slain"
+    base: 15
+    growth: 1.22
+    max-level: 999
+    milestone-coins: 1500
+  kill_guardian:
+    display: "&3🌊 Guardian Hunter"
+    icon: PRISMARINE_SHARD
+    what: "guardians slain"
+    base: 40
+    growth: 1.20
+    max-level: 999
+    milestone-coins: 1200
+
+  kill_husk:
+    display: "&6☠ Husk Slayer"
+    icon: SAND
+    what: "husks slain"
+    base: 70
+    growth: 1.18
+    max-level: 999
+    milestone-coins: 1000
+  kill_stray:
+    display: "&b☠ Stray Hunter"
+    icon: ARROW
+    what: "strays slain"
+    base: 70
+    growth: 1.18
+    max-level: 999
+    milestone-coins: 1000
+  kill_cave_spider:
+    display: "&2🕷 Cave Spider Crusher"
+    icon: FERMENTED_SPIDER_EYE
+    what: "cave spiders slain"
+    base: 60
+    growth: 1.19
+    max-level: 999
+    milestone-coins: 1000
+  kill_drowned:
+    display: "&3☠ Drowned Slayer"
+    icon: TRIDENT
+    what: "drowned slain"
+    base: 70
+    growth: 1.18
+    max-level: 999
+    milestone-coins: 1000
+  kill_wither_skeleton:
+    display: "&8☠ Wither Skeleton Hunter"
+    icon: WITHER_SKELETON_SKULL
+    what: "wither skeletons slain"
+    base: 40
+    growth: 1.20
+    max-level: 999
+    milestone-coins: 1500
+  kill_magma_cube:
+    display: "&6■ Magma Cube Squasher"
+    icon: MAGMA_CREAM
+    what: "magma cubes slain"
+    base: 50
+    growth: 1.19
+    max-level: 999
+    milestone-coins: 1000
+  kill_slime:
+    display: "&a■ Slime Squasher"
+    icon: SLIME_BALL
+    what: "slimes slain"
+    base: 60
+    growth: 1.18
+    max-level: 999
+    milestone-coins: 1000
+  kill_witch:
+    display: "&5🧪 Witch Hunter"
+    icon: GLASS_BOTTLE
+    what: "witches slain"
+    base: 40
+    growth: 1.20
+    max-level: 999
+    milestone-coins: 1500
+  kill_pillager:
+    display: "&c⚔ Pillager Hunter"
+    icon: CROSSBOW
+    what: "pillagers slain"
+    base: 50
+    growth: 1.19
+    max-level: 999
+    milestone-coins: 1200
+  kill_villager:
+    display: "&e✌ Villager… uh"
+    icon: EMERALD
+    what: "villagers slain"
+    base: 30
+    growth: 1.20
+    max-level: 999
+    milestone-coins: 800
+  kill_rabbit:
+    display: "&e🐰 Rabbit Rancher"
+    icon: RABBIT
+    what: "rabbits slain"
+    base: 100
+    growth: 1.16
+    max-level: 999
+    milestone-coins: 800
+  kill_hoglin:
+    display: "&6🐗 Hoglin Hunter"
+    icon: PORKCHOP
+    what: "hoglins slain"
+    base: 40
+    growth: 1.20
+    max-level: 999
+    milestone-coins: 1200
+  kill_piglin:
+    display: "&6💰 Piglin Hunter"
+    icon: GOLD_INGOT
+    what: "piglins slain"
+    base: 50
+    growth: 1.19
+    max-level: 999
+    milestone-coins: 1000
+  kill_silverfish:
+    display: "&7🐛 Silverfish Squish"
+    icon: STONE_BRICKS
+    what: "silverfish slain"
+    base: 80
+    growth: 1.17
+    max-level: 999
+    milestone-coins: 800
+  kill_phantom:
+    display: "&9👻 Phantom Hunter"
+    icon: PHANTOM_MEMBRANE
+    what: "phantoms slain"
+    base: 40
+    growth: 1.20
+    max-level: 999
+    milestone-coins: 1200
+
+  kill_bee:
+    display: "&6\uD83D\uDC1D Bee Saver"
+    icon: HONEY_BOTTLE
+    what: "bees slain"
+    base: 100
+    growth: 1.16
+    max-level: 999
+    milestone-coins: 800
+  kill_fox:
+    display: "&6\uD83E\uDD8A Fox Foe"
+    icon: SWEET_BERRIES
+    what: "foxes slain"
+    base: 100
+    growth: 1.16
+    max-level: 999
+    milestone-coins: 800
+  kill_goat:
+    display: "&f\uD83D\uDC10 Goat Buster"
+    icon: GOAT_HORN
+    what: "goats slain"
+    base: 100
+    growth: 1.16
+    max-level: 999
+    milestone-coins: 800
+  kill_llama:
+    display: "&e\uD83E\uDD99 Llama Llama"
+    icon: LEAD
+    what: "llamas slain"
+    base: 100
+    growth: 1.16
+    max-level: 999
+    milestone-coins: 800
+  kill_panda:
+    display: "&f\uD83D\uDC3C Panda Popper"
+    icon: BAMBOO
+    what: "pandas slain"
+    base: 100
+    growth: 1.16
+    max-level: 999
+    milestone-coins: 800
+  kill_frog:
+    display: "&a\uD83D\uDC38 Frog Feud"
+    icon: SLIME_BALL
+    what: "frogs slain"
+    base: 100
+    growth: 1.16
+    max-level: 999
+    milestone-coins: 800
+  kill_sniffer:
+    display: "&6\uD83D\uDC3E Sniffer Stomper"
+    icon: SNIFFER_EGG
+    what: "sniffers slain"
+    base: 100
+    growth: 1.16
+    max-level: 999
+    milestone-coins: 800
+  kill_squid:
+    display: "&3\uD83E\uDD9C Squid Squasher"
+    icon: INK_SAC
+    what: "squids slain"
+    base: 100
+    growth: 1.16
+    max-level: 999
+    milestone-coins: 800
+  kill_glow_squid:
+    display: "&b\uD83E\uDD9C Glow Squid Smasher"
+    icon: GLOW_INK_SAC
+    what: "glow squids slain"
+    base: 100
+    growth: 1.16
+    max-level: 999
+    milestone-coins: 800
+  kill_ghast:
+    display: "&f💨 Ghast Hunter"
+    icon: GHAST_TEAR
+    what: "ghasts slain"
+    base: 25
+    growth: 1.22
+    max-level: 999
+    milestone-coins: 1500
+  kill_shulker:
+    display: "&d📦 Shulker Hunter"
+    icon: SHULKER_SHELL
+    what: "shulkers slain"
+    base: 30
+    growth: 1.21
+    max-level: 999
+    milestone-coins: 1500

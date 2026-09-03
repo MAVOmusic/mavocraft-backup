@@ -1,0 +1,16 @@
+name: MAVODeathChest
+version: 1.1.0
+main: mavo.deathchest.DeathChest
+api-version: '1.13'
+description: Death chests that protect your items - /grave GUI travel (coins or Lucky Coins)
+author: MAVO
+softdepend: [Vault, MAVOLuckyCoins]
+commands:
+  grave:
+    description: Show your active death chests
+    aliases: [deathchest, graves]
+    usage: /grave
+permissions:
+  mavodc.admin:
+    description: Open any death chest
+    default: op

@@ -1,0 +1,16 @@
+name: MAVOCurator
+version: 1.0.1
+main: mavo.curator.Curator
+api-version: '1.13'
+description: The Museum - donate one of every item, complete collections, become THE CURATOR
+author: MAVO
+softdepend: [Vault, MAVOAchievements]
+commands:
+  museum:
+    description: Open the Museum collection book
+    aliases: [curator, collection]
+    usage: /museum [reload|shopsgen]
+permissions:
+  mavocurator.admin:
+    description: Allows /museum reload
+    default: op

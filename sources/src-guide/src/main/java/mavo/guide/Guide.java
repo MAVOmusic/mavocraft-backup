@@ -30,9 +30,21 @@ public final class Guide extends JavaPlugin implements Listener {
     private File dataFile;
     private YamlConfiguration data;
 
+    /** Content lines shown per reader page (keeps tooltips on-screen). */
+    private static final int PAGE_LINES = 12;
+    /** Version entries shown on the first What's New page (newest 3). */
+    private static final int WN_FIRST_PAGE = 3;
+    /** Version entries per later What's New page. */
+    private static final int WN_PAGE = 6;
+
     private static final class Holder implements InventoryHolder {
-        String view = "main";          // main | tutorial | reader
+        String view = "main";          // main | tutorial | reader | whatsnew
         String backView = "main";      // where the reader's Back button goes
+        int backPage = 0;              // whatsnew page to return to
+        int page = 0;                  // reader page / whatsnew page
+        List<String> lines = List.of();
+        String readerTitle = "";
+        Material readerIcon = Material.PAPER;
         @Override public Inventory getInventory() { return null; }
     }
 
@@ -73,6 +85,11 @@ public final class Guide extends JavaPlugin implements Listener {
             if (inv.getItem(i) == null) inv.setItem(i, (i % 2 == 0) ? paneR : pane);
     }
 
+    private String nameOr(Map<?, ?> f, String fallback) {
+        Object n = f.get("name");
+        return n == null ? fallback : String.valueOf(n);
+    }
+
     // ---------------- main menu ----------------
     private void openMain(Player p) {
         int version = getConfig().getInt("version", 1);
@@ -93,58 +110,82 @@ public final class Guide extends JavaPlugin implements Listener {
         List<Map<?, ?>> feats = getConfig().getMapList("features");
         int slot = 9;
         for (Map<?, ?> f : feats) {
-            if (slot >= 53) break;
+            if (slot >= 48) break;
+            if ("guide".equals(String.valueOf(f.get("id")))) continue; // pinned at bottom
+            if ("map".equals(String.valueOf(f.get("id")))) continue;   // pinned top
             Material icon;
             try { icon = Material.valueOf(String.valueOf(f.get("icon"))); }
             catch (Exception ex) { icon = Material.PAPER; }
-            inv.setItem(slot++, item(icon, String.valueOf(f.get("name")),
-                    List.of("&7" + f.get("short"), "", "&e\u25B6 Click to read the full page"),
+            Object shrt = f.getOrDefault("short", "");
+            inv.setItem(slot++, item(icon, nameOr(f, "?"),
+                    List.of("&7" + shrt, "", "&e\u25B6 Click to read the full page"),
                     "feat:" + f.get("id")));
         }
 
+        // pinned: "This Guide" reminder in the bottom-middle box
+        inv.setItem(49, item(Material.BOOK, "&f&lThis Guide",
+                List.of("&7Reopen this guide any time:", "&e/updates &7or &e/tutorial", "", "&e\u25B6 Click to read"),
+                "feat:guide"));
         inv.setItem(53, item(Material.BARRIER, "&cClose &7- reopen with &e/updates", null, "__close"));
         fillPanes(inv);
         p.openInventory(inv);
         p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 0.7f, 1.4f);
     }
 
-    // ---------------- tutorial menu ----------------
+    // ---------------- tutorial menu (up to 21 chapters) ----------------
     private void openTutorial(Player p) {
         Holder h = new Holder(); h.view = "tutorial";
-        Inventory inv = Bukkit.createInventory(h, 27, cc("&a&l\u270E Tutorial &8- pick a chapter"));
+        Inventory inv = Bukkit.createInventory(h, 54, cc("&a&l\u270E Tutorial &8- pick a chapter"));
         List<Map<?, ?>> chapters = getConfig().getMapList("tutorial");
-        int[] slots = {10, 11, 12, 13, 14, 15, 16, 3, 4, 5, 21, 22, 23};
+        int[] slots = {10,11,12,13,14,15,16, 19,20,21,22,23,24,25, 28,29,30,31,32,33,34};
         int i = 0;
         for (Map<?, ?> c : chapters) {
             if (i >= slots.length) break;
             Material icon;
             try { icon = Material.valueOf(String.valueOf(c.get("icon"))); }
             catch (Exception ex) { icon = Material.BOOK; }
-            inv.setItem(slots[i], item(icon, "&f&lChapter " + (i + 1) + " &8- " + c.get("name"),
+            String nm = String.valueOf(c.get("name"));
+            String shortNm = nm.length() > 26 ? nm.substring(0, 25) + "\u2026" : nm;
+            inv.setItem(slots[i], item(icon, "&f&lCH" + i + " &8- " + shortNm,
                     List.of("", "&e\u25B6 Click to read"),
                     "tut:" + i));
             i++;
         }
-        inv.setItem(18, item(Material.ARROW, "&e\u25C0 Back &7- guide menu", null, "__back"));
-        inv.setItem(26, item(Material.BARRIER, "&cClose", null, "__close"));
+        inv.setItem(45, item(Material.ARROW, "&e\u25C0 Back &7- guide menu", null, "__back"));
+        inv.setItem(53, item(Material.BARRIER, "&cClose", null, "__close"));
         fillPanes(inv);
         p.openInventory(inv);
         p.playSound(p.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 0.8f, 1.0f);
     }
 
-    // ---------------- reader page (a "book page" GUI) ----------------
-    private void openReader(Player p, Material icon, String title, String subtitle, List<String> lines, String backView) {
-        Holder h = new Holder(); h.view = "reader"; h.backView = backView;
-        Inventory inv = Bukkit.createInventory(h, 27, cc(title));
-        List<String> lore = new ArrayList<>();
-        if (subtitle != null && !subtitle.isBlank()) { lore.add("&7" + subtitle); lore.add(""); }
-        for (String line : lines) lore.add(String.valueOf(line));
-        inv.setItem(13, item(icon, title, lore, null));
-        inv.setItem(18, item(Material.ARROW, "&e\u25C0 Back", null, "__back"));
-        inv.setItem(26, item(Material.BARRIER, "&cClose", null, "__close"));
-        fillPanes(inv);
+    // ---------------- paged reader (never overflows the screen) ----------------
+    private void openReader(Player p, Material icon, String title, String subtitle,
+                            List<String> lines, String backView, int backPage, int page) {
+        Holder h = new Holder(); h.view = "reader"; h.backView = backView; h.backPage = backPage;
+        h.page = Math.max(0, page); h.lines = lines; h.readerTitle = title; h.readerIcon = icon;
+        Inventory inv = Bukkit.createInventory(h, 27, cc(title.length() > 30 ? title.substring(0, 29) + "\u2026" : title));
+        renderReader(inv, h, subtitle);
         p.openInventory(inv);
         p.playSound(p.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 0.8f, 1.2f);
+    }
+
+    private void renderReader(Inventory inv, Holder h, String subtitle) {
+        int per = PAGE_LINES;
+        int pages = Math.max(1, (h.lines.size() + per - 1) / per);
+        int page = Math.min(h.page, pages - 1);
+        h.page = page;
+        List<String> lore = new ArrayList<>();
+        lore.add("&7Page " + (page + 1) + "/" + pages);
+        if (page == 0 && subtitle != null && !subtitle.isBlank()) { lore.add("&7" + subtitle); lore.add(""); }
+        int start = page * per;
+        int end = Math.min(h.lines.size(), start + per);
+        for (int i = start; i < end; i++) lore.add(String.valueOf(h.lines.get(i)));
+        inv.setItem(13, item(h.readerIcon, h.readerTitle, lore, null));
+        inv.setItem(16, item(Material.ARROW, "&e\u25C0 Back", null, "__back"));
+        inv.setItem(18, page > 0 ? item(Material.LIME_DYE, "&a\u25C0 Newer page", null, "__rprev") : null);
+        inv.setItem(22, page < pages - 1 ? item(Material.ORANGE_DYE, "&6Older page \u25B6", null, "__rnext") : null);
+        inv.setItem(26, item(Material.BARRIER, "&cClose", null, "__close"));
+        fillPanes(inv);
     }
 
     private void openFeature(Player p, String id) {
@@ -153,10 +194,12 @@ public final class Guide extends JavaPlugin implements Listener {
             Material icon;
             try { icon = Material.valueOf(String.valueOf(f.get("icon"))); }
             catch (Exception ex) { icon = Material.PAPER; }
+            String title = nameOr(f, "?");
             List<String> lines = new ArrayList<>();
-            Object info = f.get("info");
+            Object info = f.get("info") != null ? f.get("info") : f.get("pages");
             if (info instanceof List<?> raw) for (Object line : raw) lines.add(String.valueOf(line));
-            openReader(p, icon, String.valueOf(f.get("name")), String.valueOf(f.get("short")), lines, "main");
+            Object shrt = f.getOrDefault("short", "");
+            openReader(p, icon, title, String.valueOf(shrt), lines, "main", 0, 0);
             return;
         }
     }
@@ -171,13 +214,77 @@ public final class Guide extends JavaPlugin implements Listener {
         List<String> lines = new ArrayList<>();
         Object info = c.get("lines");
         if (info instanceof List<?> raw) for (Object line : raw) lines.add(String.valueOf(line));
-        openReader(p, icon, "&f&lChapter " + (idx + 1) + " &8- " + c.get("name"), null, lines, "tutorial");
+        openReader(p, icon, "&f&lCH" + idx + " &8- " + c.get("name"), null, lines, "tutorial", 0, 0);
+    }
+
+    // ---------------- What's New: version list menu + pager ----------------
+    private List<Map<?, ?>> wnEntries() {
+        List<Map<?, ?>> list = getConfig().getMapList("whatsnew");
+        if (list.isEmpty()) {
+            // legacy single-shot changelog -> one entry
+            List<String> lines = new ArrayList<>(getConfig().getStringList("changelog"));
+            Map<String, Object> one = new java.util.LinkedHashMap<>();
+            one.put("title", "&c&l\u2605 What's New");
+            one.put("icon", "NETHER_STAR");
+            one.put("lines", lines);
+            list = List.of(one);
+        }
+        return list;
+    }
+
+    private void openWhatsNew(Player p, int page) {
+        int version = getConfig().getInt("version", 1);
+        Holder h = new Holder(); h.view = "whatsnew"; h.page = page;
+        Inventory inv = Bukkit.createInventory(h, 27, cc("&c&l\u2605 What's New &7(v" + version + ")"));
+        renderWhatsNew(inv, h);
+        p.openInventory(inv);
+        p.playSound(p.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 0.8f, 1.1f);
+    }
+
+    private void renderWhatsNew(Inventory inv, Holder h) {
+        int page = Math.max(0, h.page);
+        List<Map<?, ?>> entries = wnEntries();
+        int per = page == 0 ? WN_FIRST_PAGE : WN_PAGE;
+        int start = page == 0 ? 0 : WN_FIRST_PAGE + (page - 1) * WN_PAGE;
+        int end = Math.min(entries.size(), start + per);
+        int[] slots = page == 0 ? new int[]{11, 13, 15} : new int[]{10, 11, 12, 13, 14, 15};
+        int s = 0;
+        for (int i = start; i < end && s < slots.length; i++, s++) {
+            Map<?, ?> e = entries.get(i);
+            Material icon;
+            try { icon = Material.valueOf(String.valueOf(e.getOrDefault("icon", "PAPER"))); }
+            catch (Exception ex) { icon = Material.PAPER; }
+            String title = String.valueOf(e.get("title"));
+            List<String> lore = new ArrayList<>();
+            Object ln = e.get("lines");
+            if (ln instanceof List<?> raw && !raw.isEmpty())
+                lore.add("&7" + raw.get(0));
+            lore.add("");
+            lore.add("&e\u25B6 Click to read the full notes");
+            inv.setItem(slots[s], item(icon, title, lore, "wn:" + i));
+        }
+        inv.setItem(4, item(Material.ARROW, "&e\u25C0 Back &7- guide menu", null, "__back"));
+        inv.setItem(18, page > 0 ? item(Material.LIME_DYE, "&a\u25C0 Newer updates", null, "__wnprev") : null);
+        inv.setItem(22, end < entries.size() ? item(Material.ORANGE_DYE, "&6Older updates \u25B6", null, "__wnnext") : null);
+        inv.setItem(26, item(Material.BARRIER, "&cClose", null, "__close"));
+        fillPanes(inv);
+    }
+
+    private void openWhatsNewEntry(Player p, int idx, int page) {
+        List<Map<?, ?>> entries = wnEntries();
+        if (idx < 0 || idx >= entries.size()) return;
+        Map<?, ?> e = entries.get(idx);
+        Material icon;
+        try { icon = Material.valueOf(String.valueOf(e.getOrDefault("icon", "PAPER"))); }
+        catch (Exception ex) { icon = Material.PAPER; }
+        List<String> lines = new ArrayList<>();
+        Object ln = e.get("lines");
+        if (ln instanceof List<?> raw) for (Object line : raw) lines.add(String.valueOf(line));
+        openReader(p, icon, String.valueOf(e.get("title")), null, lines, "whatsnew", page, 0);
     }
 
     private void openChangelog(Player p) {
-        int version = getConfig().getInt("version", 1);
-        List<String> lines = new ArrayList<>(getConfig().getStringList("changelog"));
-        openReader(p, Material.NETHER_STAR, "&c&l\u2605 What's New &7(v" + version + ")", null, lines, "main");
+        openWhatsNew(p, 0);
     }
 
     @EventHandler
@@ -193,15 +300,47 @@ public final class Guide extends JavaPlugin implements Listener {
         switch (id) {
             case "__close" -> p.closeInventory();
             case "__tutorial" -> openTutorial(p);
-            case "__changelog" -> openChangelog(p);
+            case "__changelog" -> openWhatsNew(p, 0);
             case "__back" -> {
                 if (h.view.equals("reader") && h.backView.equals("tutorial")) openTutorial(p);
+                else if (h.view.equals("reader") && h.backView.equals("whatsnew")) openWhatsNew(p, h.backPage);
                 else openMain(p);
+            }
+            case "__rprev" -> {
+                if (h.view.equals("reader") && h.page > 0) {
+                    h.page--;
+                    renderReader(e.getInventory(), h, null);
+                }
+            }
+            case "__rnext" -> {
+                if (h.view.equals("reader")) {
+                    int pages = Math.max(1, (h.lines.size() + PAGE_LINES - 1) / PAGE_LINES);
+                    if (h.page < pages - 1) {
+                        h.page++;
+                        renderReader(e.getInventory(), h, null);
+                    }
+                }
+            }
+            case "__wnprev" -> {
+                if (h.view.equals("whatsnew") && h.page > 0) {
+                    h.page--;
+                    renderWhatsNew(e.getInventory(), h);
+                }
+            }
+            case "__wnnext" -> {
+                if (h.view.equals("whatsnew")) {
+                    int entries = wnEntries().size();
+                    int start = WN_FIRST_PAGE + h.page * WN_PAGE;
+                    if (start < entries) { h.page++; renderWhatsNew(e.getInventory(), h); }
+                }
             }
             default -> {
                 if (id.startsWith("feat:")) openFeature(p, id.substring(5));
                 else if (id.startsWith("tut:")) {
                     try { openChapter(p, Integer.parseInt(id.substring(4))); } catch (NumberFormatException ignored) {}
+                } else if (id.startsWith("wn:")) {
+                    try { openWhatsNewEntry(p, Integer.parseInt(id.substring(3)), h.view.equals("whatsnew") ? h.page : 0); }
+                    catch (NumberFormatException ignored) {}
                 }
             }
         }
