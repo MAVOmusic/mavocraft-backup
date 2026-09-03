@@ -94,7 +94,7 @@ jobs:
         run: |
           git config user.name "mavocraft-ci"
           git config user.email "ci@mavocraft.local"
-          git add -A MAVO*.jar jars/
+          git add -A 'MAVO*.jar' jars/
           if git diff --cached --quiet; then
             echo "No jar changes to commit"
             exit 0
