@@ -90,6 +90,12 @@ public final class Guide extends JavaPlugin implements Listener {
         return n == null ? fallback : String.valueOf(n);
     }
 
+    /** Safe getOrDefault for wildcard maps (Java can't infer the default type). */
+    private Object mapOr(Map<?, ?> m, String key, String def) {
+        Object v = m.get(key);
+        return v == null ? def : v;
+    }
+
     // ---------------- main menu ----------------
     private void openMain(Player p) {
         int version = getConfig().getInt("version", 1);
@@ -116,7 +122,7 @@ public final class Guide extends JavaPlugin implements Listener {
             Material icon;
             try { icon = Material.valueOf(String.valueOf(f.get("icon"))); }
             catch (Exception ex) { icon = Material.PAPER; }
-            Object shrt = f.getOrDefault("short", "");
+            Object shrt = mapOr(f, "short", "");
             inv.setItem(slot++, item(icon, nameOr(f, "?"),
                     List.of("&7" + shrt, "", "&e\u25B6 Click to read the full page"),
                     "feat:" + f.get("id")));
@@ -198,7 +204,7 @@ public final class Guide extends JavaPlugin implements Listener {
             List<String> lines = new ArrayList<>();
             Object info = f.get("info") != null ? f.get("info") : f.get("pages");
             if (info instanceof List<?> raw) for (Object line : raw) lines.add(String.valueOf(line));
-            Object shrt = f.getOrDefault("short", "");
+            Object shrt = mapOr(f, "short", "");
             openReader(p, icon, title, String.valueOf(shrt), lines, "main", 0, 0);
             return;
         }
@@ -252,7 +258,7 @@ public final class Guide extends JavaPlugin implements Listener {
         for (int i = start; i < end && s < slots.length; i++, s++) {
             Map<?, ?> e = entries.get(i);
             Material icon;
-            try { icon = Material.valueOf(String.valueOf(e.getOrDefault("icon", "PAPER"))); }
+            try { icon = Material.valueOf(String.valueOf(mapOr(e, "icon", "PAPER"))); }
             catch (Exception ex) { icon = Material.PAPER; }
             String title = String.valueOf(e.get("title"));
             List<String> lore = new ArrayList<>();
@@ -275,7 +281,7 @@ public final class Guide extends JavaPlugin implements Listener {
         if (idx < 0 || idx >= entries.size()) return;
         Map<?, ?> e = entries.get(idx);
         Material icon;
-        try { icon = Material.valueOf(String.valueOf(e.getOrDefault("icon", "PAPER"))); }
+        try { icon = Material.valueOf(String.valueOf(mapOr(e, "icon", "PAPER"))); }
         catch (Exception ex) { icon = Material.PAPER; }
         List<String> lines = new ArrayList<>();
         Object ln = e.get("lines");

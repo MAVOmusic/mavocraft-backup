@@ -169,7 +169,7 @@ public final class Events extends JavaPlugin implements Listener {
                 var w = p.getWorld();
                 for (int i = 0; i < 3; i++) {
                     var loc = p.getLocation().clone().add(rng.nextInt(9) - 4, 0, rng.nextInt(9) - 4);
-                    loc.setY(w.getHighestBlockYAt(loc).getY() + 1);
+                    loc.setY(w.getHighestBlockYAt(loc) + 1);
                     w.spawnEntity(loc, org.bukkit.entity.EntityType.ZOMBIE);
                 }
                 p.sendMessage(ChatColor.DARK_RED + "\u2620 Zombies are hunting you! DEFEND!");
