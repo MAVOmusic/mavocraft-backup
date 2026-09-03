@@ -6,7 +6,7 @@ description: Wandering traders sell only USEFUL stock for MAVOcraft - and actual
 author: MAVO
 commands:
   wanderer:
-    description: Trader info; admin: /wanderer spawn [player]
+    description: "Trader info; admin: /wanderer spawn [player]"
     usage: /wanderer [spawn <player>]
 permissions:
   mavowanderer.admin:
