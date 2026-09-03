@@ -42,7 +42,7 @@ Simple check: **`plugins/` must contain exactly ONE jar per plugin name** before
 
 | File to delete | Why (verified in source) |
 |---|---|
-| `plugins/MAVOGuide/config.yml` | Guide uses `saveDefaultConfig()` — an existing config is NEVER overwritten. Old file = **v13** (12 tutorial chapters, old text). New file inside the jar = **v15** (16 chapters CH0–CH15, paged What's New, 5,000–400,000 wild, 10/25/50 professions, v15 Museum shopsgen auto-reload). Delete only `config.yml`. |
+| `plugins/MAVOGuide/config.yml` | Guide uses `saveDefaultConfig()` — an existing config is NEVER overwritten. Old file = **v13/v14** (12 or 16 chapter builds, old text). New file inside the jar = **v15** (16 chapters CH0–CH15, paged What's New, 5,000–400,000 wild, 10/25/50 professions, v15 Museum shopsgen auto-reload). Delete only `config.yml`. |
 | `plugins/MAVOAchievements/config.yml` | Achievements reads its categories **from this file** and uses `saveDefaultConfig()`. Old file = 43 categories; new = **52** (9 new Mob Farm kill categories: bee, fox, goat, llama, panda, frog, sniffer, squid, glow_squid + aliases). Keeping the old file means the new categories never appear. Delete only `config.yml`. |
 
 **Do NOT delete alongside them:**
@@ -81,7 +81,7 @@ Simple check: **`plugins/` must contain exactly ONE jar per plugin name** before
 ```text
 /updates reload        # Guide v14 — triggers the "what's new" popups
 /museum shopsgen       # writes plugins/EconomyShopGUI/sections/MAVOMuseum.yml + shops/MAVOMuseum.yml
-/sreload              # EconomyShopGUI reload command (NOT /esgui) - loads the new Museum shop; /shop opens it
+/shop                  # open the shop -> Museum Extras (slot 43)
 /shopnpc resholo       # rebuilds floating texts at the new small size (auto-applied at boot too)
 /mobfarm resholo       # rebuilds Mob Farm hub + bay holos
 ```
