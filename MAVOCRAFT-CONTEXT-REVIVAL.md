@@ -1,0 +1,583 @@
+## PORTALROOM 1.1.0
+Shipwreck: land on wreck + buried treasure explorer map.
+Mineshaft: land by rails + directional signs/torch path (not blind glow pad).
+Structure locate retries + larger radius. structure-locate-radius config.
+
+## TAVERN 1.0.1
+Bed lock uses unlock-at fullTime (next noon after rest), not day-index.
+Fixes "already rested" blocking the next night after a paid skip.
+`/tavern unlock [player]` clears lock. Migrates legacy used.* data.
+
+## VAULT 1.7.1
+- Claiming empty room ABOVE another player's room: price = chest-price ×
+  block-above-multiplier (default **100** → 500k). Discourages grief-blocking
+  expand path. Owner door Expand Up still 2× paid only.
+- `/vaultroom wipeplayer <name>` — release all rooms + revoke vault/portalroom access.
+- `/vaultroom wipeaccess <name>` — gate access only.
+
+## VAULT 1.7.0
+- Expand click FIXED (slot 13 was ignored by onClick filter).
+- Door menu: slot11 toggle open/close, slot13 expand purchase, slot15 close.
+- /vaultroom rebuild — replays vault_build.mcfunction (ender chests) from jar.
+- Chests are ENDER_CHEST pairs; unlock opens private 54-slot pair storage
+  (data rooms.<id>.pair.<unit>), not vanilla shared ender.
+- Ladder: aisle between centre chest rows, polished deepslate support.
+- /vaultroom fixladder — re-place ladders for rooms with ladder-to set.
+- Datapack zip updated to ender_chest.
+
+# MAVOcraft — FULL CONTEXT & REVIVAL DOCUMENT
+Last updated: 2026-09-03 (Guide v14 + 10 jars rebuilt, see 2026-09-03 section below)
+
+Read this file top-to-bottom to fully restore working context for the MAVOcraft
+Minecraft server project. Everything here is CONFIRMED DEPLOYED unless marked otherwise.
+
+---
+
+## 1. WHO / WHAT / WHERE
+
+- Owner: Kick streamer "MAVO" — Java name **MAVOmusicYT** (OP, LuckPerms owner,
+  UUID 53322438-a7a2-4eb2-bb2b-1c648a43dccf). Whitelist: MAVOmusicYT, NecroCaticGames.
+- Host: **PebbleHost Premium 4GB** ($9/mo), Ryzen 9 EU node.
+- Server: **Paper 26.2 build 119**, Java 25, IP **185.206.148.185:25567**,
+  domain `mavocraft.my.pebble.host`, BlueMap web map port **8156**, Geyser (Bedrock crossplay) UDP **19132**.
+- Sky spawn plaza: center **-2578 / 200 / -1684**, protection cube ±60 (only OP+creative build;
+  villager interaction allowed). Wishing well at -2587 201 -1684. Wild Portal north, Home Portal south.
+- User plays Java. Crossplay via Geyser+floodgate. World was FULLY RESET once; keep plugin suite.
+
+
+
+
+## VAULT 1.6.2 — EXPAND + CHEST SIGNS
+Door (owner, no sneak): opens owner menu
+  - Enter room (opens birch door)
+  - Progress: N/15 chests still needed
+  - Expand Upward when 15/15 + room above empty
+    price = 2× rooms.<id>.paid (doubles each floor: 5k→10k→20k→40k…)
+    places ladder shaft at doorX / mid-Z between centre chest banks
+    punches ceiling into upper floor; upper claimed with slot#1 free
+
+Chest signs: ALWAYS oak standing sign ON TOP of chest (not wall-side).
+Auto refreshAllChestSigns on enable + /vaultroom chestsigns.
+Sneak-chest still opens rename/recolor GUI (writes the top sign).
+
+Wild 1.7.3: /holoreset = wild/home only; /holoreset all = full plaza.
+
+## HOLO + PORTAL FIX (2026-09-01 evening)
+Root cause of missing Tutorial/Louie/Curator/shopkeeper holos: Wild 1.7.1
+`/holoreset` deleted TextDisplays by text fingerprint but ShopNPC could not
+respawn them (no holo-text in config, no PDC tag, no resholo command).
+
+MAVOShopNPC **1.3.2**:
+- PDC tag `shopnpcholo`, stores `npcs.<name>.holo-text`
+- `/shopnpc resholo` (console OK) restores all; defaults for Tutorial_Guide,
+  Lucky_Louie, The_Curator, Update_Crier, Achievement_Keeper, Profession_Master
+- Auto-restore on enable (+100 ticks)
+
+MAVOWild **1.7.2**: holoreset only removes restorable holos; always dispatches
+portalroom reload, vaultroom reload, tavern reload, **shopnpc resholo**, wish well.
+
+MAVOVault **1.6.1**: fxLoop/countdownLoop/holoVisibilityLoop wrapped try/catch
+(task no longer dies on one bad tick). `/vaultroom reload` also respawns chest
+holos + room signs.
+
+MAVOPortalRoom **1.0.2**: fxLoop/tickLoop/spawnAllHolos try/catch same reason.
+
+Deploy all four jars, restart, `/shopnpc resholo` or `/holoreset` at plaza.
+
+## HOLORESET (MAVOWild 1.7.1)
+Stale TextDisplay entities keep old text after jar swaps (e.g. Wild still shows
+2,000-5,000). Fix:
+
+  /holoreset          - wipe+respawn MAVO holos within 60 blocks of you
+  /holoreset 80       - custom radius 8..128
+  /wild holoreset 60  - same
+
+Also runs on every MAVOWild enable (refreshPortalHolos after 3s) and migrates
+max-radius <=5000 -> 400000 automatically.
+
+What it does:
+1. Loads chunks in radius
+2. Removes TextDisplays that are PDC-tagged mavowild/mavovault/mavoportalroom/
+   mavotavern/mavolucky/shopnpc OR match portal/vault/well/tavern fingerprints
+   (including legacy "2,000-5,000" / "NO WAY BACK" text)
+3. Respawns Wild+Home portal holos from live wildHoloText()/homeHoloText()
+4. Console-dispatches: portalroom reload, vaultroom reload, tavern reload
+5. If near wishing well + admin: re-runs /wish well
+
+Deploy MAVOWild-1.7.3, stand at plaza center, run /holoreset (needs mavowild.admin
+= OP briefly, or console: but holoreset is player-location based so in-game).
+
+Guide 2.5.4 content v11 mentions /holoreset.
+
+## WILD 1.7.0 + VAULT 1.6.0 + GUIDE v10 (2026-09-01)
+WILD PORTAL (MAVOWild 1.7.0):
+- min-radius 2000, max-radius **400000** (was 5000). Holo text updated.
+- Rolling blacklist: last **50** landing zones (`wild-zones` list in
+  plugins/MAVOWild/config.yml), each blocks a **200-block** radius for future
+  warps (same idea as PortalRoom). Oldest drops off after 50 new warps.
+- Deploy jar; existing portal pos1/pos2 untouched. Optional: delete old holo
+  and re-run `/wild portal pos1`+`pos2` only if you want holo text refresh,
+  or just leave it - teleports use new range either way. Or `/wild` won't
+  refresh holo - holo is rewritten only on pos2. Quick fix: stand in portal
+  area admin and re-pos2, or manually ignore stale 2k-5k text until then.
+  Actually spawnHolo is only on pos2 - user can fly and re-set pos2 same corners.
+
+VAULT (MAVOVault 1.6.0):
+- Multi-room: after ALL 15 chests unlocked in a room, player may claim another
+  free room elsewhere (door buy GUI). Until then, still blocked from second claim.
+- Expand-up bundle: owner **sneak + right-click door** on a FULL room → GUI
+  "Expand Upward" into the room directly above (same col/side, level+1).
+  Price = **2× paid price** of current room (stored rooms.<id>.paid). Places a
+  **ladder** linking floors. Buying the upper room by walking to its door is a
+  normal claim (base 5k) and does **NOT** place a ladder.
+- Chain: each expand stores paid=2× previous so next expand doubles again.
+- Chest signs: every unlocked chest gets an oak wall/standing sign. Owner
+  **sneak-right-click chest** → GUI: rename (chat, max 16) + 16 color wool picks.
+  Signs are waxed (others can't edit). data: rooms.<id>.chestlabels/colors.<unit>
+- playerrooms.<uuid> list (migrates legacy playerroom.<uuid> string).
+- /vaultroom releaseroom <player> releases ALL their rooms; roominfo lists all.
+
+GUIDE 2.5.3 content v10: vault/portal described as LIVE; wild range + blacklist;
+multi-room + expand + chest signs documented. Removed stale "coming soon" portal title.
+
+## MAVOTAVERN 1.0.0 - SPAWN NIGHT SKIP (2026-09-01)
+Small plaza tavern bed: right-click at night/thunder, pay 100 coins, world
+skips to morning (time 1000, clear storm). One paid rest per player; lock
+resets at NOON (world time 6000) the following day. Creative = free.
+Does NOT set respawn / does NOT bind MAVOHomes (event cancelled).
+Bed protected from break except creative admin.
+
+Setup (console or brief creative):
+  1. Upload MAVOTavern-1.0.1.jar, restart or load
+  2a. Stand where you want the hut, creative: /tavern build
+      (5x5 spruce hut + red bed + door + lantern + holo)
+  2b. OR place your own bed and /tavern setbed while looking at it
+  3. /tavern info  - price + your lock status
+  4. Optional holo refresh: /tavern reload
+Admin: /tavern unlock [player] clears lock. /tavern clear disables bed.
+Config plugins/MAVOTavern/config.yml: price, wake-time, night-only, bed coords.
+data.yml stores used.<uuid> = MC day index of last sleep.
+Keep folder on resets (like MAVOWild) if you want bed coords to survive -
+or just re-run /tavern setbed. NOT in the never-folder-delete list yet;
+bed is cheap to re-set - optional add later.
+
+Guide 2.5.2 content v9 documents it. Permission mavotavern.use default true.
+
+BOOT LOG CHECK (2026-09-01 17:37 deploy): CLEAN. All MAVO plugins enabled
+including LuckyCoins 1.5.1 (pool 1266 sellable), Guide 2.5.1, ESGUI 28 shops.
+Ignore-only noise: Essentials unsupported-version, BlueMap manual-save WARN,
+TAB %mavohud_time% hint, ESGUI spawner AUTO + Debug mode, Vault update check,
+Paper "2 builds behind", sun.misc.Unsafe, ShopNPC "0 shop NPC(s)".
+No errors that block play. essentials.spawn on default still recommended if
+/spawn denied for non-OP.
+
+## WISH WELL = SHOP-SELLABLE ONLY (2026-09-01)
+Players got Firefly Bush / Birch Shelf / Mangrove Pressure Plate from the well
+with no /shop sell entry = unsellable junk. Permanent rule:
+
+  EVERY wishing-well prize MUST be sellable in EconomyShopGUI (sell > 0).
+
+IMPLEMENTATION:
+- MAVOLuckyCoins 1.5.1 ships `well-pool.txt` (MATERIAL:maxAmt:weight) built from
+  the live shops tree — currently ~1271 sellable mats. loadWellPool() on enable.
+  82% weighted items / 18% enchanted gear (gear also from the same sellable set).
+  Amount caps scale with sell value (junk up to 32, trophies always 1x).
+  Hard ban still: NETHERITE_BLOCK / NETHERITE_INGOT + commandy/spawn-egg/etc.
+- When adding a new shop item that should be wishable: add it to shops/*.yml
+  with sell>0, regenerate well-pool.txt from the shops tree, rebuild LuckyCoins.
+- ESGUI gap fill (Z_EverythingElse page9 + unsellable→sellable):
+  * NEW: all wood SHELFs (oak..pale_oak/crimson/warped), FIREFLY_BUSH (buy45/sell9),
+    MANGROVE_PRESSURE_PLATE (12/0.46), SHORT_GRASS (15/0.6), CLOCK (120/24),
+    DISC_FRAGMENT_5 (550/110).
+  * Was sell -0.1/0 → now sellable: DRAGON_HEAD 5k, WITHER_SKULL 3.6k,
+    skeleton/creeper/zombie heads 500, ENCHANTED_GOLDEN_APPLE 9600,
+    WET_SPONGE 160, BEE_NEST 240, poisonous potato 1, copper slab/stairs crumbs.
+- Shop audit after patch: 1351 materials, 0 with sell<=0.
+- Guide 2.5.1 / content v8 documents the rule.
+- Deploy: LuckyCoins-1.5.1 + Guide-2.5.1 jars + full shops/ (or v5 tarball) + /sreload.
+  Keep plugins/MAVOLuckyCoins/config.yml (well coords). Optional /wish well holo refresh.
+
+## NETHERITE SHOP + WISHING WELL REBALANCE (2026-09-01)
+CAUSE of the 24x netherite-block jackpot: MAVOLuckyCoins 1.4.0 grantWish 75% path
+picked uniform random Material.values() with amount = 1..maxStackSize. Netherite
+block is a legal Material -> full stacks were possible. Sell was 38355.48 each
+(~45x diamond_block sell) so one wish could print ~920k coins.
+
+SHOP FIX (EconomyShopGUI shops/resources.yml + Z_EverythingElse scrap):
+  Rule: netherite ore/ingot/block buy&sell = 8x matching diamond counterpart.
+  Sell remains ~20% of buy where diamond already followed that; diamond_ore sell
+  is flat 200 so debris sell = 8x200 = 1600.
+  | item | buy | sell | basis |
+  | diamond | 2360 | 94.5 | unchanged |
+  | netherite_ingot | 18880 | 756 | 8x diamond |
+  | diamond_block | 21240 | 850.5 | unchanged |
+  | netherite_block | 169920 | 6804 | 8x diamond_block |
+  | diamond_ore | 7790 | 200 | unchanged |
+  | ancient_debris (ore) | 62320 | 1600 | 8x diamond_ore |
+  | netherite_scrap | 4350 | 174 | ~aligned under debris (was 28900/111) |
+  Deliverable: shops/ tree + MAVOcraft-shops-villager-economy-v5.tar.gz
+  Deploy: upload shops/resources.yml + shops/Z_EverythingElse.yml (or extract
+  v5 tarball over plugins/EconomyShopGUI/shops/), then /sreload.
+  NEVER folder-delete EconomyShopGUI.
+
+WELL FIX (MAVOLuckyCoins 1.5.0):
+  - 20% enchanted gear (was 25%); gear tier weights 30/24/20/12/5/1
+    (netherite gear ~1 weight, lightly enchanted at most).
+  - 80% weighted item tiers with amount caps (triangular bias low):
+    common ~60.5% of item path max 24; uncommon 25% max 8; rare 12% max 3;
+    epic 2% max 1; mythic 0.5% max 1.
+  - HARD BAN: NETHERITE_BLOCK and NETHERITE_INGOT never from well.
+    Mythic can roll 1x NETHERITE_SCRAP / ANCIENT_DEBRIS / elytra / etc.
+  - Final safety net rewrites banned rolls to iron ingots.
+  - Holo text: "Weighted prizes · no netherite jackpots".
+  Deploy jar; well coords live in plugins/MAVOLuckyCoins/config.yml (keep it).
+  Optional: /wish well standing on well to refresh holo text, or delete holo
+  entity + re-run.
+
+GUIDE: MAVOGuide 2.5.0, content version 7 (auto-opens once). Changelog + lucky
+coins tutorial/feature pages updated.
+
+BACKUP SHA-256 (2026-09-01 vault 1.7.1): `1f04a037bcd5e8808972d27d4ebdaef264b1bf1ea3542b60f05705fefcf70eac` — also MAVOcraft-backup.sha256.
+
+/spawn still Essentials: if non-OP can't use it:
+  lp group default permission set essentials.spawn true
+
+## CHUNKBORDERS 1.2.0 + CLAIMCHUNK PERMISSIONS FIX (2026-09-01)
+BUG 1 - /chunk claim etc. OP-only: ClaimChunk 0.0.25-FIX3's plugin.yml uses
+the SINGULAR key `permission:` instead of `permissions:`, so Bukkit never
+registers its default-true player nodes; unregistered nodes = OP-only.
+FIX (permanent, one console line): 
+  lp group default permission set claimchunk.player true
+(every basic subcommand - claim/unclaim/list/info/access/give/name/alert/
+auto/show/scan - accepts claimchunk.player). Never remove this node.
+BUG 2 - broken border lines: old renderer used the MOTION_BLOCKING heightmap
+(includes LEAVES) -> lines rendered on treetops/roofs, looked gappy on the
+ground. MAVOChunkBorders 1.2.0 (src at _Old/src-chunkborders, rebuilt from
+decompiled 1.1.0): MOTION_BLOCKING_NO_LEAVES heightmap + down-scan from
+player Y+3 when surface is above head; defaults changed PURPLE glass ->
+RED_STAINED_GLASS border + BLUE_STAINED_GLASS corners (no-purple rule; guide
+already said red/blue - no guide bump needed). Deploy requires deleting the
+old plugins/MAVOChunkBorders/config.yml so new defaults generate.
+Also verify plugins/ClaimChunk/config.yml has economy.useEconomy=false
+(MAVOChunkPrices is the only charger).
+
+## STANDING MAINTENANCE PROTOCOL (user-mandated - ALWAYS follow)
+1. EVERY update that changes gameplay, prices, systems or flows MUST also
+   update MAVOGuide (changelog bump + affected feature/tutorial pages),
+   rebuild MAVOGuide-x.y.z.jar and deliver it alongside the feature jar.
+2. After EVERY delivered update: rebuild MAVOcraft-backup.zip (jars/ docs/
+   sources/), print its SHA-256, and append what changed to this document.
+   User uploads the backup to GitHub - it is the disaster-recovery source.
+3. This document is the single source of truth for reviving context.
+
+## OWNER RANK = TAG ONLY (since 2026-09-01 fresh-start stream)
+MAVOmusicYT plays as a NORMAL player: de-opped, no fly/creative/supermod.
+"owner" LuckPerms group carries ONLY the prefix (priority 100, red OWNER tag),
+no admin permission nodes. Moderation happens from PebbleHost CONSOLE only
+(ban/kick/whitelist/lp). If any MAVO plugin admin action is needed, run it
+from console or temp-op then de-op. Setup commands (console):
+  lp creategroup owner            (already exists)
+  lp group owner clear            (strip any permission nodes, keep meta)
+  lp group owner meta setprefix 100 "&4&lOWNER &r"
+  lp user MAVOmusicYT parent add owner
+Result: red OWNER tag in chat/TAB, zero elevated permissions in game.
+
+## VAULT 1.5.0 - LOCK-STATE PORTAL HOLOS (2026-09-01)
+Plaza gate portals (vault / portalroom) now spawn TWO stacked TextDisplays:
+- "UNLOCKED" variant (green check, usage hint) - visibleByDefault
+- "LOCKED" variant (red padlock, "One-time entry: <price> coins",
+  "Step in to unlock") - hidden by default
+holoVisibilityLoop (every 40t, players within 64 blocks) uses
+p.showEntity/hideEntity to show each player exactly one variant based on
+hasAccessRaw. gateHolos map holds [openUuid, lockUuid]; portalremove sweep
+still removes both via the portalholo_<id> PDC tag. Return portals unchanged
+(single green holo). Prices in locked holo read live from config at (re)spawn
+- rerun /vaultroom reload after price changes.
+
+## LATEST SYSTEMS (2026-09-01)
+
+### Rooms built by datapack (world/datapacks/MAVOcraft-builder-datapack.zip)
+Functions: build_all / portal_room / portal_frames / vault_shell / vault_build /
+purge_mobs / demolish_all. pack_format 81 (exact, no range - ranges error on Paper 26.2).
+Functions forceload their own areas (fills silently fail in unloaded chunks!).
+- PORTAL ROOM shell X -2450..-2350, Y198..228, Z -1700..-1670, bedrock, deepslate
+  lining, red nether brick pillars, froglight grid every 8 blocks (light>=11,
+  no mob spawns), doorway west face. 26 portal frames (13 N + 13 S), 3w x 4t,
+  black concrete void, themed frame blocks, every 7 blocks starting x=-2446
+  (frame opening interior x = L+1..L+3 where L=-2446+7*slot).
+- VAULT shell X -2800..-2700, Y198..238, Z -1705..-1665. INTERIOR = Vault 2.0:
+  6 levels (floor walk Y 200/206/212/218/224/230), gold corridor z-1685 with
+  glowstone edges each level, ladders both ends (x=-2798 east-facing,
+  x=-2702 west-facing), 96 private rooms = 8 columns x 2 sides x 6 levels.
+  Room column A=-2793+11*col (interior A..A+8, door at A+4), north rooms
+  z-1703..-1689 (door z-1689), south z-1681..-1667 (door z-1681), themed wall
+  blocks (16 material rotation shifted per level), birch door + oak wall sign
+  above (y0+2), 15 double chests per room in bank layout (non-touching),
+  sea lantern ceiling + glowstone floor lights per room.
+
+### MAVOVault 1.4.0 (deployed; source _Old/src-vault)
+- Gates: vault 50,000 / portalroom 25,000 one-time (regions in config gates.*.region,
+  RE-RUN pos1/pos2 gate vault to cover Y198..238 all levels!).
+- Plaza portals ACTIVE (portals.vault / portals.portalroom via pos1/pos2 +
+  /vaultroom portal <id>): locked players get unlock GUI, unlocked get 3s
+  countdown then teleport to portal-dest.<id> (set via /vaultroom portaldest
+  <id> standing at arrival spot; fallback just inside doorway).
+- Return portals: portals.vault_return / portalroom_return (green/gold FX),
+  3s countdown -> return-spawn.* (set via /vaultroom returnspawn at plaza).
+- PRIVATE ROOMS: room table hardcoded matching datapack (LEVEL_Y, colA etc).
+  Room ids L<1-6><N|S><1-8>. data.yml: rooms.<id>.owner / rooms.<id>.slots
+  (list of unlocked unit ints 0..14), playerroom.<uuid> -> room id (ONE room
+  per player). Claim = chest-price (5,000) via door/chest right-click GUI ->
+  slot #1 free + door sign written gold/red "<name>'s Vault". Slot ladder
+  SLOT_PRICES = 0,1000,1000,2500,2500,2500,5000x4,10000x5 (full room 81,500
+  total incl. claim). Sealed chest right-click = unlock GUI (charged on click
+  only). Doors: owner-only (creative admin bypass). NOTHING breakable in vault
+  region except admin creative. Old per-chest holo/rename system REMOVED.
+- Admin: /vaultroom roominfo | releaseroom <roomId|player> | signs (rewrite 96
+  signs) | portalremove <id> | portaldest <id> | returnspawn | reload.
+
+### MAVOPortalRoom 1.0.1 (deployed; source _Old/src-portalroom)
+- 26 jump portals, geometry derived from frame math (NO in-game setup).
+  TABLE rows: side|slot|id|kind|key|landing|ymin|ymax|price|r|g|b|cc|name|desc.
+  North biomes: desert 1000, savanna 1200, swamp 1500, darkforest 2000,
+  taiga 2500, flower 3000, peaks 3500, jungle 4000, bamboo 4500, ice 6000,
+  cherry 7000, badlands 8000, mushroom 10000.
+  South danger: shipwreck 1500, mineshaft 3000, dripstone 3500, lush 4000,
+  pyramid 4500, witchhut 5000, jungletemple 5500, deepcaves 6000, outpost 7000,
+  monument 9000, stronghold 11000, trial 13000, deepdark (ancient_city) 15000.
+- Per-portal FX veil (unique DustOptions color) + small holo (name/desc/price).
+- Jump: balance pre-check (red error title if poor), 7s countdown, step-out
+  instant cancel, monsters-12-blocks block, charge ONLY after successful
+  teleport. Creative = free 3s countdown (NOT instant - caused accidents).
+- Destination: random angle, 25,000-400,000 blocks from room, rejects within
+  2x100 blocks of this portal's last 50 zones (data.yml zones.<id> list
+  "x,z"). BIOME kind -> locateNearestBiome (mushroom radius 12k step 256,
+  else 6.4k/128); STRUCTURE -> locateNearestStructure r5000; CAVE landing
+  scans y-range for air pocket else carves 3x3 glowstone pocket. SURFACE
+  lands highest block (lava capped with obsidian).
+- Admin: /portalroom list | clearzones <id|all> | reload. Config: world,
+  min/max-distance, blacklist-radius/size, countdown-seconds.
+
+### Player reset procedure
+See RESET-PROGRESS.md (root + in backup): per-file deletion list to zero one
+player (Essentials userdata, world playerdata/advancements/stats, MAVO*
+data.yml files, ClaimChunk data, lp user clear). Never delete config.yml or
+the four never-folder-delete plugins (EconomyShopGUI/LuckPerms/TAB/MAVOWild).
+
+## 2. DEPLOYED PLUGIN SUITE (boot-verified versions)
+
+Third-party: BlueMap 5.23, ClaimChunk 0.0.25-FIX3, CoreProtect 24.0, EssentialsX 2.22.0
+(+Chat/+Spawn), Geyser+floodgate, LuckPerms 5.5.78, PlaceholderAPI 2.12.3, TAB 6.1.2,
+Vault 1.7.3-b131, EconomyShopGUI 7.2.1.
+
+Custom MAVO plugins (all sources in `sources/` of the backup archive):
+| Jar | What it does |
+|---|---|
+| MAVOAchievements-1.5.0 | 14 lifetime categories incl. 6 gambling + museum; public API `externalProgress(Player,String,long)` + `externalHighwater(...)` |
+| MAVOCasino-1.1.0 | Lucky Louie: 5 games (Cups 2.7x, Flip 2x@47.5%, Dice 2.3x ties-lose, Wheel 0-10x weights 34/25/15/16/9/1, TNT Tiles 1.2→32x, 2 TNT, cash-out). 10 attempts/10 MC days. Bets 100-5000 coins or 1-10 lucky coins. Reads gambler stick (material→luck), awards gambler XP via Professions.externalXp |
+| MAVOChunkBorders-1.2.0 | always-visible claim borders + 1-chunk no-build buffer |
+| MAVOChunkPrices-1.0.1 | tier table 1 free/5x100/5x250/5x500/5x1000/10x1500/10x2000/10x2500, max 51 |
+| MAVOCommunityGoals-1.1.1 | donation pots instead of chunk tax |
+| MAVOCurator-1.0.0 | THE MUSEUM: 103 auto-built sections, 1413 items. Grey/green GUI, click-donate 1, Deposit Crate (dump+close), dupes bounce with error. Section complete = items×1000⛃. Milestones 25/50/75/100% → LP curator25/50/75/100 + 10k/25k/50k/250k coins. Feeds `museum` achievement |
+| MAVODeathChest-1.0.0 | locked grave 30 min |
+| MAVOEvents-1.1.0 | Lucky Hour / Coin Rain / Mob Hunt |
+| MAVOGuide-2.5.4 | guide GUI content v11 (auto-opens once/version), tutorial chapters, feature pages incl. Vault private rooms + Portal Room jumps |
+| MAVOHomes-1.2.0 | bed right-click in OWNED chunks only binds /home; renameable |
+| MAVOHud-2.0.0 | %mavohud_day/time/coords% placeholders for TAB sidebar |
+| MAVOLuckyCoins-1.5.1 | 1% grind drops, wishing well pool = all ESGUI sellables (`well-pool.txt`), /ccollect every 10 MC days, admin `/ccollect give [n]` |
+| MAVOPets-1.0.0 | pets |
+| MAVOProfessions-3.13.0 | 9 professions (8 + GAMBLER max-1000), tool-bound XP, cap 999, prestige 250/420/666/999, per-profession rank-commands, public `externalXp(Player,String,double)`, tier note/name support, bound tools can't be placed as blocks |
+| MAVOQuests-1.4.0 | daily board 10 quests |
+| MAVOShopNPC-1.3.2 | villager NPCs running arbitrary commands + /shopnpc holo floating signs (scale 0.9) |
+| MAVOSpawn-1.0.0 | spawn protection cube |
+| MAVOStreaks-1.0.0 | login streaks |
+| MAVOTavern-1.0.1 | spawn tavern bed: 100 coins skip night, lock until noon |
+| MAVOTrades-1.0.0 | master trader stalls |
+| MAVOWanderer-1.0.0 | curated wandering trader stock (83 offers) |
+| MAVOWild-1.7.3 | Wild+Home portals, 2k-400k RTP, 50-zone/200m blacklist, 3s stand-in, /spawn warmup |
+
+## 3. KEY CROSS-PLUGIN CONTRACTS (do not break)
+
+- Lucky Coin identity: SUNFLOWER, name `&e&l⛀ Lucky Coin`, PDC byte
+  `mavoluckycoins:luckycoin`, Unbreaking-1 + HIDE_ENCHANTS. Casino replicates it; well accepts casino coins.
+- Profession tools: PDC `mavoprofessions:proftool` = "profId:branchId",
+  `mavoprofessions:profowner` = player UUID, `mavoprofessions:proflock` byte (enchant-block).
+- Casino reads gambler stick by MATERIAL (must match professions config tiers):
+  STICK 1% / BAMBOO 2% / BONE 3.5% / SUGAR_CANE 5% / POINTED_DRIPSTONE 6.5% / BREEZE_ROD 8% /
+  END_ROD 10% (+LP gambler) / LIGHTNING_ROD 12% (+LP 777) / BLAZE_ROD 15% (+mavocasino.pokercards emote).
+- Achievements categories used by other plugins: betting, luckybets, winnings, luckywins,
+  fortune (highwater), luckyhoard (highwater), museum.
+- Curator refuses: renamed items, proflock-tagged, luckycoin-tagged; blacklists spawn eggs /
+  creative-only items. SURVIVAL-only like ALL progress systems.
+- Everything progression-related counts ONLY in SURVIVAL mode.
+
+## 4. LP GROUPS (all created in console, confirmed)
+
+flex(250)/yeman(420)/satan(666)/god(999) prestige; gambler (Gambler L250), 777 (L500);
+curator25/50/75/100. Owner prefix priority 100 must outrank all.
+⚠ NOTE: console showed `?` instead of ✦ in curator prefixes — console charset only, verify
+in-game; if actually broken re-run setprefix with a simpler symbol like *.
+
+## 5. STANDING RULES / USER PREFERENCES (hard requirements)
+
+- NO purple anywhere → red or red/blue gradient. Currency symbol ⛃. Sell = 20% of buy.
+- Villager-first economy: shop deliberately 5-10x expensive; villager trading is the way.
+- Ores/raw must cost MORE than smelted (Fortune exploit guard) — v4 shops deployed.
+- All teleports: 3s, cancel-on-move, blocked if monsters within 12 blocks; portals cancel on step-out.
+- No chat spam: professions use bossbar; sidebar lists ALL professions.
+- Floating holo signs: small scale (NPC 0.9 / well 1.9 / portal 2.2); never require chat-paste
+  of long commands; /shopnpc holo auto-replaces; Wild sweeps orphan signs within 8 blocks.
+- GUI-first: all info NPCs use GUI pages with Back+Quit. Tab-completion on commands.
+- Gambling: in-game currency ONLY.
+- User's config reset method = folder deletion. NEVER folder-delete: EconomyShopGUI, LuckPerms,
+  TAB, MAVOWild (portal coords live there). Delete only specific config.yml, keep data.yml.
+- Workspace rule: keep NEWEST deliverables in workspace root; move superseded into `_Old/`.
+  Delete build targets/uploads after every build (stay under limits).
+- Deliverables: agent builds all jars; user uploads via PebbleHost file manager.
+
+## 6. BUILD RECIPE (sandbox)
+
+```
+ls /tmp/jdk/bin/java || (redownload JDK 25: adoptium api v3 binary latest/25/ga/linux/x64/jdk/hotspot/normal/eclipse -> /tmp/jdk)
+chmod +x /home/user/_Old/apache-maven-3.9.9/bin/mvn
+export JAVA_HOME=/tmp/jdk PATH=/tmp/jdk/bin:/home/user/_Old/apache-maven-3.9.9/bin:$PATH
+cd <src-dir> && mvn -q package -DskipTests
+```
+- paper-api 26.2.build.48-alpha (papermc repo), VaultAPI 1.7.1 (jitpack com.github.MilkBowl),
+  placeholderapi 2.11.6 (only professions). Local repo `.m2` in workspace root.
+- ALWAYS bump: plugin.yml version + pom `<version>` + pom `<finalName>`.
+- /tmp gets wiped often — check JDK before every build session.
+- Verify configs INSIDE jar after resource edits (`unzip -p target/X.jar config.yml | grep ...`).
+
+## 7. KNOWN PITFALLS (do not retry)
+
+- Adventure showBossBar broken on this Paper — use Bukkit boss API.
+- Action bar position is client-fixed — HUD lives in TAB sidebar.
+- Console-dispatch of Essentials /spawn breaks — performCommand + bypass flag.
+- Long /summon text_display > 256 chars — plugin commands only.
+- Holo removal by stored UUID alone unreliable — pair with PDC-tag area sweep.
+- CFR decompile needs ~4-5 generic fixes per class. Grep-filtered mvn output can hide errors.
+- python .replace() silently no-ops — use asserts.
+- Cosmetic boot noise to IGNORE: Essentials "unsupported server version", Vault update check,
+  BlueMap manual-save WARN, TAB %mavohud_time% hint, "Re-applied protection to 0 shop NPC(s)",
+  sun.misc.Unsafe warnings, ESGUI spawner-provider + Debug mode lines.
+
+## 8. RELOAD COMMANDS (never global /reload)
+
+/ess reload, /sreload, /chunk admin reload, /geyser reload, /borders reload, /tab reload,
+/papi reload, /chunkprice reload, /goal reload, /quest reload, /ach reload, /profession reload,
+/updates reload, /spawnprot reload, /museum reload, /wish well (re-place well holo).
+Portal refresh: re-run pos1 (bottom corner) then pos2 (opposite TOP corner, fly).
+
+## 9. SPAWN NPC ROSTER (spawn + holo commands in TEST-COMMANDS-FULL.md style)
+
+Profession_Master (professions GUI), Tutorial_Guide, Update_Crier, Achievement_Keeper,
+Lucky_Louie (`/shopnpc spawn Lucky_Louie casino`), The_Curator (`/shopnpc spawn The_Curator museum`,
+holo `&d&l✦ THE MUSEUM ✦|&fOne of everything. Bring me wonders!`).
+
+## 10. OUTSTANDING BACKLOG
+
+- Confirm `time set 0` done after reset; achievements/streaks data.yml zeroing if wanted.
+- Essentials disabled-commands (sethome/home/delhome vs MAVOHomes) in-game verify.
+- Recruiter LP group idea; build contest (deferred); lottery (prepared, deploy later).
+- MD manual refresh (portals/warmup/well/sidebar/guide2/no-wild/holo/casino/museum) — stale.
+- User testing Museum + Casino + Gambler right now; watch for feedback.
+- Deploy netherite shop + LuckyCoins 1.5.1 + Guide 2.5.1 + shops page9; /sreload + well holo.
+- Confirm essentials.spawn on default group for non-OP /spawn.
+
+## 11. RESTORING FROM THE BACKUP ARCHIVE
+
+Archive layout (`MAVOcraft-backup.zip`):
+- `jars/` — all current MAVO plugin jars, ready to upload to `plugins/`.
+- `sources/` — full Maven source tree for every plugin (src-*/pom.xml + src/main/...).
+  Rebuild any of them with the recipe in §6. Includes src-chunkprices + src-goals
+  (CFR-restored) and src-lucky 1.5.1 / src-guide 2.5.2 / src-tavern 1.0.0.
+- `configs/` — esgui-config.yml, shops/ (live ESGUI shop YAMLs, netherite=8x diamond),
+  MAVOcraft-shops-villager-economy-v5.tar.gz (drop over plugins/EconomyShopGUI/shops/).
+- `docs/` — manuals, checklists, this file.
+- Also keep full `EconomyShopGUI.tar` on GitHub next to the backup for disaster recovery.
+
+To revive an agent session from zero: give the agent this file + the archive URL; it downloads,
+extracts to workspace, moves everything into `_Old/` except current deliverables, and continues.
+
+## 2026-09-02 mega balance/content
+- Professions **3.14.0**: xp-base much higher, tiers 10/25/50, Eff3 netherite (not Eff5@30)
+- Achievements **1.6.0**: slower curves, start L1, kill_* mob mastery (5k/5 levels), combat still exists
+- Hud **2.1.0**: %mavohud_level% %mavohud_level_line% %mavohud_deaths% %mavohud_tab_name%
+- Goals **1.2.0**: multi-tier dirt/cobble/treasury
+- Casino **1.2.0**: 10 games, random order, dual attempt pools
+- Tavern **1.1.0**: build20 + bar soulbound
+- MobFarm **1.0.0**: NEW plugin
+- Day reset: set world fullTime 0 (see DEPLOY-2026-09-02)
+- After deploy: wipe progress + delete old configs so new defaults apply
+
+
+
+---
+
+# SECTION — 2026-09-03 GUIDE v14 + BIG JAR UPDATE
+(deployed as of this backup; replace MAVOCRAFT-CONTEXT-REVIVAL.md sections with
+these entries, or keep the file and append — this is the authoritative record)
+
+## MAVOGuide 2.7.0 (config v14)
+- What's New is now a menu: newest 3 on page 1 (pager: older pages, 6 per page, down to v2).
+- Tutorial = 16 chapters CH0–CH15 in a 54-slot menu (CH0 newbie, CH1 Tavern, CH2 First Steps/wild,
+  CH3 Survive, CH4 Earn, CH5 Villagers, CH6 Claims, CH7 Home, CH8 Lucky Coins, CH9 Graves,
+  CH10 Casino (10 games), CH11 Museum (103 sections/1413 items), CH12 Server Events (10 events),
+  CH13 Community Goals (+MobFarm chest), CH14 Vault & Portals, CH15 Mob Farm).
+- Reader is paged (12 lines/page) so nothing flows off screen; Back/Prev/Next/Close buttons.
+- "This Guide" pinned bottom-middle slot 49. All 26 features have names + shorts (null bugs fixed).
+- Wild range text corrected to 5,000–400,000 everywhere.
+- Professions tiers stated as Stone→Iron L10→Diamond L25→Netherite L50 (config comment fixed too).
+
+## MAVOEvents 1.2.0
+- 10 events: luckyhour, coinrain, mobhunt, fishingfrenzy, minersrush, harvestbonus, buildbonus,
+  zombiesiege, giftdrop, farmfrenzy. /event [list|start <name>|stop]. admin = mavoevents.admin (OP).
+- Zombie siege spawn uses getHighestBlockYAt() int API (fixed compile).
+
+## MAVOLuckyCoins 1.5.5
+- drop-chance 0.001 (1 in 1,000), drop-cadence-seconds 20 (max 1 coin/20s). Migration: configs
+  without drop-cadence-seconds get 0.001 (was 1% = the ~20 coins/10min bug).
+- Free coin via /ccollect every 10 MC days unchanged.
+
+## MAVODeathChest 1.1.0
+- /grave = GUI (54-slot list, 28/page, prev/next/close) with world + X/Y/Z + mins-left per grave.
+- Click grave -> confirm: teleport for 1000 coins (Vault) OR 10 Lucky Coins (reflection countCoins/takeCoins).
+- 3s countdown, cancel on move or monsters within 12 blocks, teleportAsync. Costs configurable.
+
+## MAVOAchievements 1.7.2
+- 52 categories (38 kill_): added kill_bee, kill_fox, kill_goat, kill_llama, kill_panda, kill_frog,
+  kill_sniffer, kill_squid, kill_glow_squid (all Mob Farm mobs covered; aliases for husk/drowned/
+  zombie_villager->zombie, stray/bogged/wither_skeleton->skeleton, cave_spider->spider,
+  elder_guardian->guardian, magma_cube->slime).
+- getLevel floors at 1: everyone shows Lv1 not Lv0 (baseline 0 = level 1).
+- kill_* milestone coins 5000.
+
+## MAVOProfessions 3.14.1
+- level() returns Math.max(1, ...); new players initialise at level 1, not 0.
+- Tier comment fixed to 10/25/50 (was stale 5/15/30). Tiers remain stone->iron L10->diamond L25->netherite L50.
+
+## MAVOWanderer 1.1.0
+- Real visits: scheduler spawns a wandering trader near a random online SURVIVAL player every
+  spawn-minutes..spawn-max-minutes (default 30–60); despawn-minutes 10; 2 trader llamas; bell sound.
+- /wanderer = info (all players), /wanderer spawn [player] = OP (mavowanderer.admin).
+- ~80-offer recipe pool (utility/redstone/building/farming/brewing) - no junk.
+
+## MAVOCurator 1.0.1
+- /museum shopsgen (OP) writes plugins/EconomyShopGUI/sections/MAVOMuseum.yml AND
+  shops/MAVOMuseum.yml (same name = linked). Real format: section = header (enable/title/slot/item/
+  fill-item), shop = pages.pageN.gui-rows:6.items with material/buy/sell. 45 items/page, NO nav-bar
+  override (inherits default PAGE_BACK/PAGE_NEXT). sell = max(1, buy*0.2). Prices tiered
+  (netherite/dragon/beacon/template/star/elytra/totem/heavy_core/creaking_heart 4000; diamond/emerald/
+  heart_of_sea/heads/skulls 800; gold/ancient_debris/scute/sponge/conduit/froglight/echo_shard 300;
+  iron/redstone/lapis/quartz/amethyst/copper/blaze/slime/shulker/prismarine/experience 80;
+  glowstone/magma/obsidian/end_*/_sherd/_banner_pattern 40; else 15).
+- Requires EconomyShopGUI (re)load afterwards.
+
+## MAVOWild 1.7.4
+- min-radius default 5000 (migrates 2000), max 400000. Portal holo reads config (never drifts).
+- /wild portal|homeportal|holoreset [radius] all admin (mavowild.admin).
+
+## MAVOShopNPC 1.3.3
+- Floating texts: scale 0.9->0.55, line width 200->140, shorter default texts.
+- Boot refresh replaces old big texts (auto re-spawn; /shopnpc resholo or /holoreset also works).
