@@ -608,3 +608,19 @@ these entries, or keep the file and append — this is the authoritative record)
 - DEPLOY: delete old MAVOCurator-1.0.0/1.0.1 jars + MAVOGuide-2.6.0/2.7.0 jars; delete
   plugins/MAVOGuide/config.yml (v14→v15, saveDefaultConfig won't overwrite). Keep
   plugins/MAVOCurator/ (config.yml + data.yml) and MAVOGuide/data.yml.
+
+## 2026-09-03 HOTFIX 3 — Curator 1.0.3: museum prices = NORMAL SHOP prices
+- PROBLEM (found from user's EconomyShopGUI.tar): `/museum shopsgen` used a tier table (15/40/80/300/800/4000)
+  but the real EconomyShopGUI shops use completely different values. 1,267 of 1,413 museum items differed
+  (e.g. ANCIENT_DEBRIS: museum 300/60 vs real 62,320/1,600) → buy museum, sell normal = 5x+ profit (exploit).
+- FIX: Curator now READS every normal shop YAML recursively at shopsgen time (skips MAVOMuseum.yml),
+  maps MATERIAL -> {buy,sell}, and writes those exact numbers. If an item is in several shops with
+  different prices (SPAWNER, ENCHANTED_BOOK, POTION variants, NOTE_BLOCK, SCUTE, NETHER_WART, INK_SAC,
+  GLOW_INK_SAC = 12 materials), the CHEAPEST buy+sell wins → never a cheaper source than the normal shop.
+- Result in chat: "Prices: 1268 items use the REAL shop prices (145 museum-only items use fallback)."
+  Fallback = old tier table (museum-only items can't be arbitraged via normal shops).
+- Also fixed: section/shop count now RECURSIVE (nested Combat/, Magic/, Farming/... folders) - shows 29/29.
+- Normal shop sell prices are NOT 20% of buy (villager-first economy: sells are intentionally low);
+  museum sell now = the real sell value, not a percentage.
+- Jar: MAVOCurator-1.0.3.jar. Deploy: delete MAVOCurator-1.0.0/1.0.1/1.0.2 jars, keep plugins/MAVOCurator.
+- NOTE: legacy MAVOMuseum.yml with tier prices already on disk is overwritten by the next /museum shopsgen.

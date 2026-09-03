@@ -676,16 +676,17 @@ public final class Curator extends JavaPlugin implements Listener {
         }
         if (a.length > 0 && a[0].equalsIgnoreCase("shopsgen")) {
             if (!s.hasPermission("mavocurator.admin")) { s.sendMessage(ChatColor.RED + "No permission."); return true; }
-            int n = writeShopSection();
             Plugin es = Bukkit.getPluginManager().getPlugin("EconomyShopGUI");
-            if (es == null) {
+            int[] res = writeShopSection(es);
+            if (res == null) {
                 s.sendMessage(ChatColor.RED + "EconomyShopGUI plugin not found - files were written but nothing was reloaded.");
                 return true;
             }
             int secs = countYml(new File(es.getDataFolder(), "sections"));
             int shops = countYml(new File(es.getDataFolder(), "shops"));
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "sreload");
-            s.sendMessage(ChatColor.GREEN + "Museum shop written: " + n + " pages (" + totalItems + " items) and EconomyShopGUI reloaded.");
+            s.sendMessage(ChatColor.GREEN + "Museum shop written: " + res[0] + " pages (" + totalItems + " items) and EconomyShopGUI reloaded.");
+            s.sendMessage(ChatColor.YELLOW + "Prices: " + res[1] + " items use the REAL shop prices (" + res[2] + " museum-only items use fallback).");
             s.sendMessage(ChatColor.GRAY + "Expected: " + secs + " section configs, " + shops + " shop configs. /shop > Museum Extras (slot 43).");
             s.sendMessage(ChatColor.GRAY + "Console shows the exact loaded counts (e.g. \"Completed loading 29 section configs\").");
             return true;
@@ -695,21 +696,66 @@ public final class Curator extends JavaPlugin implements Listener {
         return true;
     }
 
-    /**
-     * Writes an EconomyShopGUI section + shop pair so every museum item is
-     * sellable (sell = 20% of buy, per server rule). The files share the
-     * name (MAVOMuseum) so ESGUI links the main-menu header to the shop.
-     * Requires ESGUI to (re)load afterwards.
-     */
     private int countYml(File dir) {
         if (dir == null || !dir.isDirectory()) return 0;
-        File[] f = dir.listFiles((d, name) -> name.endsWith(".yml") || name.endsWith(".yaml"));
-        return f == null ? 0 : f.length;
+        try (java.util.stream.Stream<java.nio.file.Path> st = java.nio.file.Files.walk(dir.toPath())) {
+            return (int) st.filter(java.nio.file.Files::isRegularFile)
+                    .filter(x -> x.toString().toLowerCase(Locale.ROOT).endsWith(".yml")
+                            || x.toString().toLowerCase(Locale.ROOT).endsWith(".yaml")).count();
+        } catch (Exception ex) { return 0; }
     }
 
-    private int writeShopSection() {
-        Plugin es = Bukkit.getPluginManager().getPlugin("EconomyShopGUI");
-        File base = es != null ? es.getDataFolder() : getDataFolder();
+    /**
+     * Reads EVERY normal EconomyShopGUI shop file (recursive, skips MAVOMuseum.yml)
+     * and returns MATERIAL -> {buy, sell}. If an item is listed in several shops with
+     * different prices, the CHEAPEST buy (and its sell) wins - that way the museum can
+     * never be a cheaper source than the normal shop (no arbitrage either direction).
+     */
+    private Map<String, double[]> loadShopPrices(File shopsDir) {
+        Map<String, double[]> out = new LinkedHashMap<>();
+        if (shopsDir == null || !shopsDir.isDirectory()) return out;
+        try (java.util.stream.Stream<java.nio.file.Path> st = java.nio.file.Files.walk(shopsDir.toPath())) {
+            st.filter(java.nio.file.Files::isRegularFile)
+              .filter(x -> x.toString().toLowerCase(Locale.ROOT).endsWith(".yml")
+                      || x.toString().toLowerCase(Locale.ROOT).endsWith(".yaml"))
+              .filter(x -> !x.getFileName().toString().equalsIgnoreCase("MAVOMuseum.yml"))
+              .forEach(x -> {
+                  try {
+                      YamlConfiguration cfg = YamlConfiguration.loadConfiguration(x.toFile());
+                      for (Map.Entry<String, Object> e : cfg.getValues(true).entrySet()) {
+                          String k = e.getKey();
+                          if (!k.endsWith(".material")) continue;
+                          if (!(e.getValue() instanceof String mat)) continue;
+                          String id = k.substring(0, k.length() - ".material".length());
+                          Object bv = cfg.get(id + ".buy");
+                          Object sv = cfg.get(id + ".sell");
+                          if (!(bv instanceof Number buyN) || !(sv instanceof Number sellN)) continue;
+                          double buy = buyN.doubleValue();
+                          double sell = sellN.doubleValue();
+                          double[] cur = out.get(mat);
+                          if (cur == null) out.put(mat, new double[]{buy, sell});
+                          else { cur[0] = Math.min(cur[0], buy); cur[1] = Math.min(cur[1], sell); }
+                      }
+                  } catch (Exception ignored) {}
+              });
+        } catch (Exception ex) { return out; }
+        return out;
+    }
+
+    private static String fmt(double v) {
+        if (v == Math.rint(v) && !Double.isInfinite(v) && Math.abs(v) < 1e15) return Long.toString((long) v);
+        return java.math.BigDecimal.valueOf(v).stripTrailingZeros().toPlainString();
+    }
+
+    /**
+     * Writes the Museum section + shop pair. Buy/sell are copied from the
+     * normal EconomyShopGUI shops so the museum can never be a cheaper source
+     * (no arbitrage). Items missing from the normal shops use an internal
+     * fallback. @return {pages, matchedRealShopPrices, fallbackCount} or null when ESGUI is missing.
+     */
+    private int[] writeShopSection(Plugin es) {
+        if (es == null) return null;
+        File base = es.getDataFolder();
         File dirSec = new File(base, "sections");
         File dirShop = new File(base, "shops");
         if (!dirSec.exists()) dirSec.mkdirs();
@@ -735,14 +781,15 @@ public final class Curator extends JavaPlugin implements Listener {
                     java.nio.charset.StandardCharsets.UTF_8);
         } catch (Exception ex) {
             getLogger().warning("Failed writing section: " + ex.getMessage());
-            return 0;
+            return new int[]{0, 0, 0};
         }
+        Map<String, double[]> real = loadShopPrices(dirShop);
         // shop file: 45 items per page (6 rows x 9 minus nav-bar row)
         StringBuilder sb = new StringBuilder();
-        sb.append("# GENERATED by MAVOCurator /museum shopsgen - museum duplicates sellable (sell = 20% of buy).\n");
+        sb.append("# GENERATED by MAVOCurator /museum shopsgen - prices copied from the normal EconomyShopGUI shops (no arbitrage).\n");
         sb.append("# Matches sections/MAVOMuseum.yml - reload the shop after regenerating.\n");
         sb.append("pages:\n");
-        int n = 0, page = 0;
+        int n = 0, page = 0, matched = 0, fallback = 0;
         String v = UUID.randomUUID().toString().substring(0, 8);
         for (Cat c : cats.values()) {
             for (Material m : c.items) {
@@ -753,11 +800,14 @@ public final class Curator extends JavaPlugin implements Listener {
                     sb.append("    items:\n");
                     n = 0;
                 }
-                int buy = priceOf(m);
+                double[] pr = real.get(m.name());
+                double buy, sell;
+                if (pr != null) { buy = pr[0]; sell = pr[1]; matched++; }
+                else { buy = priceOf(m); sell = Math.max(1, (int) (buy * 0.2)); fallback++; }
                 sb.append("      m").append(v).append(page).append("_").append(n).append(":\n");
                 sb.append("        material: \"").append(m.name()).append("\"\n");
-                sb.append("        buy: ").append(buy).append("\n");
-                sb.append("        sell: ").append(Math.max(1, (int) (buy * 0.2))).append("\n");
+                sb.append("        buy: ").append(fmt(buy)).append("\n");
+                sb.append("        sell: ").append(fmt(sell)).append("\n");
                 n++;
             }
         }
@@ -766,9 +816,9 @@ public final class Curator extends JavaPlugin implements Listener {
                     java.nio.charset.StandardCharsets.UTF_8);
         } catch (Exception ex) {
             getLogger().warning("Failed writing shop: " + ex.getMessage());
-            return 0;
+            return new int[]{0, 0, 0};
         }
-        return page;
+        return new int[]{page, matched, fallback};
     }
 
     /** Rough villager-first price: common cheap, rares scaled up; sell stays 20%. */

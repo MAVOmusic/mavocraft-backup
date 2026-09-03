@@ -85,12 +85,12 @@ Auto-spawns a wandering trader near a random online survival player every **30â€
 
 ---
 
-## MAVOCurator 1.0.2
+## MAVOCurator 1.0.3
 | Command | Who | What it does |
 |---|---|---|
 | `/museum` | Players | Open your collection book (aliases: `/curator`, `/collection`) |
 | `/museum reload` | OP (`mavocurator.admin`) | Reload 103 sections / 1,413 items |
-| `/museum shopsgen` | OP (`mavocurator.admin`) | Generate the Museum shop (sections + shops YAML, all items, sell = 20% of buy) **and reload EconomyShopGUI automatically** â€” you get the section/shop counts in chat; open with `/shop`. |
+| `/museum shopsgen` | OP (`mavocurator.admin`) | Generate the Museum shop (sections + shops YAML, all 1,413 items). **Buy/sell prices are copied from the normal EconomyShopGUI shops** (items in more than one shop use the cheapest entry, so no arbitrage); 145 museum-only items use fallback prices. Auto-reloads EconomyShopGUI and prints matched/fallback counts in chat. Open with `/shop`. |
 
 ---
 

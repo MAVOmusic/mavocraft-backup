@@ -81,7 +81,7 @@ jobs:
           rm -f MAVOAchievements-1.7.0.jar MAVOAchievements-1.7.1.jar jars/MAVOAchievements-1.7.0.jar jars/MAVOAchievements-1.7.1.jar
           rm -f MAVOProfessions-3.13.0.jar MAVOProfessions-3.14.0.jar jars/MAVOProfessions-3.13.0.jar jars/MAVOProfessions-3.14.0.jar
           rm -f MAVOWanderer-1.0.0.jar jars/MAVOWanderer-1.0.0.jar
-          rm -f MAVOCurator-1.0.0.jar MAVOCurator-1.0.1.jar jars/MAVOCurator-1.0.0.jar jars/MAVOCurator-1.0.1.jar
+          rm -f MAVOCurator-1.0.0.jar MAVOCurator-1.0.1.jar MAVOCurator-1.0.2.jar jars/MAVOCurator-1.0.0.jar jars/MAVOCurator-1.0.1.jar jars/MAVOCurator-1.0.2.jar
           rm -f MAVOWild-1.7.3.jar jars/MAVOWild-1.7.3.jar
           rm -f MAVOShopNPC-1.3.2.jar jars/MAVOShopNPC-1.3.2.jar
           rm -f MAVOCasino-1.2.0.jar MAVOCasino-1.2.1.jar MAVOCasino-1.2.2.jar \
