@@ -90,7 +90,7 @@ Auto-spawns a wandering trader near a random online survival player every **30â€
 |---|---|---|
 | `/museum` | Players | Open your collection book (aliases: `/curator`, `/collection`) |
 | `/museum reload` | OP (`mavocurator.admin`) | Reload 103 sections / 1,413 items |
-| `/museum shopsgen` | OP (`mavocurator.admin`) | Generate `plugins/EconomyShopGUI/sections/MAVOMuseum.yml` + `shops/MAVOMuseum.yml` (all items, sell = 20% of buy). **Restart/reload EconomyShopGUI afterwards** to load it. |
+| `/museum shopsgen` | OP (`mavocurator.admin`) | Generate `plugins/EconomyShopGUI/sections/MAVOMuseum.yml` + `shops/MAVOMuseum.yml` (all items, sell = 20% of buy). Then run **`/sreload`** (ESGUI reload â€” not `/esgui`); open with `/shop`. |
 
 ---
 

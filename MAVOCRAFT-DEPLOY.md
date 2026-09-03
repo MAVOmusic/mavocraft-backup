@@ -81,7 +81,7 @@ Simple check: **`plugins/` must contain exactly ONE jar per plugin name** before
 ```text
 /updates reload        # Guide v14 — triggers the "what's new" popups
 /museum shopsgen       # writes plugins/EconomyShopGUI/sections/MAVOMuseum.yml + shops/MAVOMuseum.yml
-/esgui reload          # EconomyShopGUI loads the new Museum shop (or restart the server once)
+/sreload              # EconomyShopGUI reload command (NOT /esgui) - loads the new Museum shop; /shop opens it
 /shopnpc resholo       # rebuilds floating texts at the new small size (auto-applied at boot too)
 /mobfarm resholo       # rebuilds Mob Farm hub + bay holos
 ```

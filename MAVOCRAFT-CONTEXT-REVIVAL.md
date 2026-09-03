@@ -521,7 +521,7 @@ two config files this update: `plugins/MAVOGuide/config.yml` (v13→v14 content)
 `plugins/MAVOAchievements/config.yml` (43→52 categories, new mob kills). DELETE NOTHING ELSE.**
 Full replace/delete/keep table incl. data.yml/homes.yml per plugin: `MAVOCRAFT-DEPLOY.md` in repo root.
 Never folder-delete EconomyShopGUI / LuckPerms / TAB / MAVOWild. Full restart (no /reload) for jar swaps.
-Post-start: `/updates reload`, `/museum shopsgen` + `/esgui reload`, `/shopnpc resholo`, `/mobfarm resholo`.
+Post-start: `/updates reload`, `/museum shopsgen` + `/sreload` (ESGUI reload cmd, NOT /esgui), `/shopnpc resholo`, `/mobfarm resholo`.
 
 ---
 
