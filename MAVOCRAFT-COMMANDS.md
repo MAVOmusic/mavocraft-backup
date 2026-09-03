@@ -4,7 +4,7 @@ Every MAVO jar and its commands. **Players** = anyone online · **OP** = server 
 
 ---
 
-## MAVOGuide 2.7.3
+## MAVOGuide 2.8.0
 | Command | Who | What it does |
 |---|---|---|
 | `/updates` | Players | Open the guide main menu (aliases: `/guide`, `/mods`, `/features`) |
@@ -28,19 +28,21 @@ Notes: Guide auto-opens once per new version. "This Guide" book is pinned bottom
 
 ---
 
-## MAVOLuckyCoins 1.5.5
+## MAVOLuckyCoins 1.5.6
 | Command | Who | What it does |
 |---|---|---|
 | `/wish` | Players | Wishing Well info (wishes happen at the well with `Q`) |
 | `/ccollect` | Players | Claim your free Lucky Coin (every 10 MC days) |
 | `/wish well` | OP (`mavolucky.admin`) | Set the Wishing Well to the block you look at |
 | `/ccollect give [amount]` | OP (`mavolucky.admin`) | Give Lucky Coins to yourself |
+| `/destroy` / `/destroy hand` | Players | Destroy **unsellable** junk (hand = main hand only). NEVER touches shop-sellable items, lucky coins, profession tools, renamed/enchanted items, or museum items you have not donated yet. |
+| `/destroyall` | Players | Clear the main inventory (slots 9–35). Hotbar + offhand shield + lucky coins + profession tools are kept. |
 
 Drop rate 0.1% (1 in 1,000 actions) with a 20s cadence between drops — mining/killing/fishing only, never player-placed blocks.
 
 ---
 
-## MAVODeathChest 1.1.0
+## MAVODeathChest 1.1.1
 | Command | Who | What it does |
 |---|---|---|
 | `/grave` | Players | Open the **/grave GUI**: every grave with world + X/Y/Z coords + time left (aliases: `/deathchest`, `/graves`) |
@@ -85,11 +87,11 @@ Auto-spawns a wandering trader near a random online survival player every **30�
 
 ---
 
-## MAVOCurator 1.0.5
+## MAVOCurator 1.0.6
 | Command | Who | What it does |
 |---|---|---|
 | `/museum` | Players | Open your collection book (aliases: `/curator`, `/collection`) |
-| `/museum extras` | Players | Per-player **buy-only** list of items you still miss (normal shop prices, no selling) |
+| `/museum extras` | Players | Per-player **buy-only** list of items you still miss (normal shop prices). **Clicking buys instantly and adds it to the museum — GUI stays open.** |
 | `/museum reload` | OP (`mavocurator.admin`) | Reload 103 sections / 1,413 items |
 | `/museum shopsgen` | OP (`mavocurator.admin`) | Re-index buy prices from the normal EconomyShopGUI shops + `/sreload`. Stale `MAVOMuseum.yml` files are now also **auto-removed on server boot**. |
 
@@ -122,14 +124,15 @@ Wild range: **5,000–400,000** blocks (1,000s comma format on the portal sign),
 ## Mob Farm 2.5.0
 | Command | Who | What it does |
 |---|---|---|
-| `/mobfarm info` | Players | Entry cost, session length, XP scale, community coins, center, protect radius |
-| `/mobfarm prices` | Players | Spawner prices (10k/20k/40k…), unlock cost |
+| `/mobfarm info` | Players | Entry cost, session, pick prices, extend cost, XP scale, community, center |
+| `/mobfarm prices` | Players | Price GUI: egg icons per mob (shop price / 16, doubles per pick) + stack extras |
 | `/mobfarm hub` | Players | Teleport to the Mob Farm hub |
+| `/mobfarm extend` | Players | 25,000 coins → +15 min on the same session timer (HUD countdown updates) |
 | `/mobfarm status` | Players | Your session status, time left, loot/spawner counts |
-| `/mobfarm enter` | Players | 5,000 coins, 10s don't-move, then 30 min session |
+| `/mobfarm enter` | Players | 10,000 coins, 10s don't-move, then **15 min** session |
 | `/mobfarm leave` | Players | Leave early (session timer keeps running) |
-| `/mobfarm buy` | Players | Buy extra spawners (10k/20k/40k…) |
-| `/mobfarm pick` | Players | Choose your bay/loot pick |
+| `/mobfarm buy` | Players | Extra spawners on the SAME block (mob shop price /8, /4, /2, ×1, then ×2…) |
+| `/mobfarm pick` | Players | 2-page pick GUI (hostile \| farm animals, alphabetic, egg icons) — pick #1 = shop price/16, each extra pick doubles |
 | `/mobfarm tp` | OP (`mavomobfarm.admin`) | Teleport to the hub (admins) |
 | `/mobfarm setcenter` | OP | Move the farm center to where you stand |
 | `/mobfarm build` | OP | Build the farm complex |
@@ -142,7 +145,7 @@ Wild range: **5,000–400,000** blocks (1,000s comma format on the portal sign),
 
 ---
 
-## Casino 1.2.3 (unchanged, for reference)
+## Casino 1.2.4
 | Command | Who | What it does |
 |---|---|---|
 | `/casino` | Players | Open Louie's menu (also right-click the villager) |
