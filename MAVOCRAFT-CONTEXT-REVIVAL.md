@@ -639,3 +639,19 @@ these entries, or keep the file and append — this is the authoritative record)
 - Deploy: replace MAVOCurator-1.0.4.jar + MAVOGuide-2.7.2.jar; DELETE plugins/MAVOGuide/config.yml (v15->v16,
   saveDefaultConfig never overwrites); keep plugins/MAVOCurator/config.yml + data.yml (donations per player).
 - After deploy: /museum shopsgen (removes old ESGUI files + indexes prices) then players open /museum extras.
+
+## 2026-09-03 HOTFIX 5 — Curator 1.0.5 + Guide 2.7.3 (v17): stale museum shop auto-removed
+- SYMPTOM (user boot 19:38): MAVOGuide + MAVOCurator NOT in plugin list at all (36 Bukkit plugins;
+  no "Enabling" lines) -> /museum dead, old MAVOMuseum.yml still in EconomyShopGUI with cheap tier
+  prices (ESGUI loaded 29 section configs incl. Museum Extras).
+- Cause: jars not present/loadable in plugins/ (panel side - files valid, CI-built, verified locally).
+  Check: exactly one jar per plugin in plugins/ ROOT, correct names, sizes (curator 34176 B, guide 24619 B).
+- FIX IN CODE (defence-in-depth): Curator 1.0.5 now REMOVES the stale static ESGUI museum files
+  (sections/MAVOMuseum.yml + shops/MAVOMuseum.yml) on BOOT (onEnable) and logs
+  "Removed old Museum Extras shop files (2)..." + /museum shopsgen still re-indexes prices.
+- Guide 2.7.3 v17: whatsnew entry "Museum Extras cleanup" (v17).
+- Deploy: replace MAVOCurator-1.0.4->1.0.5 + MAVOGuide-2.7.2->2.7.3; DELETE plugins/MAVOGuide/config.yml
+  (v16->v17); keep plugins/MAVOCurator/{config.yml,data.yml}; keep MAVOGuide/data.yml.
+- AFTER DEPLOY the boot log MUST show "MAVOGuide 2.7.3" + "MAVOCurator 1.0.5" in the plugin list and
+  "MAVOCurator enabled: 103 exhibit sections, 1413 collectable items." - then /shop has NO Museum
+  Extras (28 configs) and /museum extras (per player) works.

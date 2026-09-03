@@ -1,5 +1,5 @@
 name: MAVOCurator
-version: 1.0.4
+version: 1.0.5
 main: mavo.curator.Curator
 api-version: '1.13'
 description: The Museum - donate one of every item, complete collections, become THE CURATOR

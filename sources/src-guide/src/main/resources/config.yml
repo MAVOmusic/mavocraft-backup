@@ -1,10 +1,17 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 16
+version: 17
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&e&lv17 &7- Museum Extras cleanup"
+    icon: EMERALD
+    lines:
+      - "&7The old &e/shop > Museum Extras&7 section is removed"
+      - "&7automatically - everything is in &e/museum&7 now:"
+      - "&7&e/museum > Museum Extras&7 = only what YOU miss, buy-only."
+      - ""
   - title: "&e&lv16 &7- Museum Extras per player"
     icon: EMERALD
     lines:

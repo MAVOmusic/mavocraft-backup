@@ -21,14 +21,14 @@ In `plugins/`, remove every jar except the new one. Exact superseded files:
 
 | Plugin | DELETE from plugins/ | Keep (new) |
 |---|---|---|
-| MAVOGuide | `MAVOGuide-2.5.*.jar`, `MAVOGuide-2.6.0.jar`, `MAVOGuide-2.7.0.jar`, `MAVOGuide-2.7.1.jar` | `MAVOGuide-2.7.2.jar` |
+| MAVOGuide | `MAVOGuide-2.5.*.jar`, `MAVOGuide-2.6.0.jar`, `MAVOGuide-2.7.0.jar`, `MAVOGuide-2.7.1.jar`, `MAVOGuide-2.7.2.jar` | `MAVOGuide-2.7.3.jar` |
 | MAVOEvents | `MAVOEvents-1.1.0.jar` | `MAVOEvents-1.2.0.jar` |
 | MAVOLuckyCoins | `MAVOLuckyCoins-1.5.1.jar` … `1.5.4.jar` | `MAVOLuckyCoins-1.5.5.jar` |
 | MAVODeathChest | `MAVODeathChest-1.0.0.jar` | `MAVODeathChest-1.1.0.jar` |
 | MAVOAchievements | `MAVOAchievements-1.6.0.jar`, `1.7.0.jar`, `1.7.1.jar` | `MAVOAchievements-1.7.2.jar` |
 | MAVOProfessions | `MAVOProfessions-3.14.0.jar` (and 3.13.x if present) | `MAVOProfessions-3.14.1.jar` |
 | MAVOWanderer | `MAVOWanderer-1.0.0.jar` | `MAVOWanderer-1.1.0.jar` |
-| MAVOCurator | `MAVOCurator-1.0.0.jar`, `MAVOCurator-1.0.1.jar`, `MAVOCurator-1.0.2.jar`, `MAVOCurator-1.0.3.jar` | `MAVOCurator-1.0.4.jar` |
+| MAVOCurator | `MAVOCurator-1.0.0.jar`, `MAVOCurator-1.0.1.jar`, `MAVOCurator-1.0.2.jar`, `MAVOCurator-1.0.3.jar`, `MAVOCurator-1.0.4.jar` | `MAVOCurator-1.0.5.jar` |
 | MAVOWild | `MAVOWild-1.7.3.jar` | `MAVOWild-1.7.4.jar` |
 | MAVOShopNPC | `MAVOShopNPC-1.3.2.jar` | `MAVOShopNPC-1.3.3.jar` |
 | MAVOCasino | `MAVOCasino-1.2.0.jar`, `1.2.1.jar`, `1.2.2.jar` | `MAVOCasino-1.2.3.jar` |
@@ -53,7 +53,7 @@ Simple check: **`plugins/` must contain exactly ONE jar per plugin name** before
 
 ## 4. UPLOAD — the 12 new jars
 
-`MAVOGuide-2.7.2.jar` · `MAVOEvents-1.2.0.jar` · `MAVOLuckyCoins-1.5.5.jar` · `MAVODeathChest-1.1.0.jar` · `MAVOAchievements-1.7.2.jar` · `MAVOProfessions-3.14.1.jar` · `MAVOWanderer-1.1.0.jar` · `MAVOCurator-1.0.4.jar` · `MAVOWild-1.7.4.jar` · `MAVOShopNPC-1.3.3.jar` · `MAVOCasino-1.2.3.jar` · `MAVOMobFarm-2.5.0.jar`
+`MAVOGuide-2.7.3.jar` · `MAVOEvents-1.2.0.jar` · `MAVOLuckyCoins-1.5.5.jar` · `MAVODeathChest-1.1.0.jar` · `MAVOAchievements-1.7.2.jar` · `MAVOProfessions-3.14.1.jar` · `MAVOWanderer-1.1.0.jar` · `MAVOCurator-1.0.5.jar` · `MAVOWild-1.7.4.jar` · `MAVOShopNPC-1.3.3.jar` · `MAVOCasino-1.2.3.jar` · `MAVOMobFarm-2.5.0.jar`
 
 ---
 
