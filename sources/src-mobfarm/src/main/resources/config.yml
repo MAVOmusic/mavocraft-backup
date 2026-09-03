@@ -1,0 +1,355 @@
+# MAVOMobFarm 2.5 — unique per-mob bays @ -15000 (each mob gets its own kill cell)
+entry-cost: 5000
+entry-cancel-seconds: 10
+session-minutes: 30
+profession-xp-scale: 0.30
+pvp: false
+
+mob-ai: true
+sun-safe-killpad: true
+credit-last-damager: true
+session-hud: true
+session-hud-title: "&6MobFarm &7| &e{mm}:{ss} &7left &8| &f{mob} &8| &ex{stack}"
+
+# Protection ONLY this far around the farm AABB (caves outside = normal)
+protect-radius: 50
+
+# Pricing (P = normal-spawner-price)
+# unlock (pick) = P / unlock-divisor   (default 16 → 625)
+# extras: P/8, P/4, P/2, P, then double…
+normal-spawner-price: 10000
+unlock-divisor: 16
+extra-divisors: [8, 4, 2, 1]   # first four extras; then doubles previous
+base-spawners: 2
+max-spawners: 25
+stack-spawn-interval-ticks: 40
+spawn-per-stack: 1
+max-mobs-in-cell: 12
+
+# NEW remote hub — far west of plaza/vault (~-4000)
+center:
+  world: world
+  x: -15000
+  y: 200
+  z: -2000
+
+# Wings: hostile west (−X), animals east (+X but still ≪ vault)
+# Each mob is its own bay — offsets from center
+# style: pad | feet | spider | enderman | blaze | slime | water | pen | raid | nether
+
+community:
+  enabled: true
+  start-target: 1000000
+  stack-start: 2
+
+# Blacklist: no wild/portal dump into these boxes (walk + /spawn OK)
+# /mobfarm enter and admin tp bypass
+blacklist:
+  enabled: true
+  regions:
+    plaza:
+      world: world
+      min: { x: -4120, y: 150, z: -2120 }
+      max: { x: -3880, y: 250, z: -1880 }
+    vault:
+      world: world
+      min: { x: -4120, y: 150, z: -2120 }
+      max: { x: -3880, y: 260, z: -1880 }
+    portal:
+      world: world
+      min: { x: -4100, y: 150, z: -2100 }
+      max: { x: -3900, y: 250, z: -1900 }
+    # mobfarm filled at runtime from built AABB + protect-radius
+
+mobs:
+  # ---- HOSTILE WING (west) ----
+  zombie:
+    display: "&2Zombie"
+    entity: ZOMBIE
+    wing: hostile
+    style: crypt
+    theme: dark
+    icon: ROTTEN_FLESH
+    offset: { x: -80, y: 0, z: -40 }
+  husk:
+    display: "&6Husk"
+    entity: HUSK
+    wing: hostile
+    style: crypt
+    theme: desert
+    icon: SAND
+    offset: { x: -110, y: 0, z: -40 }
+  skeleton:
+    display: "&fSkeleton"
+    entity: SKELETON
+    wing: hostile
+    style: gallery
+    theme: dark
+    icon: BONE
+    offset: { x: -140, y: 0, z: -40 }
+  stray:
+    display: "&bStray"
+    entity: STRAY
+    wing: hostile
+    style: gallery
+    theme: ice
+    icon: ARROW
+    offset: { x: -170, y: 0, z: -40 }
+  spider:
+    display: "&8Spider"
+    entity: SPIDER
+    wing: hostile
+    style: web
+    theme: dark
+    icon: SPIDER_EYE
+    offset: { x: -80, y: 0, z: -80 }
+  cave_spider:
+    display: "&2Cave Spider"
+    entity: CAVE_SPIDER
+    wing: hostile
+    style: web
+    theme: mine
+    icon: FERMENTED_SPIDER_EYE
+    offset: { x: -110, y: 0, z: -80 }
+  creeper:
+    display: "&aCreeper"
+    entity: CREEPER
+    wing: hostile
+    style: bunker
+    theme: dark
+    icon: GUNPOWDER
+    offset: { x: -140, y: 0, z: -80 }
+  enderman:
+    display: "&5Enderman"
+    entity: ENDERMAN
+    wing: hostile
+    style: totem
+    theme: end
+    icon: ENDER_PEARL
+    offset: { x: -170, y: 0, z: -80 }
+  blaze:
+    display: "&6Blaze"
+    entity: BLAZE
+    wing: hostile
+    style: forge
+    theme: nether
+    icon: BLAZE_ROD
+    offset: { x: -80, y: 0, z: -120 }
+  magma_cube:
+    display: "&6Magma Cube"
+    entity: MAGMA_CUBE
+    wing: hostile
+    style: cells
+    theme: nether
+    icon: MAGMA_CREAM
+    offset: { x: -110, y: 0, z: -120 }
+  slime:
+    display: "&aSlime"
+    entity: SLIME
+    wing: hostile
+    style: cells
+    theme: swamp
+    icon: SLIME_BALL
+    offset: { x: -140, y: 0, z: -120 }
+  wither_skeleton:
+    display: "&8Wither Skeleton"
+    entity: WITHER_SKELETON
+    wing: hostile
+    style: gallery
+    theme: nether
+    icon: WITHER_SKELETON_SKULL
+    offset: { x: -170, y: 0, z: -120 }
+  drowned:
+    display: "&3Drowned"
+    entity: DROWNED
+    wing: hostile
+    style: crypt
+    theme: ocean
+    icon: COPPER_INGOT
+    offset: { x: -80, y: 0, z: -160 }
+  guardian:
+    display: "&3Guardian"
+    entity: GUARDIAN
+    wing: hostile
+    style: aqua
+    theme: ocean
+    icon: PRISMARINE_SHARD
+    offset: { x: -110, y: 0, z: -160 }
+  witch:
+    display: "&5Witch"
+    entity: WITCH
+    wing: hostile
+    style: crypt
+    theme: swamp
+    icon: GLASS_BOTTLE
+    offset: { x: -140, y: 0, z: -160 }
+  pillager:
+    display: "&cPillager"
+    entity: PILLAGER
+    wing: hostile
+    style: gallery
+    theme: raid
+    icon: CROSSBOW
+    offset: { x: -170, y: 0, z: -160 }
+  hoglin:
+    display: "&6Hoglin"
+    entity: HOGLIN
+    wing: hostile
+    style: brutal
+    theme: nether
+    icon: PORKCHOP
+    offset: { x: -200, y: 0, z: -40 }
+  piglin:
+    display: "&6Piglin"
+    entity: PIGLIN
+    wing: hostile
+    style: brutal
+    theme: nether
+    icon: GOLD_INGOT
+    offset: { x: -200, y: 0, z: -80 }
+  silverfish:
+    display: "&7Silverfish"
+    entity: SILVERFISH
+    wing: hostile
+    style: cells
+    theme: mine
+    icon: STONE_BRICKS
+    offset: { x: -200, y: 0, z: -120 }
+  phantom:
+    display: "&9Phantom"
+    entity: PHANTOM
+    wing: hostile
+    style: arena
+    theme: dark
+    icon: PHANTOM_MEMBRANE
+    offset: { x: -200, y: 0, z: -160 }
+
+  # ---- ANIMAL / PASSIVE WING (east of hub, still far from vault) ----
+  cow:
+    display: "&fCow"
+    entity: COW
+    wing: animal
+    style: barn
+    theme: animal
+    icon: BEEF
+    offset: { x: 80, y: 0, z: -40 }
+  pig:
+    display: "&dPig"
+    entity: PIG
+    wing: animal
+    style: barn
+    theme: animal
+    icon: PORKCHOP
+    offset: { x: 110, y: 0, z: -40 }
+  chicken:
+    display: "&eChicken"
+    entity: CHICKEN
+    wing: animal
+    style: barn
+    theme: animal
+    icon: CHICKEN
+    offset: { x: 140, y: 0, z: -40 }
+  sheep:
+    display: "&7Sheep"
+    entity: SHEEP
+    wing: animal
+    style: barn
+    theme: animal
+    icon: WHITE_WOOL
+    offset: { x: 170, y: 0, z: -40 }
+  rabbit:
+    display: "&eRabbit"
+    entity: RABBIT
+    wing: animal
+    style: barn
+    theme: animal
+    icon: RABBIT
+    offset: { x: 80, y: 0, z: -80 }
+  villager:
+    display: "&eVillager"
+    entity: VILLAGER
+    wing: animal
+    style: barn
+    theme: village
+    icon: EMERALD
+    offset: { x: 110, y: 0, z: -80 }
+  iron_golem:
+    display: "&fIron Golem"
+    entity: IRON_GOLEM
+    wing: animal
+    style: barn
+    theme: village
+    icon: IRON_BLOCK
+    offset: { x: 140, y: 0, z: -80 }
+  squid:
+    display: "&8Squid"
+    entity: SQUID
+    wing: animal
+    style: aqua
+    theme: ocean
+    icon: INK_SAC
+    offset: { x: 170, y: 0, z: -80 }
+  glow_squid:
+    display: "&bGlow Squid"
+    entity: GLOW_SQUID
+    wing: animal
+    style: aqua
+    theme: ocean
+    icon: GLOW_INK_SAC
+    offset: { x: 80, y: 0, z: -120 }
+  bee:
+    display: "&eBee"
+    entity: BEE
+    wing: animal
+    style: barn
+    theme: animal
+    icon: HONEYCOMB
+    offset: { x: 110, y: 0, z: -120 }
+  fox:
+    display: "&6Fox"
+    entity: FOX
+    wing: animal
+    style: barn
+    theme: animal
+    icon: SWEET_BERRIES
+    offset: { x: 140, y: 0, z: -120 }
+  goat:
+    display: "&fGoat"
+    entity: GOAT
+    wing: animal
+    style: barn
+    theme: ice
+    icon: GOAT_HORN
+    offset: { x: 170, y: 0, z: -120 }
+  llama:
+    display: "&eLlama"
+    entity: LLAMA
+    wing: animal
+    style: barn
+    theme: animal
+    icon: LEATHER
+    offset: { x: 80, y: 0, z: -160 }
+  panda:
+    display: "&fPanda"
+    entity: PANDA
+    wing: animal
+    style: barn
+    theme: animal
+    icon: BAMBOO
+    offset: { x: 110, y: 0, z: -160 }
+  frog:
+    display: "&aFrog"
+    entity: FROG
+    wing: animal
+    style: barn
+    theme: swamp
+    icon: FROGSPAWN
+    offset: { x: 140, y: 0, z: -160 }
+  sniffer:
+    display: "&6Sniffer"
+    entity: SNIFFER
+    wing: animal
+    style: barn
+    theme: animal
+    icon: TORCHFLOWER
+    offset: { x: 170, y: 0, z: -160 }

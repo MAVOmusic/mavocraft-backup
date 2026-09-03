@@ -1,0 +1,16 @@
+name: MAVOCasino
+version: 1.2.3
+main: mavo.casino.Casino
+api-version: '1.13'
+description: Lucky Louie's gambling den - 5 games of chance for MAVOcraft
+author: MAVO
+softdepend: [Vault, MAVOLuckyCoins, MAVOProfessions, MAVOAchievements]
+commands:
+  casino:
+    description: Open Lucky Louie's casino
+    aliases: [gamble, bet]
+    usage: /casino
+permissions:
+  mavocasino.pokercards:
+    description: Ultimate gambler poker-cards win emote (granted at Gambler L1000)
+    default: false

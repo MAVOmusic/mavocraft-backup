@@ -1,0 +1,71 @@
+name: Build MAVO plugins
+
+# Builds the MAVO plugin sources with JDK 25 and commits the resulting jars
+# straight back into the repo (root + jars/). Trigger by pushing to a branch,
+# or manually with "Run workflow". The same-branch push does not re-trigger
+# because this workflow only watches sources/** and workflow files.
+on:
+  push:
+    branches: [ 'arena/**' ]
+    paths:
+      - 'sources/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 25 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Build plugins (casino, mobfarm)
+        run: |
+          set -euo pipefail
+          for d in sources/src-casino sources/src-mobfarm; do
+            echo "== Building $d =="
+            (cd "$d" && mvn -B -q package -DskipTests)
+          done
+          ls -la sources/src-casino/target/ sources/src-mobfarm/target/
+
+      - name: Copy jars to repo root + jars/
+        run: |
+          set -euo pipefail
+          mkdir -p jars
+          for f in sources/src-casino/target/MAVOCasino-*.jar sources/src-mobfarm/target/MAVOMobFarm-*.jar; do
+            [ -f "$f" ] || continue
+            case "$(basename "$f")" in
+              *original-*|*-sources.jar|*-javadoc.jar) continue;;
+            esac
+            cp -f "$f" .
+            cp -f "$f" jars/
+          done
+          # remove older same-plugin versions so only the latest remains
+          rm -f MAVOCasino-1.2.0.jar MAVOCasino-1.2.1.jar MAVOCasino-1.2.2.jar \
+                jars/MAVOCasino-1.2.0.jar jars/MAVOCasino-1.2.1.jar jars/MAVOCasino-1.2.2.jar
+          rm -f MAVOMobFarm-2.4.0.jar MAVOMobFarm-2.3.0.jar MAVOMobFarm-2.2.5.jar \
+                jars/MAVOMobFarm-2.4.0.jar jars/MAVOMobFarm-2.3.0.jar jars/MAVOMobFarm-2.2.5.jar
+          ls -la MAVOCasino-*.jar MAVOMobFarm-*.jar jars/ | tail -20
+
+      - name: Commit rebuilt jars
+        run: |
+          git config user.name "mavocraft-ci"
+          git config user.email "ci@mavocraft.local"
+          git add -A MAVOCasino-*.jar MAVOMobFarm-*.jar jars/
+          if git diff --cached --quiet; then
+            echo "No jar changes to commit"
+            exit 0
+          fi
+          git commit -m "ci: rebuilt MAVOCasino $(basename sources/src-casino/target/MAVOCasino-*.jar | sed 's/MAVOCasino-//;s/.jar//') + MAVOMobFarm $(basename sources/src-mobfarm/target/MAVOMobFarm-*.jar | sed 's/MAVOMobFarm-//;s/.jar//')"
+          git push origin HEAD:"${GITHUB_REF_NAME}"

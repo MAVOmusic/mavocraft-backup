@@ -1,0 +1,13 @@
+# MAVOCasino 1.2 - Lucky Louie's den
+# Separate attempt pools for coins and lucky coins
+coin-attempts: 10
+lucky-attempts: 10
+# legacy key still read as coin-attempts fallback
+attempts: 10
+window-days: 10
+# GUI shuffles game order each open
+random-order: true
+
+# Result screens (Dice / Blackjack / Hi-Lo / RPS): seconds before auto-close
+# CLOSE button always available on the result screen
+result-seconds: 5

@@ -1,0 +1,1874 @@
+package mavo.mobfarm;
+
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.block.*;
+import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.type.Slab;
+import org.bukkit.block.data.type.Stairs;
+import org.bukkit.block.sign.Side;
+import org.bukkit.boss.*;
+import org.bukkit.command.*;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.*;
+import org.bukkit.event.*;
+import org.bukkit.event.block.*;
+import org.bukkit.event.entity.*;
+import org.bukkit.event.inventory.*;
+import org.bukkit.event.player.*;
+import org.bukkit.event.world.PortalCreateEvent;
+import org.bukkit.inventory.*;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
+
+/** MAVOMobFarm 2.5.0 — unique per-mob bays + real hopper→chest plumbing, paid pick, r=50 protect, blacklist. */
+public final class MobFarm extends JavaPlugin implements Listener, TabCompleter {
+
+    private Economy econ;
+    private File dataFile;
+    private YamlConfiguration data;
+    private Location center;
+    private final Map<String, MobDef> mobs = new LinkedHashMap<>();
+    private final Map<UUID, Session> sessions = new HashMap<>();
+    private final Map<UUID, PendingEnter> pending = new HashMap<>();
+    private NamespacedKey holoKey, farmMobKey, stackHoloKey, lastHitKey;
+    private long communityCoins, communityTarget;
+    private int communityStack;
+    private int minX, minY, minZ, maxX, maxY, maxZ; // farm AABB (built bays)
+
+    static final class MobDef {
+        String id, display, wing, style, theme; EntityType entity; Material icon;
+        int ox, oy, oz;
+        Location stand, killPad, lootChest, stackBlock, communityChest;
+        boolean built;
+    }
+    static final class Session {
+        UUID owner; String mobId; long endsAtMs;
+        int extraSpawners; Location returnLoc, stackLoc; boolean active = true;
+        boolean unlocked; // paid pick for this session's mob
+        BukkitTask spawnTask; BukkitTask hudTask; BossBar hud; TextDisplay stackHolo;
+    }
+    static final class PendingEnter { int secondsLeft; BukkitTask task; long cost; }
+    static final class Region {
+        String world; int minX, minY, minZ, maxX, maxY, maxZ;
+        boolean contains(Location l) {
+            if (l.getWorld() == null || !l.getWorld().getName().equals(world)) return false;
+            int x = l.getBlockX(), y = l.getBlockY(), z = l.getBlockZ();
+            return x >= minX && x <= maxX && y >= minY && y <= maxY && z >= minZ && z <= maxZ;
+        }
+    }
+    private final List<Region> blacklist = new ArrayList<>();
+
+    @Override public void onEnable() {
+        holoKey = new NamespacedKey(this, "mfholo");
+        farmMobKey = new NamespacedKey(this, "farmmob");
+        stackHoloKey = new NamespacedKey(this, "stackholo");
+        lastHitKey = new NamespacedKey(this, "lasthit");
+        saveDefaultConfig();
+        dataFile = new File(getDataFolder(), "data.yml");
+        data = YamlConfiguration.loadConfiguration(dataFile);
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp != null) econ = rsp.getProvider();
+        loadAll();
+        getServer().getPluginManager().registerEvents(this, this);
+        if (getCommand("mobfarm") != null) getCommand("mobfarm").setTabCompleter(this);
+        new BukkitRunnable() {
+            @Override public void run() {
+                long now = System.currentTimeMillis();
+                List<UUID> end = new ArrayList<>();
+                for (var e : sessions.entrySet()) if (now >= e.getValue().endsAtMs) end.add(e.getKey());
+                for (UUID u : end) endSession(u, true);
+            }
+        }.runTaskTimer(this, 40L, 40L);
+        getLogger().info("MAVOMobFarm 2.5.0 enabled. mobs=" + mobs.size()
+                + " center=" + (center == null ? "?" : center.getBlockX() + "," + center.getBlockZ())
+                + " ai=" + mobAiEnabled());
+    }
+
+    @Override public void onDisable() {
+        for (UUID u : new ArrayList<>(sessions.keySet())) endSession(u, false);
+        saveData();
+    }
+
+    private void loadAll() {
+        mobs.clear(); blacklist.clear();
+        String wn = getConfig().getString("center.world", "world");
+        World w = Bukkit.getWorld(wn);
+        if (w == null && !Bukkit.getWorlds().isEmpty()) w = Bukkit.getWorlds().get(0);
+        if (w != null) center = new Location(w, getConfig().getDouble("center.x", -15000),
+                getConfig().getDouble("center.y", 200), getConfig().getDouble("center.z", -2000));
+        ConfigurationSection ms = getConfig().getConfigurationSection("mobs");
+        if (ms != null) {
+            for (String id : ms.getKeys(false)) {
+                ConfigurationSection c = ms.getConfigurationSection(id);
+                if (c == null) continue;
+                MobDef m = new MobDef();
+                m.id = id;
+                m.display = color(c.getString("display", id));
+                m.wing = c.getString("wing", "hostile");
+                m.style = c.getString("style", "pad");
+                m.theme = c.getString("theme", "dark");
+                m.ox = c.getInt("offset.x", 0); m.oy = c.getInt("offset.y", 0); m.oz = c.getInt("offset.z", -40);
+                try { m.entity = EntityType.valueOf(c.getString("entity", "ZOMBIE").toUpperCase(Locale.ROOT)); }
+                catch (Exception ex) { m.entity = EntityType.ZOMBIE; }
+                Material ic = Material.matchMaterial(c.getString("icon", "ROTTEN_FLESH"));
+                m.icon = ic != null ? ic : Material.ROTTEN_FLESH;
+                mobs.put(id, m);
+            }
+        }
+        communityCoins = data.getLong("community.coins", 0L);
+        communityTarget = data.getLong("community.target", getConfig().getLong("community.start-target", 1_000_000L));
+        communityStack = data.getInt("community.stack", getConfig().getInt("community.stack-start", 2));
+        if (communityStack < 1) communityStack = getConfig().getInt("community.stack-start", 2);
+        loadBlacklist();
+        if (data.getBoolean("built", false) && center != null) {
+            recomputeAABB();
+            for (MobDef m : mobs.values()) computeGeom(m);
+        }
+    }
+
+    private void loadBlacklist() {
+        blacklist.clear();
+        if (!getConfig().getBoolean("blacklist.enabled", true)) return;
+        ConfigurationSection rs = getConfig().getConfigurationSection("blacklist.regions");
+        if (rs == null) return;
+        for (String id : rs.getKeys(false)) {
+            ConfigurationSection c = rs.getConfigurationSection(id);
+            if (c == null) continue;
+            Region r = new Region();
+            r.world = c.getString("world", "world");
+            r.minX = c.getInt("min.x"); r.minY = c.getInt("min.y"); r.minZ = c.getInt("min.z");
+            r.maxX = c.getInt("max.x"); r.maxY = c.getInt("max.y"); r.maxZ = c.getInt("max.z");
+            blacklist.add(r);
+        }
+    }
+
+    private void saveData() {
+        data.set("community.coins", communityCoins);
+        data.set("community.target", communityTarget);
+        data.set("community.stack", communityStack);
+        try { data.save(dataFile); } catch (Exception ignored) {}
+    }
+
+    private static String color(String s) { return ChatColor.translateAlternateColorCodes('&', s == null ? "" : s); }
+
+    private int baseSpawners() {
+        int start = getConfig().getInt("community.stack-start", getConfig().getInt("base-spawners", 2));
+        int stack = communityStack > 0 ? communityStack : start;
+        return Math.max(1, stack);
+    }
+    private int stackCount(Session s) {
+        return Math.min(getConfig().getInt("max-spawners", 25), baseSpawners() + s.extraSpawners);
+    }
+    private long normalPrice() { return getConfig().getLong("normal-spawner-price", 10_000L); }
+    /** Paid unlock to pick/activate a mob zone = P / unlock-divisor */
+    private long unlockCost() {
+        long p = normalPrice();
+        long d = Math.max(1L, getConfig().getLong("unlock-divisor", 16L));
+        return Math.max(1L, p / d);
+    }
+    /** Extra #0 = P/8, #1 = P/4, #2 = P/2, #3 = P, then double previous. */
+    private long extraCost(int extrasAlreadyBought) {
+        long p = normalPrice();
+        List<Integer> divs = getConfig().getIntegerList("extra-divisors");
+        if (divs == null || divs.isEmpty()) divs = List.of(8, 4, 2, 1);
+        if (extrasAlreadyBought < divs.size()) {
+            int d = Math.max(1, divs.get(extrasAlreadyBought));
+            return Math.max(1L, p / d);
+        }
+        // after listed: start from full P at index size-1 if last div is 1, then double each
+        long last = Math.max(1L, p / Math.max(1, divs.get(divs.size() - 1)));
+        int over = extrasAlreadyBought - (divs.size() - 1);
+        // extrasAlreadyBought == size → first double after last listed
+        // e.g. size=4, bought=4 → over=1 → last*2
+        long cost = last;
+        for (int i = 0; i < over; i++) {
+            cost = Math.min(cost * 2L, Long.MAX_VALUE / 4);
+        }
+        return cost;
+    }
+    private boolean mobAiEnabled() { return getConfig().getBoolean("mob-ai", true); }
+    private boolean sunSafe() { return getConfig().getBoolean("sun-safe-killpad", true); }
+    private boolean creditLastDamager() { return getConfig().getBoolean("credit-last-damager", true); }
+    private boolean sessionHud() { return getConfig().getBoolean("session-hud", true); }
+    private int protectRadius() { return Math.max(0, getConfig().getInt("protect-radius", 50)); }
+
+    private Location origin(MobDef m) {
+        return center.clone().add(m.ox, m.oy, m.oz);
+    }
+
+    private void computeGeom(MobDef m) {
+        if (center == null) return;
+        Location o = origin(m);
+        World w = o.getWorld();
+        int x = o.getBlockX(), y = o.getBlockY(), z = o.getBlockZ();
+        m.stand = new Location(w, x + 0.5, y + 1, z + 6.5);
+        m.killPad = new Location(w, x + 0.5, y - 1.0, z + 0.5);
+        m.stackBlock = new Location(w, x + 3, y + 1, z - 2);
+        m.lootChest = new Location(w, x + 5, y - 2, z + 3);
+        m.communityChest = new Location(w, x - 3, y, z + 5);
+    }
+
+    private void recomputeAABB() {
+        if (center == null) return;
+        minX = center.getBlockX() - 20; maxX = center.getBlockX() + 20;
+        minY = center.getBlockY() - 12; maxY = center.getBlockY() + 16;
+        minZ = center.getBlockZ() - 20; maxZ = center.getBlockZ() + 20;
+        for (MobDef m : mobs.values()) {
+            Location o = origin(m);
+            minX = Math.min(minX, o.getBlockX() - 14); maxX = Math.max(maxX, o.getBlockX() + 14);
+            minY = Math.min(minY, o.getBlockY() - 10); maxY = Math.max(maxY, o.getBlockY() + 12);
+            minZ = Math.min(minZ, o.getBlockZ() - 14); maxZ = Math.max(maxZ, o.getBlockZ() + 16);
+        }
+    }
+
+    private boolean inFarmProtect(Location l) {
+        if (center == null || l.getWorld() != center.getWorld()) return false;
+        if (!data.getBoolean("built", false)) {
+            // only hub ball until built
+            return l.distanceSquared(center) <= (double) protectRadius() * protectRadius();
+        }
+        int r = protectRadius();
+        int x = l.getBlockX(), y = l.getBlockY(), z = l.getBlockZ();
+        return x >= minX - r && x <= maxX + r && y >= minY - r && y <= maxY + r && z >= minZ - r && z <= maxZ + r;
+    }
+
+    private boolean inBlacklist(Location l) {
+        for (Region r : blacklist) if (r.contains(l)) return true;
+        // also mobfarm protect volume as blacklist for wild dumps
+        return inFarmProtect(l);
+    }
+
+    // ---------------- commands ----------------
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (args.length == 0) {
+            sender.sendMessage(ChatColor.GOLD + "/mobfarm enter|leave|hub|status|buy|pick|prices|info"
+                    + (sender.hasPermission("mavomobfarm.admin")
+                    ? "|tp|setcenter|build|rebuild|clear|clearhere|purge|reload|resholo" : ""));
+            return true;
+        }
+        String a = args[0].toLowerCase(Locale.ROOT);
+        if (a.equals("info")) {
+            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.5.0 " + ChatColor.GRAY + "entry "
+                    + ChatColor.YELLOW + getConfig().getInt("entry-cost")
+                    + ChatColor.GRAY + " · " + getConfig().getInt("session-minutes") + "m"
+                    + ChatColor.GRAY + " · unlock " + ChatColor.GREEN + unlockCost()
+                    + ChatColor.GRAY + " · XP×" + ChatColor.AQUA + getConfig().getDouble("profession-xp-scale"));
+            sender.sendMessage(ChatColor.GRAY + "Community " + ChatColor.YELLOW + communityCoins + "/" + communityTarget
+                    + ChatColor.GRAY + " · base stack " + ChatColor.GREEN + "x" + baseSpawners()
+                    + ChatColor.GRAY + " · mobs " + mobs.size());
+            sender.sendMessage(ChatColor.DARK_GRAY + "Hub @ " + (center == null ? "?" :
+                    center.getBlockX() + " " + center.getBlockY() + " " + center.getBlockZ())
+                    + " · protect r=" + protectRadius());
+            sender.sendMessage(ChatColor.DARK_GRAY + "mob-ai=" + mobAiEnabled() + " · /mobfarm prices for costs");
+            return true;
+        }
+        if (a.equals("prices")) {
+            showPrices(sender);
+            return true;
+        }
+        if (a.equals("reload")) {
+            if (!sender.hasPermission("mavomobfarm.admin")) { sender.sendMessage(ChatColor.RED + "No."); return true; }
+            reloadConfig(); loadAll();
+            sender.sendMessage(ChatColor.GREEN + "Reloaded. mobs=" + mobs.size()
+                    + " ai=" + mobAiEnabled() + " unlock=" + unlockCost());
+            for (Session s : sessions.values()) {
+                if (s.hud == null && sessionHud()) startHud(s); else updateHud(s);
+            }
+            return true;
+        }
+        if (!(sender instanceof Player p)) { sender.sendMessage("Players only."); return true; }
+        switch (a) {
+            case "setcenter" -> {
+                if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
+                center = p.getLocation().getBlock().getLocation().add(0.5, 0, 0.5);
+                getConfig().set("center.world", center.getWorld().getName());
+                getConfig().set("center.x", center.getX());
+                getConfig().set("center.y", center.getY());
+                getConfig().set("center.z", center.getZ());
+                saveConfig();
+                p.sendMessage(ChatColor.GREEN + "Center set " + center.getBlockX() + " " + center.getBlockY() + " " + center.getBlockZ());
+            }
+            case "tp", "hub" -> {
+                if (a.equals("tp") && !p.hasPermission("mavomobfarm.admin")) {
+                    // players use hub
+                }
+                goHub(p);
+            }
+            case "build" -> {
+                if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
+                buildComplex(p);
+            }
+            case "rebuild" -> {
+                if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
+                clearComplex(p); buildComplex(p);
+            }
+            case "clear" -> {
+                if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
+                clearComplex(p);
+            }
+            case "clearhere" -> {
+                if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
+                int r = args.length > 1 ? parseInt(args[1], 80) : 80;
+                clearHere(p, r);
+            }
+            case "purge" -> {
+                if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
+                int r = args.length > 1 ? parseInt(args[1], 150) : 150;
+                purgeOnly(p, r);
+            }
+            case "resholo" -> {
+                if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
+                spawnHubHolo(); refreshBayHolos(); p.sendMessage(ChatColor.GREEN + "Holo ok.");
+            }
+            case "enter" -> beginEnter(p);
+            case "leave" -> leaveFarm(p);
+            case "status" -> showStatus(p);
+            case "buy" -> buySpawner(p);
+            case "pick" -> openPick(p);
+            default -> p.sendMessage(ChatColor.RED + "Unknown. /mobfarm");
+        }
+        return true;
+    }
+
+    private static int parseInt(String s, int def) {
+        try { return Integer.parseInt(s); } catch (Exception e) { return def; }
+    }
+
+    private void showPrices(CommandSender sender) {
+        long unlock = unlockCost();
+        long p = normalPrice();
+        sender.sendMessage(ChatColor.GOLD + "=== MobFarm prices ===");
+        sender.sendMessage(ChatColor.YELLOW + "Session entry: " + ChatColor.WHITE + getConfig().getInt("entry-cost")
+                + ChatColor.GRAY + " · unlock mob (pick): " + ChatColor.GREEN + unlock
+                + ChatColor.DARK_GRAY + " (P/" + getConfig().getLong("unlock-divisor", 16) + ", P=" + p + ")");
+        sender.sendMessage(ChatColor.AQUA + "Extra stacks on SAME block:");
+        for (int i = 0; i < 8; i++) {
+            sender.sendMessage(ChatColor.GRAY + "  extra #" + (i + 1) + ": " + ChatColor.YELLOW + extraCost(i));
+        }
+        sender.sendMessage(ChatColor.GOLD + "--- Mobs (unlock each = " + unlock + ") ---");
+        String lastWing = "";
+        for (MobDef m : mobs.values()) {
+            if (!m.wing.equals(lastWing)) {
+                lastWing = m.wing;
+                sender.sendMessage(ChatColor.LIGHT_PURPLE + " " + lastWing.toUpperCase(Locale.ROOT) + " wing:");
+            }
+            sender.sendMessage(ChatColor.GRAY + "  " + m.display + ChatColor.DARK_GRAY + " [" + m.style + "]"
+                    + ChatColor.WHITE + " unlock " + unlock
+                    + ChatColor.GRAY + " · then extras " + extraCost(0) + " → " + extraCost(1) + " → …");
+        }
+        sender.sendMessage(ChatColor.RED + "Enter with ≥ " + unlock + " coins to unlock the cheapest spawner after entry.");
+    }
+
+    private void showStatus(Player p) {
+        Session s = sessions.get(p.getUniqueId());
+        if (s == null || s.endsAtMs < System.currentTimeMillis()) {
+            p.sendMessage(ChatColor.GRAY + "No active session. /mobfarm enter");
+            return;
+        }
+        long left = Math.max(0, (s.endsAtMs - System.currentTimeMillis()) / 1000L);
+        p.sendMessage(ChatColor.GOLD + "Session " + ChatColor.YELLOW + (left / 60) + "m " + (left % 60) + "s"
+                + ChatColor.GRAY + " · mob " + ChatColor.WHITE + s.mobId
+                + ChatColor.GRAY + " · stack x" + stackCount(s)
+                + ChatColor.GRAY + " · unlocked=" + s.unlocked);
+    }
+
+    private void beginEnter(Player p) {
+        if (center == null) { p.sendMessage(ChatColor.RED + "Farm not set. Admin: /mobfarm setcenter"); return; }
+        Session existing = sessions.get(p.getUniqueId());
+        if (existing != null && existing.endsAtMs > System.currentTimeMillis()) {
+            existing.active = true;
+            if (existing.spawnTask == null && existing.unlocked) startSpawnTask(existing);
+            if (existing.hud == null) startHud(existing); else updateHud(existing);
+            teleportToSession(p, existing);
+            p.sendMessage(ChatColor.GREEN + "Welcome back — same session/stack. /mobfarm pick");
+            return;
+        }
+        if (pending.containsKey(p.getUniqueId())) { p.sendMessage(ChatColor.RED + "Already entering."); return; }
+        long cost = getConfig().getLong("entry-cost", 5000);
+        if (econ == null) { p.sendMessage(ChatColor.RED + "Economy missing."); return; }
+        if (!econ.has(p, cost)) { p.sendMessage(ChatColor.RED + "Need " + cost + " coins to enter."); return; }
+        long unlock = unlockCost();
+        p.sendActionBar(ChatColor.RED + "" + ChatColor.BOLD + "MAKE SURE TO HAVE ≥ " + unlock
+                + " COINS TO UNLOCK THE CHEAPEST SPAWNER");
+        p.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "⚠ After entry you must PAY " + unlock
+                + " coins in /mobfarm pick to unlock a mob zone (no free spawner).");
+        int secs = Math.max(3, getConfig().getInt("entry-cancel-seconds", 10));
+        PendingEnter pe = new PendingEnter(); pe.secondsLeft = secs; pe.cost = cost;
+        pe.task = new BukkitRunnable() {
+            @Override public void run() {
+                if (!p.isOnline()) { pending.remove(p.getUniqueId()); cancel(); return; }
+                pe.secondsLeft--;
+                if (pe.secondsLeft > 0) {
+                    p.sendActionBar(ChatColor.GOLD + "Mob farm in " + pe.secondsLeft + "s… don't move! "
+                            + ChatColor.RED + "Need ≥" + unlock + " after entry to unlock");
+                    return;
+                }
+                pending.remove(p.getUniqueId()); cancel();
+                if (!econ.has(p, pe.cost)) { p.sendMessage(ChatColor.RED + "Not enough coins."); return; }
+                econ.withdrawPlayer(p, pe.cost); startSession(p);
+            }
+        }.runTaskTimer(this, 20L, 20L);
+        pending.put(p.getUniqueId(), pe);
+        p.sendMessage(ChatColor.GOLD + "Entering… " + secs + "s (move = cancel). Cost " + cost);
+    }
+
+    @EventHandler
+    public void onMoveCancel(PlayerMoveEvent e) {
+        PendingEnter pe = pending.get(e.getPlayer().getUniqueId());
+        if (pe == null || e.getTo() == null) return;
+        if (e.getFrom().getBlockX() != e.getTo().getBlockX()
+                || e.getFrom().getBlockY() != e.getTo().getBlockY()
+                || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) {
+            pe.task.cancel(); pending.remove(e.getPlayer().getUniqueId());
+            e.getPlayer().sendMessage(ChatColor.RED + "Entry cancelled.");
+        }
+    }
+
+    private void startSession(Player p) {
+        Session s = new Session();
+        s.owner = p.getUniqueId();
+        s.mobId = data.getString("players." + p.getUniqueId() + ".last-mob", "zombie");
+        if (!mobs.containsKey(s.mobId)) s.mobId = mobs.isEmpty() ? "zombie" : mobs.keySet().iterator().next();
+        s.endsAtMs = System.currentTimeMillis() + getConfig().getInt("session-minutes", 30) * 60_000L;
+        s.returnLoc = p.getLocation().clone(); s.extraSpawners = 0; s.unlocked = false;
+        sessions.put(p.getUniqueId(), s);
+        startHud(s);
+        goHub(p);
+        p.sendMessage(ChatColor.GREEN + "Session started. " + ChatColor.YELLOW + "Pay "
+                + unlockCost() + ChatColor.GREEN + " in " + ChatColor.AQUA + "/mobfarm pick"
+                + ChatColor.GREEN + " to unlock a zone (teleports you there).");
+        p.sendMessage(ChatColor.RED + "No free spawner — unlock required. /mobfarm prices");
+        openPick(p);
+    }
+
+    private void leaveFarm(Player p) {
+        Session s = sessions.get(p.getUniqueId());
+        if (s == null) { p.sendMessage(ChatColor.GRAY + "No session."); return; }
+        if (s.returnLoc != null) p.teleport(s.returnLoc); else if (center != null) p.teleport(center);
+        p.sendMessage(ChatColor.YELLOW + "Left farm zone. Timer still runs (HUD hides). "
+                + ChatColor.GRAY + "/mobfarm enter free while session live — stack kept.");
+    }
+
+    private void goHub(Player p) {
+        if (center == null) { p.sendMessage(ChatColor.RED + "No hub."); return; }
+        p.teleport(center.clone().add(0.5, 1, 0.5));
+        p.sendMessage(ChatColor.AQUA + "MobFarm hub.");
+    }
+
+    private void endSession(UUID u, boolean announce) {
+        Session s = sessions.remove(u); if (s == null) return;
+        if (s.spawnTask != null) s.spawnTask.cancel();
+        stopHud(s);
+        clearSessionMobs(s); removeStackHolo(s);
+        if (s.stackLoc != null && s.stackLoc.getBlock().getType() == Material.SPAWNER) {
+            if (s.stackLoc.getBlock().getState() instanceof CreatureSpawner cs) {
+                try { cs.setSpawnedType(EntityType.PIG); cs.setDelay(9999); cs.update(true, false); } catch (Throwable ignored) {}
+            }
+        }
+        data.set("players." + u + ".last-mob", s.mobId);
+        Player p = Bukkit.getPlayer(u);
+        if (p != null && p.isOnline()) {
+            if (s.returnLoc != null) p.teleport(s.returnLoc); else if (center != null) p.teleport(center);
+            if (announce) p.sendMessage(ChatColor.RED + "Session ended. Bought stacks cleared.");
+        }
+        saveData();
+    }
+
+    private void buySpawner(Player p) {
+        Session s = sessions.get(p.getUniqueId());
+        if (s == null || s.endsAtMs < System.currentTimeMillis()) { p.sendMessage(ChatColor.RED + "No session."); return; }
+        if (!s.unlocked) { p.sendMessage(ChatColor.RED + "Unlock a mob first: /mobfarm pick (" + unlockCost() + " coins)"); return; }
+        int max = getConfig().getInt("max-spawners", 25);
+        if (stackCount(s) >= max) { p.sendMessage(ChatColor.RED + "Max stack " + max); return; }
+        long cost = extraCost(s.extraSpawners);
+        if (econ == null || !econ.has(p, cost)) {
+            p.sendMessage(ChatColor.RED + "Need " + cost + " coins for next stack.");
+            return;
+        }
+        econ.withdrawPlayer(p, cost); s.extraSpawners++; setupCellStack(s);
+        updateHud(s);
+        p.sendMessage(ChatColor.GREEN + "Stack now " + ChatColor.YELLOW + "x" + stackCount(s)
+                + ChatColor.GREEN + " Paid " + cost + ". Next: " + extraCost(s.extraSpawners));
+    }
+
+    private void openPick(Player p) {
+        Session s = sessions.get(p.getUniqueId());
+        if (s == null || s.endsAtMs < System.currentTimeMillis()) { p.sendMessage(ChatColor.RED + "/mobfarm enter first"); return; }
+        int size = 54;
+        Inventory inv = Bukkit.createInventory(null, size, ChatColor.DARK_RED + "Unlock Farm Mob (" + unlockCost() + ")");
+        int slot = 0;
+        for (MobDef m : mobs.values()) {
+            if (slot >= size) break;
+            ItemStack it = new ItemStack(m.icon);
+            ItemMeta meta = it.getItemMeta();
+            meta.setDisplayName(m.display);
+            List<String> lore = new ArrayList<>();
+            lore.add(ChatColor.GRAY + "Wing: " + m.wing + " · style: " + m.style);
+            lore.add(ChatColor.YELLOW + "UNLOCK cost: " + unlockCost() + " coins");
+            lore.add(ChatColor.DARK_GRAY + "Extras after: " + extraCost(0) + ", " + extraCost(1) + ", " + extraCost(2) + "…");
+            if (m.id.equals(s.mobId) && s.unlocked) lore.add(ChatColor.GREEN + "✓ ACTIVE");
+            else if (m.id.equals(s.mobId)) lore.add(ChatColor.GOLD + "Selected — pay to unlock");
+            lore.add(ChatColor.AQUA + "Click to pay & teleport to zone");
+            meta.setLore(lore);
+            it.setItemMeta(meta);
+            inv.setItem(slot++, it);
+        }
+        p.openInventory(inv);
+    }
+
+    @EventHandler
+    public void onPickClick(InventoryClickEvent e) {
+        if (!(e.getWhoClicked() instanceof Player p)) return;
+        String title = e.getView().getTitle();
+        if (title == null || !title.contains("Unlock Farm Mob")) return;
+        e.setCancelled(true);
+        if (e.getCurrentItem() == null || e.getCurrentItem().getType().isAir()) return;
+        Session s = sessions.get(p.getUniqueId());
+        if (s == null || s.endsAtMs < System.currentTimeMillis()) { p.closeInventory(); return; }
+        ItemMeta meta = e.getCurrentItem().getItemMeta();
+        if (meta == null || !meta.hasDisplayName()) return;
+        String name = meta.getDisplayName();
+        MobDef chosen = null;
+        for (MobDef m : mobs.values()) {
+            if (m.display.equals(name) || ChatColor.stripColor(m.display).equals(ChatColor.stripColor(name))) {
+                chosen = m; break;
+            }
+        }
+        if (chosen == null) {
+            // match by icon fallback
+            for (MobDef m : mobs.values()) {
+                if (m.icon == e.getCurrentItem().getType()) { chosen = m; break; }
+            }
+        }
+        if (chosen == null) return;
+        long cost = unlockCost();
+        // switching mob mid-session still requires unlock payment if different or not unlocked
+        boolean needPay = !s.unlocked || !chosen.id.equals(s.mobId);
+        if (needPay) {
+            if (econ == null || !econ.has(p, cost)) {
+                p.sendMessage(ChatColor.RED + "Need " + cost + " coins to unlock " + ChatColor.stripColor(chosen.display));
+                return;
+            }
+            econ.withdrawPlayer(p, cost);
+            p.sendMessage(ChatColor.GREEN + "Paid " + cost + " — unlocked " + chosen.display);
+        }
+        // stop old zone
+        if (s.spawnTask != null) { s.spawnTask.cancel(); s.spawnTask = null; }
+        clearSessionMobs(s); removeStackHolo(s);
+        s.mobId = chosen.id;
+        s.unlocked = true;
+        // keep extras when switching? reset extras on mob switch to avoid cheese
+        if (needPay) s.extraSpawners = 0;
+        setupCellStack(s);
+        startSpawnTask(s);
+        updateHud(s);
+        p.closeInventory();
+        teleportToSession(p, s);
+        p.sendMessage(ChatColor.AQUA + "Zone ready: " + chosen.display + ChatColor.GRAY
+                + " · stack x" + stackCount(s) + " · hit from the safe window");
+    }
+
+    private void teleportToSession(Player p, Session s) {
+        MobDef m = mobs.get(s.mobId);
+        if (m == null || center == null) { goHub(p); return; }
+        if (m.stand == null) computeGeom(m);
+        Location dest = m.stand.clone();
+        dest.setYaw(180f); dest.setPitch(20f);
+        p.teleport(dest);
+    }
+
+    // ---------------- build (2.5: unique per-mob bays + real loot plumbing) ----------------
+    private void buildComplex(Player admin) {
+        if (center == null) { admin.sendMessage(ChatColor.RED + "Set center first."); return; }
+        stopAllFarmActivity("build");
+        World w = center.getWorld();
+        // hub platform
+        int hx = center.getBlockX(), hy = center.getBlockY(), hz = center.getBlockZ();
+        for (int x = -12; x <= 12; x++)
+            for (int z = -12; z <= 12; z++) {
+                Material fl = ((x + z) & 1) == 0 ? Material.SEA_LANTERN : Material.POLISHED_DEEPSLATE;
+                w.getBlockAt(hx + x, hy - 1, hz + z).setType(fl, false);
+                for (int y = 0; y <= 4; y++) setAir(w, hx + x, hy + y, hz + z);
+            }
+        // hub beacon pillars
+        for (int[] d : new int[][]{{-10, -10}, {-10, 10}, {10, -10}, {10, 10}}) {
+            for (int y = 0; y <= 6; y++)
+                w.getBlockAt(hx + d[0], hy + y, hz + d[1]).setType(Material.CRYING_OBSIDIAN, false);
+            w.getBlockAt(hx + d[0], hy + 7, hz + d[1]).setType(Material.SEA_LANTERN, false);
+        }
+        // community chest hub
+        placeDoubleChest(w, hx, hy, hz + 4, BlockFace.NORTH);
+        Block sign = w.getBlockAt(hx, hy + 1, hz + 4);
+        sign.setType(Material.OAK_SIGN, false);
+        writeSign(sign, ChatColor.GOLD + "COMMUNITY", ChatColor.YELLOW + "FARM CHEST",
+                ChatColor.WHITE + "Donate loot", ChatColor.GRAY + "→ stack goal");
+        // wing signs
+        Block hs = w.getBlockAt(hx - 6, hy + 1, hz);
+        hs.setType(Material.OAK_SIGN, false);
+        writeSign(hs, ChatColor.RED + "HOSTILE", ChatColor.WHITE + "WING ← WEST",
+                ChatColor.GRAY + "/mobfarm pick", ChatColor.DARK_GRAY + "pay unlock");
+        Block as = w.getBlockAt(hx + 6, hy + 1, hz);
+        as.setType(Material.OAK_SIGN, false);
+        writeSign(as, ChatColor.GREEN + "ANIMAL", ChatColor.WHITE + "WING → EAST",
+                ChatColor.GRAY + "/mobfarm pick", ChatColor.DARK_GRAY + "pay unlock");
+
+        int n = 0;
+        for (MobDef m : mobs.values()) {
+            computeGeom(m);
+            buildBay(m);
+            m.built = true;
+            n++;
+        }
+        recomputeAABB();
+        data.set("built", true); saveData();
+        spawnHubHolo(); refreshBayHolos();
+        admin.sendMessage(ChatColor.GREEN + "Built hub + " + n + " unique bays. AABB "
+                + minX + ".." + maxX + " / " + minZ + ".." + maxZ + " protect+" + protectRadius());
+        admin.sendMessage(ChatColor.GRAY + "TP: /tp @s " + hx + " " + (hy + 1) + " " + hz
+                + " — stand on the marked HIT pads; loot chests face the walkway.");
+    }
+
+    private void buildBay(MobDef m) {
+        if (center == null) return;
+        World w = center.getWorld();
+        Location o = origin(m);
+        int cx = o.getBlockX(), cy = o.getBlockY(), cz = o.getBlockZ();
+        // clear volume
+        for (int x = -10; x <= 10; x++)
+            for (int z = -10; z <= 10; z++)
+                for (int y = -8; y <= 12; y++)
+                    setAir(w, cx + x, cy + y, cz + z);
+
+        String style = m.style == null ? "" : m.style;
+        switch (style) {
+            case "crypt" -> buildCryptBay(m, w, cx, cy, cz);
+            case "gallery" -> buildGalleryBay(m, w, cx, cy, cz);
+            case "bunker" -> buildBunkerBay(m, w, cx, cy, cz);
+            case "web" -> buildWebBay(m, w, cx, cy, cz);
+            case "totem" -> buildTotemBay(m, w, cx, cy, cz);
+            case "forge" -> buildForgeBay(m, w, cx, cy, cz);
+            case "cells" -> buildCellBay(m, w, cx, cy, cz);
+            case "arena" -> buildArenaBay(m, w, cx, cy, cz);
+            case "aqua" -> buildAquaBay(m, w, cx, cy, cz);
+            case "brutal" -> buildBrutalBay(m, w, cx, cy, cz);
+            case "barn" -> buildBarnBay(m, w, cx, cy, cz);
+            // legacy aliases from 2.4 configs
+            case "feet" -> buildGalleryBay(m, w, cx, cy, cz);
+            case "pad" -> buildCryptBay(m, w, cx, cy, cz);
+            case "spider" -> buildWebBay(m, w, cx, cy, cz);
+            case "enderman" -> buildTotemBay(m, w, cx, cy, cz);
+            case "blaze" -> buildForgeBay(m, w, cx, cy, cz);
+            case "slime" -> buildCellBay(m, w, cx, cy, cz);
+            case "water" -> buildAquaBay(m, w, cx, cy, cz);
+            case "pen" -> buildBarnBay(m, w, cx, cy, cz);
+            default -> buildCryptBay(m, w, cx, cy, cz);
+        }
+        // per-bay environment extras (never reusable "copies")
+        applyThemeBlocks(m, w, cx, cy, cz);
+        finishBayCommon(m, w, cx, cy, cz);
+    }
+
+    /* ---------- shared building blocks ---------- */
+
+    private void setSlab(World w, int x, int y, int z, Material mat, boolean topHalf) {
+        Block b = w.getBlockAt(x, y, z);
+        b.setType(mat, false);
+        try {
+            Slab s = (Slab) b.getBlockData();
+            s.setType(topHalf ? Slab.Type.TOP : Slab.Type.BOTTOM);
+            b.setBlockData(s, false);
+        } catch (Throwable ignored) {}
+    }
+
+    private void setHopperFacing(World w, int x, int y, int z, BlockFace f) {
+        Block b = w.getBlockAt(x, y, z);
+        b.setType(Material.HOPPER, false);
+        try {
+            org.bukkit.block.data.type.Hopper h = (org.bukkit.block.data.type.Hopper) b.getBlockData();
+            h.setFacing(f);
+            b.setBlockData(h, false);
+        } catch (Throwable ignored) {}
+    }
+
+    private void setChest(World w, int x, int y, int z, BlockFace facing) {
+        Block b = w.getBlockAt(x, y, z);
+        b.setType(Material.CHEST, false);
+        try {
+            org.bukkit.block.data.type.Chest c = (org.bukkit.block.data.type.Chest) b.getBlockData();
+            c.setFacing(facing);
+            c.setType(org.bukkit.block.data.type.Chest.Type.SINGLE);
+            b.setBlockData(c, false);
+        } catch (Throwable ignored) {}
+    }
+
+    private void fillBox(World w, int cx, int cy, int cz, int x0, int x1, int y0, int y1, int z0, int z1, Material mat) {
+        for (int x = x0; x <= x1; x++)
+            for (int y = y0; y <= y1; y++)
+                for (int z = z0; z <= z1; z++)
+                    w.getBlockAt(cx + x, cy + y, cz + z).setType(mat, false);
+    }
+
+    /**
+     * Shared kill cell v2 (2.5):
+     * - 3x3 hopper pit (x -1..1, z -3..-1), floor y=cy-1; every hopper faces SOUTH into
+     *   the chest row at z=0 (real hopper→hopper→chest chain, not "hope" placement).
+     * - Chest row at z=0, y=cy-1: front face exposed through a 1-high hole at y=cy-1 in
+     *   the front wall — the loot chests are clickable from the player trench.
+     * - Slab slit: bottom slab y=cy + air y=cy+1 + bottom slab y=cy+2 → 1.5 block
+     *   melee window; mobs can't pass, legs stay visible, head/eyes blocked.
+     * - Player trench z=+1..+3, floor y=cy-1 → eye ~0.6 below the slit top = safe.
+     */
+    private void killCell(World w, int cx, int cy, int cz, Material wall, boolean barred, boolean openTop) {
+        // pit floor hoppers chaining south
+        for (int x = -1; x <= 1; x++)
+            for (int z = -3; z <= -1; z++)
+                setHopperFacing(w, cx + x, cy - 1, cz + z, BlockFace.SOUTH);
+        // chest row (front faces the trench at z=+1)
+        placeDoubleChest(w, cx - 1, cy - 1, cz, BlockFace.SOUTH);
+        setChest(w, cx + 1, cy - 1, cz, BlockFace.SOUTH);
+        // pit walls
+        for (int y = -1; y <= (openTop ? 4 : 3); y++) {
+            for (int z = -4; z <= 1; z++) {
+                w.getBlockAt(cx - 2, cy + y, cz + z).setType(wall, false);
+                w.getBlockAt(cx + 2, cy + y, cz + z).setType(wall, false);
+            }
+            for (int x = -1; x <= 1; x++)
+                w.getBlockAt(cx + x, cy + y, cz - 4).setType(wall, false);
+        }
+        // front wall z=+1: chest face hole at y=cy-1, slab slit above
+        for (int x = -1; x <= 1; x++) {
+            w.getBlockAt(cx + x, cy + 0, cz + 1).setType(Material.AIR, false);
+        }
+        for (int x = -1; x <= 1; x++) {
+            setSlab(w, cx + x, cy, cz + 1, wall, false);      // bottom slab
+            setAir(w, cx + x, cy + 1, cz + 1);                 // 1.5 slit air
+            if (barred) w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.IRON_BARS, false);
+            setSlab(w, cx + x, cy + 2, cz + 1, wall, false);  // top half of window
+            for (int y = 3; y <= (openTop ? 5 : 4); y++)
+                w.getBlockAt(cx + x, cy + y, cz + 1).setType(wall, false);
+        }
+        // pit ceiling (light-tight) unless open-top arena
+        if (!openTop) {
+            for (int x = -2; x <= 2; x++)
+                for (int z = -4; z <= 0; z++)
+                    w.getBlockAt(cx + x, cy + 3, cz + z).setType(wall, false);
+        }
+        // trench + walkway: trench floor y=cy-1 (z +1..+3), walkway floor y=cy (z +4..+6)
+        for (int x = -3; x <= 3; x++) {
+            for (int z = 1; z <= 3; z++) {
+                w.getBlockAt(cx + x, cy - 1, cz + z).setType(Material.POLISHED_DEEPSLATE, false);
+                setAir(w, cx + x, cy, cz + z);
+                setAir(w, cx + x, cy + 1, cz + z);
+                setAir(w, cx + x, cy + 2, cz + z);
+            }
+            for (int z = 4; z <= 6; z++) {
+                w.getBlockAt(cx + x, cy, cz + z).setType(Material.SEA_LANTERN, false);
+                setAir(w, cx + x, cy + 1, cz + z);
+                setAir(w, cx + x, cy + 2, cz + z);
+            }
+            w.getBlockAt(cx + x, cy + 3, cz + 6).setType(wall, false); // porch roof edge
+        }
+        // trench side safety walls (keep mobs feeling caged, arrows blocked)
+        for (int y = 0; y <= 2; y++) {
+            w.getBlockAt(cx - 3, cy + y, cz + 1).setType(wall, false);
+            w.getBlockAt(cx + 3, cy + y, cz + 1).setType(wall, false);
+            w.getBlockAt(cx - 3, cy + y, cz + 3).setType(wall, false);
+            w.getBlockAt(cx + 3, cy + y, cz + 3).setType(wall, false);
+        }
+    }
+
+    private void setPos(MobDef m, World w, double x, double y, double z, String what) {
+        Location l = new Location(w, x, y, z);
+        if ("pad".equals(what)) m.killPad = l;
+        else if ("stand".equals(what)) m.stand = l;
+        else m.lootChest = l;
+    }
+
+    /* ---------- per-mob environments ---------- */
+
+    /** Zombie/Husk/Drowned/Witch — dark mossy crypt, 3-high, standard 1.5 slit. */
+    private void buildCryptBay(MobDef m, World w, int cx, int cy, int cz) {
+        Material wall = themeWall(m);
+        killCell(w, cx, cy, cz, wall, false, false);
+        // mossy crypt décor: cracked/mossy stone accents + candles
+        for (int[] p : new int[][]{{-2, -1, -3}, {2, -1, -2}, {-2, -1, 1}, {2, -1, 1}, {0, -2, -4}, {0, -2, -1}}) {
+            w.getBlockAt(cx + p[0], cy + p[1] + 3, cz + p[2]).setType(
+                    ((Math.abs(p[0]) + Math.abs(p[2])) & 1) == 0 ? Material.MOSSY_STONE_BRICKS : Material.MOSSY_COBBLESTONE, false);
+        }
+        w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.CANDLE, false);
+        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
+        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
+        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
+    }
+
+    /** Skeleton/Stray/Pillager — arrow gallery: bars in the slit + no-LoS slab, tall variant for withers. */
+    private void buildGalleryBay(MobDef m, World w, int cx, int cy, int cz) {
+        Material wall = themeWall(m);
+        killCell(w, cx, cy, cz, wall, true, false);
+        // arrow-proof decor: target blocks / arrow racks on back wall
+        for (int x = -1; x <= 1; x++)
+            w.getBlockAt(cx + x, cy + 1, cz - 4).setType(x == 0 ? Material.TARGET : Material.SCAFFOLDING, false);
+        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
+        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
+        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
+    }
+
+    /** Creeper — blast bunker: obsidian-lined pit, deeper trench, double slit. */
+    private void buildBunkerBay(MobDef m, World w, int cx, int cy, int cz) {
+        Material wall = Material.OBSIDIAN;
+        killCell(w, cx, cy, cz, wall, false, false);
+        // reinforce outer shell (plugin cancels explosion too — safety net)
+        fillBox(w, cx, cy, cz, -3, -3, -1, 4, -5, 1, Material.DEEPSLATE_BRICKS);
+        fillBox(w, cx, cy, cz, 3, 3, -1, 4, -5, 1, Material.DEEPSLATE_BRICKS);
+        fillBox(w, cx, cy, cz, -3, 3, -1, 4, -5, -5, Material.DEEPSLATE_BRICKS);
+        for (int x = -1; x <= 1; x++)
+            w.getBlockAt(cx + x, cy + 3, cz + 1).setType(Material.TRAPDOOR, false);
+        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
+        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
+        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
+    }
+
+    /** Spider/Cave Spider — web pit: fence-cage (spiders can't climb), trapdoor slit. */
+    private void buildWebBay(MobDef m, World w, int cx, int cy, int cz) {
+        killCell(w, cx, cy, cz, Material.STONE_BRICKS, false, false);
+        // replace climbable walls with fences (spiders can't scale) + cobweb accents
+        for (int y = 0; y <= 2; y++)
+            for (int z = -3; z <= 1; z++) {
+                w.getBlockAt(cx - 2, cy + y, cz + z).setType(Material.IRON_BARS, false);
+                w.getBlockAt(cx + 2, cy + y, cz + z).setType(Material.IRON_BARS, false);
+            }
+        for (int x = -1; x <= 1; x++)
+            for (int z = -3; z <= -1; z++) {
+                if (((x + z) & 1) == 0) w.getBlockAt(cx + x, cy + 1, cz + z).setType(Material.COBWEB, false);
+            }
+        // cobweb deco inside the pit only (slit stays slab/slab for melee)
+        for (int x = -1; x <= 1; x++)
+            w.getBlockAt(cx + x, cy + 2, cz - 4).setType(Material.COBWEB, false);
+        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
+        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
+        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
+    }
+
+    /** Enderman — obsidian totem: purple/end theme, carpet floor (no water), tall slit. */
+    private void buildTotemBay(MobDef m, World w, int cx, int cy, int cz) {
+        Material wall = Material.OBSIDIAN;
+        killCell(w, cx, cy, cz, wall, false, false);
+        // end theme: end stone slab floor inside pit, purple accent pillars
+        for (int x = -1; x <= 1; x++)
+            for (int z = -3; z <= -1; z++) {
+                setHopperFacing(w, cx + x, cy - 1, cz + z, BlockFace.SOUTH);
+            }
+        fillBox(w, cx, cy, cz, -2, -2, -1, 5, -4, 1, Material.PURPUR_PILLAR);
+        fillBox(w, cx, cy, cz, 2, 2, -1, 5, -4, 1, Material.PURPUR_PILLAR);
+        w.getBlockAt(cx, cy + 1, cz - 4).setType(Material.ENDER_CHEST, false);
+        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
+        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
+        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
+    }
+
+    /** Blaze — hell forge: nether bricks, magma floor accents, barred slit. */
+    private void buildForgeBay(MobDef m, World w, int cx, int cy, int cz) {
+        Material wall = Material.NETHER_BRICKS;
+        killCell(w, cx, cy, cz, wall, true, false);
+        fillBox(w, cx, cy, cz, -1, 1, 2, 2, -4, -4, Material.MAGMA_BLOCK);
+        for (int x = -1; x <= 1; x++)
+            w.getBlockAt(cx + x, cy + 1, cz - 4).setType(Material.NETHER_WART_BLOCK, false);
+        for (int y = 0; y <= 2; y++) {
+            w.getBlockAt(cx - 2, cy + y, cz + 1).setType(Material.IRON_BARS, false);
+            w.getBlockAt(cx + 2, cy + y, cz + 1).setType(Material.IRON_BARS, false);
+        }
+        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
+        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
+        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
+    }
+
+    /** Slime/Magma/Silverfish — 4 tiny glass cubbies (1x1x2), each with its own hopper chain. */
+    private void buildCellBay(MobDef m, World w, int cx, int cy, int cz) {
+        int[][] cells = {{-1, -3}, {-1, -1}, {1, -3}, {1, -1}};
+        // cell grid floor hoppers (all face south into their row chest)
+        for (int[] c : cells) {
+            setHopperFacing(w, cx + c[0], cy - 1, cz + c[1], BlockFace.SOUTH);
+            int bridge = c[1] + 1;
+            if (bridge < 0) setHopperFacing(w, cx + c[0], cy - 1, cz + bridge, BlockFace.SOUTH);
+        }
+        // chains to chests at z=0 (2 chest columns)
+        setChest(w, cx - 1, cy - 1, cz, BlockFace.SOUTH);
+        setChest(w, cx + 1, cy - 1, cz, BlockFace.SOUTH);
+        // glass cell walls + slit slats
+        for (int[] c : cells) {
+            for (int y = 0; y <= 1; y++) {
+                w.getBlockAt(cx + c[0], cy + y, cz + c[1] - 1).setType(Material.GLASS, false);
+                w.getBlockAt(cx + c[0] + (c[0] < 0 ? -1 : 1), cy + y, cz + c[1]).setType(Material.GLASS, false);
+                if (y == 0) setAir(w, cx + c[0], cy + y, cz + c[1] + 1);       // 1-high melee slit
+                else setSlab(w, cx + c[0], cy + y, cz + c[1] + 1, Material.STONE_BRICKS, false);
+                setAir(w, cx + c[0], cy + y, cz + c[1]);                        // cell interior air
+            }
+            w.getBlockAt(cx + c[0], cy + 2, cz + c[1]).setType(Material.GLASS, false);
+        }
+        // outer shell + player trench (same as killCell but no shared pit)
+        for (int x = -3; x <= 3; x++)
+            for (int z = 1; z <= 3; z++) {
+                w.getBlockAt(cx + x, cy - 1, cz + z).setType(Material.POLISHED_DEEPSLATE, false);
+                setAir(w, cx + x, cy, cz + z);
+                setAir(w, cx + x, cy + 1, cz + z);
+                setAir(w, cx + x, cy + 2, cz + z);
+            }
+        fillBox(w, cx, cy, cz, -4, 4, 2, 2, -4, 1, Material.STONE_BRICKS);
+        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
+        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
+        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
+    }
+
+    /** Phantom — open sky court: no ceiling, tall walls, player watches the dive line. */
+    private void buildArenaBay(MobDef m, World w, int cx, int cy, int cz) {
+        Material wall = Material.DEEPSLATE_BRICKS;
+        killCell(w, cx, cy, cz, wall, false, true);
+        // tall outer walls for dive containment
+        for (int y = 4; y <= 8; y++) {
+            for (int z = -5; z <= 2; z++) {
+                w.getBlockAt(cx - 3, cy + y, cz + z).setType(wall, false);
+                w.getBlockAt(cx + 3, cy + y, cz + z).setType(wall, false);
+            }
+            for (int x = -2; x <= 2; x++)
+                w.getBlockAt(cx + x, cy + y, cz - 5).setType(wall, false);
+        }
+        // light poles so the dive line is visible at night
+        for (int x = -2; x <= 2; x += 2) {
+            w.getBlockAt(cx + x, cy + 6, cz - 5).setType(Material.SEA_LANTERN, false);
+        }
+        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
+        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
+        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
+    }
+
+    /** Guardian/Squid/Glow Squid — aquarium: water pit, dry trench, bars window. */
+    private void buildAquaBay(MobDef m, World w, int cx, int cy, int cz) {
+        Material wall = Material.PRISMARINE_BRICKS;
+        killCell(w, cx, cy, cz, wall, true, false);
+        // water two layers above the hopper pit (mobs swim at body height)
+        for (int x = -1; x <= 1; x++)
+            for (int z = -3; z <= -1; z++) {
+                w.getBlockAt(cx + x, cy + 1, cz + z).setType(Material.WATER, false);
+                w.getBlockAt(cx + x, cy + 2, cz + z).setType(Material.WATER, false);
+            }
+        // kelp + sea pickle décor
+        for (int x = -1; x <= 1; x++)
+            w.getBlockAt(cx + x, cy + 1, cz - 4).setType(Material.KELP, false);
+        w.getBlockAt(cx, cy + 2, cz - 4).setType(Material.SEA_LANTERN, false);
+        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
+        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
+        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
+    }
+
+    /** Hoglin/Piglin — brutal pen: double-thick walls, wide slit, gold accents. */
+    private void buildBrutalBay(MobDef m, World w, int cx, int cy, int cz) {
+        Material wall = Material.BLACKSTONE;
+        killCell(w, cx, cy, cz, wall, true, false);
+        fillBox(w, cx, cy, cz, -3, 3, 3, 5, -5, 1, Material.BLACKSTONE_BRICKS);
+        for (int x = -1; x <= 1; x++) {
+            w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.IRON_BARS, false);
+        }
+        w.getBlockAt(cx, cy + 1, cz - 4).setType(Material.GOLD_BLOCK, false);
+        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
+        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
+        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
+    }
+
+    /** Animals — barn: sealed pen above iron-bars grate, player butchers from below. */
+    private void buildBarnBay(MobDef m, World w, int cx, int cy, int cz) {
+        Material wall = themeWall(m);
+        Material floor = themeFloor(m);
+        // pen at y+2, player under at y
+        for (int x = -4; x <= 4; x++)
+            for (int z = -4; z <= 4; z++) {
+                w.getBlockAt(cx + x, cy - 1, cz + z).setType(floor, false);
+                setAir(w, cx + x, cy, cz + z);
+                setAir(w, cx + x, cy + 1, cz + z);
+                boolean open = Math.abs(x) <= 2 && Math.abs(z) <= 2;
+                if (open) w.getBlockAt(cx + x, cy + 2, cz + z).setType(Material.IRON_BARS, false);
+                else w.getBlockAt(cx + x, cy + 2, cz + z).setType(floor, false);
+                boolean edge = Math.abs(x) == 4 || Math.abs(z) == 4;
+                if (edge) {
+                    w.getBlockAt(cx + x, cy + 3, cz + z).setType(wall, false);
+                    w.getBlockAt(cx + x, cy + 4, cz + z).setType(wall, false);
+                } else {
+                    setAir(w, cx + x, cy + 3, cz + z);
+                    setAir(w, cx + x, cy + 4, cz + z);
+                }
+                w.getBlockAt(cx + x, cy + 5, cz + z).setType(wall, false); // sealed roof (chicken-safe)
+            }
+        // hoppers BETWEEN the under-floor and the grate — chain south to the chest line
+        for (int x = -3; x <= 3; x++)
+            for (int z = -3; z <= 3; z++) {
+                if (Math.abs(x) <= 2 && Math.abs(z) <= 2)
+                    setHopperFacing(w, cx + x, cy + 1, cz + z, BlockFace.SOUTH);
+            }
+        // chest line at z=+3, y=cy+1 — hopper chain feeds it; its front face (z=+4)
+        // is clickable from the under-floor walkway
+        placeDoubleChest(w, cx - 1, cy + 1, cz + 3, BlockFace.SOUTH);
+        setChest(w, cx + 1, cy + 1, cz + 3, BlockFace.SOUTH);
+        for (int x = -1; x <= 1; x++)
+            setAir(w, cx + x, cy + 2, cz + 3);
+        // barn décor
+        w.getBlockAt(cx, cy + 4, cz).setType(Material.SEA_LANTERN, false);
+        for (int x = -4; x <= 4; x += 2)
+            w.getBlockAt(cx + x, cy + 4, cz - 4).setType(Material.HAY_BLOCK, false);
+        setPos(m, w, cx + 0.5, cy + 0.1, cz + 1.5, "stand");
+        setPos(m, w, cx + 0.5, cy + 2.1, cz + 1.5, "pad");
+        setPos(m, w, cx + 0.5, cy + 1, cz + 3.5, "loot");
+    }
+
+    private Material themeWall(MobDef m) {
+        return switch (m.theme) {
+            case "nether" -> Material.NETHER_BRICKS;
+            case "end" -> Material.OBSIDIAN;
+            case "ocean" -> Material.PRISMARINE_BRICKS;
+            case "ice" -> Material.PACKED_ICE;
+            case "desert" -> Material.SANDSTONE;
+            case "swamp" -> Material.MOSSY_COBBLESTONE;
+            case "mine" -> Material.DEEPSLATE_BRICKS;
+            case "raid" -> Material.DARK_OAK_LOG;
+            case "village" -> Material.OAK_LOG;
+            case "animal" -> Material.OAK_PLANKS;
+            default -> Material.STONE_BRICKS;
+        };
+    }
+    private Material themeFloor(MobDef m) {
+        return switch (m.theme) {
+            case "nether" -> Material.NETHERRACK;
+            case "end" -> Material.END_STONE;
+            case "ocean" -> Material.PRISMARINE;
+            case "ice" -> Material.SNOW_BLOCK;
+            case "desert" -> Material.SAND;
+            case "swamp" -> Material.MUD;
+            case "animal", "village" -> Material.GRASS_BLOCK;
+            default -> Material.DEEPSLATE_TILES;
+        };
+    }
+
+    private void applyThemeBlocks(MobDef m, World w, int cx, int cy, int cz) {
+        Material accent = switch (m.theme) {
+            case "nether" -> Material.SHROOMLIGHT;
+            case "end" -> Material.PURPLE_STAINED_GLASS;
+            case "ocean" -> Material.SEA_LANTERN;
+            case "ice" -> Material.PACKED_ICE;
+            case "swamp" -> Material.MOSS_BLOCK;
+            case "desert" -> Material.CACTUS;
+            case "mine" -> Material.DEEPSLATE_TILES;
+            default -> Material.SEA_LANTERN;
+        };
+        for (int[] d : new int[][]{{-7, -7}, {-7, 7}, {7, -7}, {7, 7}}) {
+            w.getBlockAt(cx + d[0], cy, cz + d[1]).setType(accent, false);
+        }
+    }
+
+    private void finishBayCommon(MobDef m, World w, int cx, int cy, int cz) {
+        // stack spawner display east of bay
+        w.getBlockAt(cx + 6, cy, cz - 2).setType(Material.OBSIDIAN, false);
+        w.getBlockAt(cx + 6, cy + 1, cz - 2).setType(Material.SPAWNER, false);
+        m.stackBlock = new Location(w, cx + 6, cy + 1, cz - 2);
+        if (w.getBlockAt(cx + 6, cy + 1, cz - 2).getState() instanceof CreatureSpawner cs) {
+            try {
+                cs.setSpawnedType(m.entity);
+                cs.setDelay(Integer.MAX_VALUE / 4);
+                try { cs.setSpawnCount(0); cs.setMinSpawnDelay(99999); cs.setMaxSpawnDelay(99999); } catch (Throwable ignored) {}
+                cs.update(true, false);
+            } catch (Throwable ignored) {}
+        }
+        // community chest at walkway entry (reachable)
+        placeDoubleChest(w, cx - 4, cy, cz + 6, BlockFace.SOUTH);
+        m.communityChest = new Location(w, cx - 4, cy, cz + 6);
+        Block baySign = w.getBlockAt(cx - 4, cy + 1, cz + 6);
+        baySign.setType(Material.OAK_SIGN, false);
+        writeSign(baySign, ChatColor.GOLD + "COMMUNITY", ChatColor.stripColor(m.display),
+                ChatColor.WHITE + "Donate loot", ChatColor.GRAY + "→ stack");
+        // name plate + hit pad marker
+        Block name = w.getBlockAt(cx, cy + 1, cz + 7);
+        name.setType(Material.OAK_SIGN, false);
+        writeSign(name, ChatColor.GOLD + "ZONE", ChatColor.stripColor(m.display),
+                ChatColor.GRAY + m.style + "/" + m.theme, ChatColor.AQUA + "HIT ▶");
+        Block hitpad = w.getBlockAt(cx, cy, cz + 4);
+        hitpad.setType(Material.LIME_WOOL, false);
+        writeSign(w.getBlockAt(cx, cy + 1, cz + 4), ChatColor.GREEN + "HIT", ChatColor.WHITE + "HERE",
+                ChatColor.GRAY + "stand ↓", ChatColor.YELLOW + "/mobfarm pick");
+        // loot chest marker above chest row
+        Block lootSign = w.getBlockAt(cx, cy + 1, cz + 2);
+        lootSign.setType(Material.OAK_SIGN, false);
+        writeSign(lootSign, ChatColor.GOLD + "LOOT", ChatColor.WHITE + "↓ chest",
+                ChatColor.GRAY + "hopper fed", ChatColor.YELLOW + "collect ↓");
+        // ladder back to path
+        for (int y = 0; y <= 3; y++) {
+            w.getBlockAt(cx + 6, cy + y, cz + 6).setType(Material.LADDER, false);
+        }
+        if (m.stand == null) m.stand = new Location(w, cx + 0.5, cy + 1, cz + 6.5);
+        if (m.killPad == null) m.killPad = new Location(w, cx + 0.5, cy - 1, cz + 0.5);
+        if (m.lootChest == null) m.lootChest = new Location(w, cx + 0.5, cy - 1, cz + 0.5);
+    }
+
+    private void placeDoubleChest(World w, int x, int y, int z, BlockFace facing) {
+        Block b1 = w.getBlockAt(x, y, z);
+        Block b2 = w.getBlockAt(x + 1, y, z);
+        b1.setType(Material.CHEST, false);
+        b2.setType(Material.CHEST, false);
+        try {
+            org.bukkit.block.data.type.Chest c1 = (org.bukkit.block.data.type.Chest) b1.getBlockData();
+            org.bukkit.block.data.type.Chest c2 = (org.bukkit.block.data.type.Chest) b2.getBlockData();
+            c1.setFacing(facing); c2.setFacing(facing);
+            c1.setType(org.bukkit.block.data.type.Chest.Type.LEFT);
+            c2.setType(org.bukkit.block.data.type.Chest.Type.RIGHT);
+            b1.setBlockData(c1, false); b2.setBlockData(c2, false);
+        } catch (Throwable ignored) {}
+    }
+
+    private void writeSign(Block b, String l0, String l1, String l2, String l3) {
+        if (!(b.getState() instanceof Sign si)) return;
+        try {
+            si.getSide(Side.FRONT).setLine(0, nz(l0));
+            si.getSide(Side.FRONT).setLine(1, nz(l1));
+            si.getSide(Side.FRONT).setLine(2, nz(l2));
+            si.getSide(Side.FRONT).setLine(3, nz(l3));
+        } catch (Throwable t) {
+            try {
+                si.setLine(0, nz(l0)); si.setLine(1, nz(l1)); si.setLine(2, nz(l2)); si.setLine(3, nz(l3));
+            } catch (Throwable ignored) {}
+        }
+        si.update(true, false);
+    }
+    private static String nz(String s) { return s == null ? "" : s; }
+    private static void setAir(World w, int x, int y, int z) {
+        w.getBlockAt(x, y, z).setType(Material.AIR, false);
+    }
+
+    private void setupCellStack(Session s) {
+        MobDef m = mobs.get(s.mobId);
+        if (m == null || center == null) return;
+        if (m.stackBlock == null) computeGeom(m);
+        World w = center.getWorld();
+        Block b = m.stackBlock.getBlock();
+        b.getRelative(0, -1, 0).setType(Material.OBSIDIAN, false);
+        b.setType(Material.SPAWNER, false);
+        s.stackLoc = b.getLocation().clone();
+        if (b.getState() instanceof CreatureSpawner cs) {
+            try {
+                cs.setSpawnedType(m.entity);
+                cs.setDelay(Integer.MAX_VALUE / 4);
+                try { cs.setSpawnCount(0); cs.setMinSpawnDelay(99999); cs.setMaxSpawnDelay(99999); } catch (Throwable ignored) {}
+                cs.update(true, false);
+            } catch (Throwable ignored) {}
+        }
+        spawnStackHolo(s);
+    }
+
+    private void spawnStackHolo(Session s) {
+        removeStackHolo(s);
+        if (s.stackLoc == null) return;
+        Location loc = s.stackLoc.clone().add(0.5, 1.4, 0.5);
+        int n = stackCount(s);
+        MobDef m = mobs.get(s.mobId);
+        String name = m != null ? ChatColor.stripColor(m.display) : s.mobId;
+        String text = ChatColor.GOLD + "" + ChatColor.BOLD + "STACK x" + n
+                + "\n" + ChatColor.WHITE + name
+                + "\n" + ChatColor.GRAY + "/mobfarm buy";
+        s.stackHolo = loc.getWorld().spawn(loc, TextDisplay.class, d -> {
+            d.setText(text); d.setBillboard(Display.Billboard.CENTER); d.setShadowed(true);
+            try { d.setDefaultBackground(false); d.setBackgroundColor(Color.fromARGB(160, 10, 10, 30)); } catch (Throwable ignored) {}
+            d.setLineWidth(120);
+            var tr = d.getTransformation(); tr.getScale().set(0.9f); d.setTransformation(tr);
+            d.setPersistent(false);
+            d.getPersistentDataContainer().set(stackHoloKey, PersistentDataType.BYTE, (byte) 1);
+        });
+    }
+
+    private void removeStackHolo(Session s) {
+        if (s.stackHolo != null && !s.stackHolo.isDead()) s.stackHolo.remove();
+        s.stackHolo = null;
+        if (s.stackLoc != null) {
+            for (Entity e : s.stackLoc.getWorld().getNearbyEntities(s.stackLoc.clone().add(0.5, 1.4, 0.5), 3, 3, 3)) {
+                if (e instanceof TextDisplay td
+                        && td.getPersistentDataContainer().has(stackHoloKey, PersistentDataType.BYTE)) td.remove();
+            }
+        }
+    }
+
+    private void startSpawnTask(Session s) {
+        if (s.spawnTask != null) s.spawnTask.cancel();
+        if (!s.unlocked) return;
+        MobDef m = mobs.get(s.mobId);
+        if (m == null) return;
+        final Location o = origin(m);
+        final long spawnEvery = Math.max(20L, getConfig().getLong("stack-spawn-interval-ticks", 40L));
+        final int maxMobs = getConfig().getInt("max-mobs-in-cell", 12);
+        s.spawnTask = new BukkitRunnable() {
+            long age = 0;
+            @Override public void run() {
+                age += 5;
+                if (!data.getBoolean("built", false)) { cancel(); return; }
+                Session live = sessions.get(s.owner);
+                if (live == null || live != s || s.endsAtMs < System.currentTimeMillis()) { cancel(); return; }
+                MobDef md = mobs.get(s.mobId); if (md == null) return;
+                Player owner = Bukkit.getPlayer(s.owner);
+                if (owner == null || !owner.isOnline()) return;
+                // only spawn when player near THIS bay
+                if (owner.getWorld() != o.getWorld() || owner.getLocation().distanceSquared(o) > 40 * 40) return;
+
+                World w = o.getWorld();
+                boolean ai = mobAiEnabled();
+                Location pad = md.killPad != null ? md.killPad.clone() : o.clone().add(0.5, -1, 0.5);
+
+                int alive = 0;
+                for (LivingEntity le : w.getLivingEntities()) {
+                    if (le instanceof Player) continue;
+                    if (!le.getPersistentDataContainer().has(farmMobKey, PersistentDataType.BYTE)) continue;
+                    Location loc = le.getLocation();
+                    if (loc.getWorld() != w || loc.distanceSquared(o) > 18 * 18) continue;
+                    alive++;
+                    try { le.setAI(ai); } catch (Throwable ignored) {}
+                    if (sunSafe()) {
+                        try { le.setFireTicks(0); } catch (Throwable ignored) {}
+                    }
+                    // pin / contain
+                    containMob(le, md, pad, ai);
+                }
+
+                if (age % spawnEvery != 0) return;
+                if (alive >= maxMobs) return;
+                int stack = stackCount(s);
+                int per = Math.max(1, getConfig().getInt("spawn-per-stack", 1));
+                int want = Math.min(Math.min(stack * per, maxMobs - alive), Math.max(1, Math.min(3, stack)));
+                for (int i = 0; i < want; i++) {
+                    try {
+                        Location at = pad.clone().add(
+                                (ThreadLocalRandom.current().nextDouble() - 0.5) * 0.8,
+                                0.1,
+                                (ThreadLocalRandom.current().nextDouble() - 0.5) * 0.8);
+                        if (at.getBlock().getType().isSolid()) at.add(0, 0.5, 0);
+                        Entity ent = w.spawnEntity(at, md.entity);
+                        if (ent instanceof LivingEntity le) {
+                            tagFarmMob(le, owner, ai, md);
+                        }
+                    } catch (Throwable t) {
+                        getLogger().warning("Spawn " + md.entity + ": " + t.getMessage());
+                        break;
+                    }
+                }
+            }
+        }.runTaskTimer(this, 15L, 5L);
+    }
+
+    private void tagFarmMob(LivingEntity le, Player owner, boolean ai, MobDef md) {
+        try {
+            if (le instanceof Ageable ag && !ag.isAdult()) ag.setAdult();
+            if (le.getVehicle() != null) le.getVehicle().remove();
+            le.eject();
+            for (Entity pass : new ArrayList<>(le.getPassengers())) pass.remove();
+        } catch (Throwable ignored) {}
+        // force small slimes / magma
+        try {
+            if (le instanceof org.bukkit.entity.Slime slime) slime.setSize(1);
+        } catch (Throwable ignored) {}
+        // piglins not zombified hostility dampen
+        try {
+            if (le instanceof org.bukkit.entity.Piglin piglin) {
+                piglin.setImmuneToZombification(true);
+                piglin.setBaby(false);
+            }
+        } catch (Throwable ignored) {}
+        le.getPersistentDataContainer().set(farmMobKey, PersistentDataType.BYTE, (byte) 1);
+        le.setRemoveWhenFarAway(true);
+        le.setCanPickupItems(false);
+        try { le.setAI(ai); } catch (Throwable ignored) {}
+        if (sunSafe()) try { le.setFireTicks(0); } catch (Throwable ignored) {}
+        if (owner != null) {
+            le.getPersistentDataContainer().set(lastHitKey, PersistentDataType.STRING, owner.getUniqueId().toString());
+        }
+        try {
+            if (le.getAttribute(Attribute.FOLLOW_RANGE) != null)
+                le.getAttribute(Attribute.FOLLOW_RANGE).setBaseValue(ai ? 12 : 2);
+        } catch (Throwable ignored) {}
+        // enderman: no teleport — keep AI but cancel teleport event separately; reduce movement
+        if (md.style.equals("enderman") || md.style.equals("totem")) {
+            try { le.setAI(true); } catch (Throwable ignored) {}
+        }
+        // creeper charged false
+        if (le instanceof org.bukkit.entity.Creeper cr) {
+            try { cr.setPowered(false); cr.setMaxFuseTicks(80); } catch (Throwable ignored) {}
+        }
+        le.setVelocity(new Vector(0, -0.1, 0));
+    }
+
+    private void containMob(LivingEntity le, MobDef md, Location pad, boolean ai) {
+        Location loc = le.getLocation();
+        double dist = loc.distanceSquared(pad);
+        if (dist > 36) {
+            le.teleport(pad.clone().add(
+                    (ThreadLocalRandom.current().nextDouble() - 0.5) * 0.5,
+                    0,
+                    (ThreadLocalRandom.current().nextDouble() - 0.5) * 0.5));
+            return;
+        }
+        if (!ai) {
+            double pullX = pad.getX() - loc.getX();
+            double pullZ = pad.getZ() - loc.getZ();
+            le.setVelocity(new Vector(pullX * 0.15, Math.min(-0.02, le.getVelocity().getY()), pullZ * 0.15));
+        } else if (dist > 4) {
+            Vector v = pad.toVector().subtract(loc.toVector());
+            if (v.lengthSquared() > 0.01) {
+                v.setY(Math.max(-0.05, Math.min(0.05, v.getY())));
+                v.normalize().multiply(0.15);
+                le.setVelocity(le.getVelocity().multiply(0.5).add(v));
+            }
+        }
+        // spiders: cancel climb by pushing down
+        if ((md.style.equals("spider") || md.style.equals("web")) && le.getVelocity().getY() > 0.1) {
+            le.setVelocity(le.getVelocity().setY(-0.1));
+        }
+    }
+
+    private void clearSessionMobs(Session s) {
+        MobDef m = mobs.get(s.mobId);
+        if (m == null || center == null) return;
+        Location o = origin(m);
+        for (LivingEntity le : o.getWorld().getLivingEntities()) {
+            if (le instanceof Player) continue;
+            if (le.getLocation().distanceSquared(o) < 20 * 20
+                    && le.getPersistentDataContainer().has(farmMobKey, PersistentDataType.BYTE))
+                le.remove();
+        }
+    }
+
+    // ---------------- HUD ----------------
+    private void startHud(Session s) {
+        stopHud(s);
+        if (!sessionHud()) return;
+        Player p = Bukkit.getPlayer(s.owner);
+        String title = color(getConfig().getString("session-hud-title",
+                "&6MobFarm &7| &e{mm}:{ss} &7left &8| &f{mob} &8| &ex{stack}"));
+        s.hud = Bukkit.createBossBar(formatHud(title, s), BarColor.YELLOW, BarStyle.SEGMENTED_10);
+        s.hud.setProgress(1.0);
+        s.hud.setVisible(true);
+        if (p != null && p.isOnline()) s.hud.addPlayer(p);
+        s.hudTask = new BukkitRunnable() {
+            @Override public void run() {
+                Session live = sessions.get(s.owner);
+                if (live == null || live != s) { cancel(); return; }
+                if (s.endsAtMs - System.currentTimeMillis() <= 0) { cancel(); return; }
+                updateHud(s);
+            }
+        }.runTaskTimer(this, 10L, 20L);
+    }
+
+    private void updateHud(Session s) {
+        if (s.hud == null) return;
+        long leftMs = Math.max(0, s.endsAtMs - System.currentTimeMillis());
+        long total = Math.max(1L, getConfig().getInt("session-minutes", 30) * 60_000L);
+        s.hud.setProgress(Math.max(0, Math.min(1, leftMs / (double) total)));
+        String title = color(getConfig().getString("session-hud-title",
+                "&6MobFarm &7| &e{mm}:{ss} &7left &8| &f{mob} &8| &ex{stack}"));
+        s.hud.setTitle(formatHud(title, s));
+        Player p = Bukkit.getPlayer(s.owner);
+        if (p == null || !p.isOnline()) { s.hud.removeAll(); return; }
+        boolean near = inFarmProtect(p.getLocation()) || (center != null
+                && p.getWorld() == center.getWorld() && p.getLocation().distanceSquared(center) < 100 * 100);
+        if (near) {
+            if (!s.hud.getPlayers().contains(p)) s.hud.addPlayer(p);
+            s.hud.setVisible(true);
+        } else s.hud.removePlayer(p);
+    }
+
+    private String formatHud(String tmpl, Session s) {
+        long left = Math.max(0, (s.endsAtMs - System.currentTimeMillis()) / 1000L);
+        return tmpl.replace("{mm}", String.format("%02d", left / 60))
+                .replace("{ss}", String.format("%02d", left % 60))
+                .replace("{stack}", String.valueOf(stackCount(s)))
+                .replace("{mob}", s.unlocked ? s.mobId : "locked");
+    }
+
+    private void stopHud(Session s) {
+        if (s.hudTask != null) { try { s.hudTask.cancel(); } catch (Throwable ignored) {} s.hudTask = null; }
+        if (s.hud != null) {
+            try { s.hud.setVisible(false); s.hud.removeAll(); } catch (Throwable ignored) {}
+            s.hud = null;
+        }
+    }
+
+    private void spawnHubHolo() {
+        if (center == null) return;
+        World w = center.getWorld();
+        Location loc = center.clone().add(0, 3.2, 4);
+        for (var e : w.getNearbyEntities(loc, 16, 10, 16)) {
+            if (e instanceof TextDisplay td && td.getPersistentDataContainer().has(holoKey, PersistentDataType.BYTE))
+                td.remove();
+        }
+        String line = ChatColor.GOLD + "" + ChatColor.BOLD + "MOBFARM HUB"
+                + "\n" + ChatColor.WHITE + "Community chest ↓"
+                + "\n" + ChatColor.YELLOW + communityCoins + "/" + communityTarget
+                + "\n" + ChatColor.AQUA + "/mobfarm enter · pick · prices"
+                + "\n" + ChatColor.GRAY + "base stack x" + baseSpawners();
+        w.spawn(loc, TextDisplay.class, d -> {
+            d.setText(line); d.setBillboard(Display.Billboard.CENTER); d.setShadowed(true);
+            try { d.setDefaultBackground(false); d.setBackgroundColor(Color.fromARGB(180, 20, 40, 20)); } catch (Throwable ignored) {}
+            d.setLineWidth(200);
+            var tr = d.getTransformation(); tr.getScale().set(1.2f); d.setTransformation(tr);
+            d.setPersistent(true);
+            d.getPersistentDataContainer().set(holoKey, PersistentDataType.BYTE, (byte) 1);
+        });
+    }
+
+    private void refreshBayHolos() {
+        for (MobDef m : mobs.values()) spawnBayHolo(m);
+    }
+
+    private void spawnBayHolo(MobDef m) {
+        if (m.communityChest == null || center == null) return;
+        Location loc = m.communityChest.clone().add(0.5, 2.2, 0.5);
+        World w = loc.getWorld();
+        String name = ChatColor.stripColor(m.display);
+        for (var e : w.getNearbyEntities(loc, 3, 4, 3)) {
+            if (e instanceof TextDisplay td && td.getPersistentDataContainer().has(holoKey, PersistentDataType.BYTE)) {
+                String t = td.getText();
+                if (t != null && t.contains(name)) td.remove();
+            }
+        }
+        String line = ChatColor.GOLD + "" + ChatColor.BOLD + "COMMUNITY"
+                + "\n" + m.display
+                + "\n" + ChatColor.YELLOW + communityCoins + "/" + communityTarget;
+        w.spawn(loc, TextDisplay.class, d -> {
+            d.setText(line); d.setBillboard(Display.Billboard.CENTER); d.setShadowed(true);
+            try { d.setDefaultBackground(false); d.setBackgroundColor(Color.fromARGB(170, 20, 40, 20)); } catch (Throwable ignored) {}
+            d.setLineWidth(140);
+            var tr = d.getTransformation(); tr.getScale().set(1.0f); d.setTransformation(tr);
+            d.setPersistent(true);
+            d.getPersistentDataContainer().set(holoKey, PersistentDataType.BYTE, (byte) 1);
+        });
+    }
+
+    // ---------------- clear / purge ----------------
+    private void stopAllFarmActivity(String reason) {
+        for (UUID u : new ArrayList<>(sessions.keySet())) endSession(u, false);
+        getLogger().info("stopAllFarmActivity: " + reason);
+    }
+
+    private int purgeFarmEntities(World w, Location around, double radius) {
+        int mobsN = 0, holos = 0;
+        for (Entity e : w.getEntities()) {
+            if (e.getLocation().distanceSquared(around) > radius * radius) continue;
+            if (e instanceof TextDisplay td) {
+                boolean ours = td.getPersistentDataContainer().has(holoKey, PersistentDataType.BYTE)
+                        || td.getPersistentDataContainer().has(stackHoloKey, PersistentDataType.BYTE);
+                String t = null; try { t = td.getText(); } catch (Throwable ignored) {}
+                if (ours || (t != null && (t.contains("STACK") || t.contains("MOBFARM") || t.contains("COMMUNITY")))) {
+                    td.remove(); holos++;
+                }
+                continue;
+            }
+            if (e instanceof LivingEntity le && !(e instanceof Player)) {
+                if (le.getPersistentDataContainer().has(farmMobKey, PersistentDataType.BYTE)) {
+                    le.remove(); mobsN++;
+                }
+            }
+        }
+        return mobsN + holos;
+    }
+
+    private void clearComplex(Player admin) {
+        if (center == null) { admin.sendMessage(ChatColor.RED + "No center."); return; }
+        stopAllFarmActivity("clear");
+        World w = center.getWorld();
+        recomputeAABB();
+        int ents = purgeFarmEntities(w, center.clone(), 250);
+        int n = wipeBox(w, minX - 5, minY - 5, minZ - 5, maxX + 5, maxY + 5, maxZ + 5);
+        ents += purgeFarmEntities(w, center.clone(), 250);
+        data.set("built", false); saveData();
+        admin.sendMessage(ChatColor.YELLOW + "Cleared " + n + " blocks + " + ents + " entities.");
+    }
+
+    private void clearHere(Player admin, int radius) {
+        radius = Math.max(8, Math.min(200, radius));
+        stopAllFarmActivity("clearhere");
+        Location c = admin.getLocation();
+        int ents = purgeFarmEntities(c.getWorld(), c, radius);
+        int n = wipeBox(c.getWorld(), c.getBlockX() - radius, c.getBlockY() - radius, c.getBlockZ() - radius,
+                c.getBlockX() + radius, c.getBlockY() + radius, c.getBlockZ() + radius);
+        ents += purgeFarmEntities(c.getWorld(), c, radius);
+        data.set("built", false); saveData();
+        admin.sendMessage(ChatColor.YELLOW + "clearhere r=" + radius + " → " + n + " blocks, " + ents + " ents.");
+    }
+
+    private void purgeOnly(Player admin, int radius) {
+        radius = Math.max(8, Math.min(250, radius));
+        stopAllFarmActivity("purge");
+        int ents = purgeFarmEntities(admin.getWorld(), admin.getLocation(), radius);
+        admin.sendMessage(ChatColor.YELLOW + "Purge r=" + radius + ": " + ents);
+    }
+
+    private int wipeBox(World w, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        int n = 0;
+        for (int x = minX; x <= maxX; x++)
+            for (int z = minZ; z <= maxZ; z++)
+                for (int y = minY; y <= maxY; y++) {
+                    Block b = w.getBlockAt(x, y, z);
+                    Material t = b.getType();
+                    if (t != Material.AIR && t != Material.CAVE_AIR && t != Material.VOID_AIR) {
+                        b.setType(Material.AIR, false); n++;
+                    }
+                }
+        return n;
+    }
+
+    // ---------------- protection (r=50 around farm) ----------------
+    private boolean canBypassProtect(Player p) {
+        return p != null && (p.hasPermission("mavomobfarm.bypass.protect")
+                || p.hasPermission("mavomobfarm.admin")
+                || p.getGameMode() == GameMode.CREATIVE);
+    }
+
+    private boolean protectCancel(Player p, Location loc) {
+        if (p != null && canBypassProtect(p)) return false;
+        return inFarmProtect(loc);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onBreak(BlockBreakEvent e) {
+        if (protectCancel(e.getPlayer(), e.getBlock().getLocation())) {
+            e.setCancelled(true);
+            e.getPlayer().sendMessage(ChatColor.RED + "MobFarm is protected.");
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onPlace(BlockPlaceEvent e) {
+        if (protectCancel(e.getPlayer(), e.getBlock().getLocation())) {
+            e.setCancelled(true);
+            e.getPlayer().sendMessage(ChatColor.RED + "MobFarm is protected.");
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onBucketEmpty(PlayerBucketEmptyEvent e) {
+        if (protectCancel(e.getPlayer(), e.getBlock().getLocation())) e.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onBucketFill(PlayerBucketFillEvent e) {
+        if (protectCancel(e.getPlayer(), e.getBlock().getLocation())) e.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onIgnite(BlockIgniteEvent e) {
+        if (e.getPlayer() != null && protectCancel(e.getPlayer(), e.getBlock().getLocation())) e.setCancelled(true);
+        else if (e.getPlayer() == null && inFarmProtect(e.getBlock().getLocation())) e.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onExplode(EntityExplodeEvent e) {
+        if (center != null && inFarmProtect(e.getEntity().getLocation())) {
+            e.blockList().clear();
+            e.setYield(0f);
+        }
+        // also strip farm blocks from any explosion list
+        e.blockList().removeIf(b -> inFarmProtect(b.getLocation()));
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onInteractProtect(PlayerInteractEvent e) {
+        if (e.getClickedBlock() == null) return;
+        Material t = e.getClickedBlock().getType();
+        // allow chests, barrels, ender chests, signs, buttons used for farm
+        if (t == Material.CHEST || t == Material.TRAPPED_CHEST || t == Material.BARREL
+                || t.name().contains("SIGN") || t == Material.HOPPER) return;
+        if (e.getAction() == org.bukkit.event.block.Action.PHYSICAL) return;
+        if (protectCancel(e.getPlayer(), e.getClickedBlock().getLocation())
+                && e.getAction().isRightClick()
+                && e.getClickedBlock().getType().isInteractable()) {
+            // allow nothing else that changes blocks; doors ok? keep locked — only chests
+            if (t != Material.CHEST && t != Material.TRAPPED_CHEST && t != Material.BARREL) {
+                // still allow opening nothing destructive — cancel lever/door break style
+            }
+        }
+    }
+
+    // ---------------- blacklist wild/portal dumps ----------------
+    private boolean canBypassBlacklist(Player p) {
+        return p != null && (p.hasPermission("mavomobfarm.bypass.blacklist")
+                || p.hasPermission("mavomobfarm.admin"));
+    }
+
+    private boolean isFarmTeleportAllowed(Player p) {
+        // active enter / session teleport
+        return sessions.containsKey(p.getUniqueId()) || pending.containsKey(p.getUniqueId());
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onTeleportBlacklist(PlayerTeleportEvent e) {
+        if (!getConfig().getBoolean("blacklist.enabled", true)) return;
+        if (canBypassBlacklist(e.getPlayer())) return;
+        Location to = e.getTo();
+        if (to == null || !inBlacklist(to)) return;
+        PlayerTeleportEvent.TeleportCause c = e.getCause();
+        // allow plugin/commands for farm enter, and UNKNOWN from our plugin teleports
+        if (c == PlayerTeleportEvent.TeleportCause.PLUGIN
+                || c == PlayerTeleportEvent.TeleportCause.COMMAND
+                || c == PlayerTeleportEvent.TeleportCause.UNKNOWN) {
+            // still block NETHER/END portal style if flagged as PLUGIN from portal — portals use NETHER_PORTAL
+            return;
+        }
+        if (c == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL
+                || c == PlayerTeleportEvent.TeleportCause.END_PORTAL
+                || c == PlayerTeleportEvent.TeleportCause.END_GATEWAY
+                || c == PlayerTeleportEvent.TeleportCause.SPECTATE
+                || c == PlayerTeleportEvent.TeleportCause.CHORUS_FRUIT
+                || c == PlayerTeleportEvent.TeleportCause.ENDER_PEARL) {
+            e.setCancelled(true);
+            e.getPlayer().sendMessage(ChatColor.RED + "Protected area — walk or /spawn. No portal/pearl dumps.");
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onPortal(PlayerPortalEvent e) {
+        if (!getConfig().getBoolean("blacklist.enabled", true)) return;
+        if (canBypassBlacklist(e.getPlayer())) return;
+        Location to = e.getTo();
+        if (to != null && inBlacklist(to)) {
+            e.setCancelled(true);
+            e.getPlayer().sendMessage(ChatColor.RED + "Portals cannot drop you into protected MAVOcraft zones.");
+        }
+        // also if FROM is outside and would create link into blacklist
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onRespawn(PlayerRespawnEvent e) {
+        // if bed/anchor in blacklist weirdness — leave vanilla; /spawn OK
+    }
+
+    // ---------------- combat / farm events ----------------
+    @EventHandler(ignoreCancelled = true)
+    public void onPvp(EntityDamageByEntityEvent e) {
+        if (getConfig().getBoolean("pvp", false)) return;
+        if (!(e.getEntity() instanceof Player) || !(e.getDamager() instanceof Player)) return;
+        if (inFarmProtect(e.getEntity().getLocation()) || inFarmProtect(e.getDamager().getLocation()))
+            e.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onCreatureSpawn(CreatureSpawnEvent e) {
+        if (center == null) return;
+        if (!inFarmProtect(e.getLocation())) return;
+        LivingEntity ent = e.getEntity();
+        // strip jockeys
+        try {
+            if (ent.getVehicle() != null && ent.getVehicle().getType() == EntityType.CHICKEN) {
+                e.setCancelled(true); return;
+            }
+            if (ent instanceof Ageable age && !age.isAdult()) age.setAdult();
+        } catch (Throwable ignored) {}
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onSpawnerSpawn(SpawnerSpawnEvent e) {
+        if (center != null && inFarmProtect(e.getSpawner().getLocation())) e.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onEnderTeleport(EntityTeleportEvent e) {
+        if (!(e.getEntity() instanceof LivingEntity le)) return;
+        if (!le.getPersistentDataContainer().has(farmMobKey, PersistentDataType.BYTE)) return;
+        // farm endermen cannot teleport out
+        e.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onTarget(EntityTargetLivingEntityEvent e) {
+        if (!(e.getEntity() instanceof LivingEntity le)) return;
+        if (!le.getPersistentDataContainer().has(farmMobKey, PersistentDataType.BYTE)) return;
+        // passive styles: pad animals shouldn't fight hard — still allow if player hits
+        MobDef style = null;
+        // keep target only if player is session owner near
+        if (e.getTarget() instanceof Player p) {
+            Session s = sessions.get(p.getUniqueId());
+            if (s == null || !s.unlocked) {
+                e.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFarmDamage(EntityDamageByEntityEvent e) {
+        if (!creditLastDamager()) return;
+        if (!(e.getEntity() instanceof LivingEntity le)) return;
+        if (!le.getPersistentDataContainer().has(farmMobKey, PersistentDataType.BYTE)) return;
+        Player p = null;
+        if (e.getDamager() instanceof Player pl) p = pl;
+        else if (e.getDamager() instanceof Projectile proj && proj.getShooter() instanceof Player pl) p = pl;
+        if (p == null) return;
+        le.getPersistentDataContainer().set(lastHitKey, PersistentDataType.STRING, p.getUniqueId().toString());
+        // cancel creeper explosion damage to player if blocked
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onFarmCombust(EntityDamageEvent e) {
+        if (!sunSafe()) return;
+        if (!(e.getEntity() instanceof LivingEntity le)) return;
+        if (!le.getPersistentDataContainer().has(farmMobKey, PersistentDataType.BYTE)) return;
+        EntityDamageEvent.DamageCause c = e.getCause();
+        if (c == EntityDamageEvent.DamageCause.FIRE
+                || c == EntityDamageEvent.DamageCause.FIRE_TICK
+                || c == EntityDamageEvent.DamageCause.LAVA
+                || c == EntityDamageEvent.DamageCause.HOT_FLOOR) {
+            e.setCancelled(true);
+            try { le.setFireTicks(0); } catch (Throwable ignored) {}
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onCreeperExplode(ExplosionPrimeEvent e) {
+        if (e.getEntity() instanceof LivingEntity le
+                && le.getPersistentDataContainer().has(farmMobKey, PersistentDataType.BYTE)) {
+            // prevent farm creepers from exploding — still killable by player
+            e.setCancelled(true);
+            // soften: deal no blast
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onKill(EntityDeathEvent e) {
+        LivingEntity victim = e.getEntity();
+        if (!victim.getPersistentDataContainer().has(farmMobKey, PersistentDataType.BYTE)) return;
+        Player killer = victim.getKiller();
+        if (killer == null && creditLastDamager()) {
+            String id = victim.getPersistentDataContainer().get(lastHitKey, PersistentDataType.STRING);
+            if (id != null) {
+                try {
+                    Player p = Bukkit.getPlayer(UUID.fromString(id));
+                    if (p != null && p.isOnline()) {
+                        try { victim.setKiller(p); } catch (Throwable ignored) {}
+                        killer = p;
+                    }
+                } catch (Throwable ignored) {}
+            }
+        }
+        // Achievements listens to getKiller — setKiller above is enough for 1.7.0
+        // Soft-call externalProgress if needed
+        if (killer != null) {
+            tryReflectAchievement(killer, victim.getType());
+        }
+    }
+
+    private void tryReflectAchievement(Player killer, EntityType type) {
+        try {
+            org.bukkit.plugin.Plugin pl = Bukkit.getPluginManager().getPlugin("MAVOAchievements");
+            if (pl == null) return;
+            // onKill in achievements handles combat + kill_* when killer set
+            // also push external for safety
+            String key = "kill_" + type.name().toLowerCase(Locale.ROOT);
+            try {
+                pl.getClass().getMethod("externalProgress", Player.class, String.class, long.class)
+                        .invoke(pl, killer, key, 1L);
+            } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {}
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        PendingEnter pe = pending.remove(e.getPlayer().getUniqueId());
+        if (pe != null && pe.task != null) pe.task.cancel();
+    }
+
+    @EventHandler
+    public void onCommunityClose(InventoryCloseEvent e) {
+        if (!(e.getPlayer() instanceof Player p) || center == null) return;
+        Inventory top = e.getInventory();
+        Location il;
+        try { il = top.getLocation(); } catch (Throwable t) { return; }
+        if (il == null || il.getWorld() != center.getWorld()) return;
+        boolean isCommunity = false;
+        if (Math.abs(il.getBlockX() - center.getBlockX()) <= 1
+                && il.getBlockY() == center.getBlockY()
+                && Math.abs(il.getBlockZ() - (center.getBlockZ() + 4)) <= 1) isCommunity = true;
+        if (!isCommunity) {
+            for (MobDef m : mobs.values()) {
+                if (m.communityChest == null) continue;
+                if (il.getBlockY() != m.communityChest.getBlockY()) continue;
+                if (Math.abs(il.getBlockZ() - m.communityChest.getBlockZ()) > 0) continue;
+                if (Math.abs(il.getBlockX() - m.communityChest.getBlockX()) <= 1) {
+                    isCommunity = true; break;
+                }
+            }
+        }
+        if (!isCommunity) return;
+        long value = 0;
+        ItemStack[] contents = top.getContents();
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack it = contents[i];
+            if (it == null || it.getType().isAir()) continue;
+            value += communityUnitValue(it.getType()) * it.getAmount();
+            contents[i] = null;
+        }
+        if (value <= 0) return;
+        top.setContents(contents);
+        addCommunityCoins(value, p);
+        spawnHubHolo();
+        refreshBayHolos();
+    }
+
+    private long communityUnitValue(Material mat) {
+        return switch (mat) {
+            case ROTTEN_FLESH, BONE, STRING, GUNPOWDER, SPIDER_EYE, ARROW, SAND, INK_SAC -> 2L;
+            case ENDER_PEARL, BLAZE_ROD, GHAST_TEAR, MAGMA_CREAM, SLIME_BALL, PRISMARINE_SHARD, PHANTOM_MEMBRANE -> 25L;
+            case BEEF, PORKCHOP, CHICKEN, MUTTON, LEATHER, WHITE_WOOL, RABBIT, HONEYCOMB,
+                 COOKED_BEEF, COOKED_PORKCHOP, COOKED_CHICKEN, COOKED_MUTTON, COOKED_RABBIT -> 5L;
+            case IRON_INGOT, GOLD_INGOT, COPPER_INGOT, COAL, EMERALD -> 50L;
+            case DIAMOND -> 200L;
+            case NETHERITE_INGOT -> 2000L;
+            case SPAWNER -> 5000L;
+            default -> 1L;
+        };
+    }
+
+    public boolean isFarmKill(Player p) {
+        Session s = sessions.get(p.getUniqueId());
+        return s != null && s.active && s.endsAtMs >= System.currentTimeMillis() && s.unlocked;
+    }
+    public double farmXpScale() { return getConfig().getDouble("profession-xp-scale", 0.30); }
+
+    public void addCommunityCoins(long amount, Player who) {
+        if (amount <= 0) return;
+        communityCoins += amount;
+        while (communityCoins >= communityTarget) {
+            communityCoins -= communityTarget;
+            communityStack++;
+            communityTarget = Math.max(communityTarget * 2, communityTarget + 1);
+            Bukkit.broadcastMessage(ChatColor.GOLD + "MobFarm community goal! Base stack now "
+                    + ChatColor.YELLOW + "x" + communityStack + ChatColor.GOLD + ". Next: " + communityTarget);
+            spawnHubHolo();
+            refreshBayHolos();
+        }
+        saveData();
+        if (who != null) who.sendMessage(ChatColor.GREEN + "Community +" + amount
+                + " (" + communityCoins + "/" + communityTarget + ")");
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length == 1) {
+            List<String> base = new ArrayList<>(List.of("enter", "leave", "hub", "status", "buy", "pick", "prices", "info"));
+            if (sender.hasPermission("mavomobfarm.admin"))
+                base.addAll(List.of("tp", "setcenter", "build", "rebuild", "clear", "clearhere", "purge", "reload", "resholo"));
+            String pfx = args[0].toLowerCase(Locale.ROOT);
+            base.removeIf(s -> !s.startsWith(pfx));
+            return base;
+        }
+        return List.of();
+    }
+}

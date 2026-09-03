@@ -1,0 +1,22 @@
+name: MAVOMobFarm
+version: 2.5.0
+main: mavo.mobfarm.MobFarm
+api-version: '1.21'
+description: Dual-wing unique-zone mob farm at -15000 with paid picks
+author: MAVO
+depend: [Vault]
+softdepend: [MAVOProfessions, MAVOAchievements]
+commands:
+  mobfarm:
+    description: Mob farm commands
+    usage: /mobfarm <enter|leave|hub|status|buy|pick|prices|info|tp|setcenter|build|rebuild|clear|clearhere|purge|reload|resholo>
+    aliases: [mfarm, farm]
+permissions:
+  mavomobfarm.admin:
+    default: op
+  mavomobfarm.use:
+    default: true
+  mavomobfarm.bypass.protect:
+    default: op
+  mavomobfarm.bypass.blacklist:
+    default: op
