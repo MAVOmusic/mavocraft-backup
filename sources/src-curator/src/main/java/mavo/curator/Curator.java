@@ -212,6 +212,9 @@ public final class Curator extends JavaPlugin implements Listener {
         if (rsp != null) econ = rsp.getProvider();
         buildRegistry();
         refreshShopPrices();
+        int cleaned = removeEsguiMuseum(Bukkit.getPluginManager().getPlugin("EconomyShopGUI"));
+        if (cleaned > 0)
+            getLogger().info("Removed old Museum Extras shop files (" + cleaned + ") - extras are per-player in /museum now.");
         getServer().getPluginManager().registerEvents(this, this);
         getLogger().info("MAVOCurator enabled: " + cats.size() + " exhibit sections, " + totalItems + " collectable items.");
     }
