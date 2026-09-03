@@ -591,3 +591,9 @@ these entries, or keep the file and append — this is the authoritative record)
 ## MAVOShopNPC 1.3.3
 - Floating texts: scale 0.9->0.55, line width 200->140, shorter default texts.
 - Boot refresh replaces old big texts (auto re-spawn; /shopnpc resholo or /holoreset also works).
+
+## HOTFIX 2026-09-03 — MAVOWanderer 1.1.0 rebuilt
+- Root cause: `plugins/MAVOWanderer` command description was UNQUOTED (`description: Trader info; admin: /wanderer spawn [player]`)
+  → invalid YAML → whole plugin rejected ("Invalid plugin.yml", "mapping values are not allowed here").
+- Fix: description quoted. Same version (1.1.0) — same filename, just replace the jar, keep `plugins/MAVOWanderer/config.yml`.
+- Verified: CI run 33789140144 passed; rebuilt jar parses cleanly; all 12 jars' plugin.yml+config.yml now YAML-valid.
