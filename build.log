@@ -1,4 +1,4 @@
-## build log Thu Sep  3 17:06:33 UTC 2026
+## build log Thu Sep  3 17:10:15 UTC 2026
 == sources/src-achievements ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -9,8 +9,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  0.973 s
-[INFO] Finished at: 2026-09-03T17:06:35Z
+[INFO] Total time:  1.066 s
+[INFO] Finished at: 2026-09-03T17:10:17Z
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal on project mavo-achievements: Could not collect dependencies for project mavo:mavo-achievements:jar:1.7.2
 [ERROR] Failed to read artifact descriptor for com.github.MilkBowl:VaultAPI:jar:1.7.2
@@ -49,8 +49,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.049 s
-[INFO] Finished at: 2026-09-03T17:06:37Z
+[INFO] Total time:  1.037 s
+[INFO] Finished at: 2026-09-03T17:10:19Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-curator ==
 [INFO] Scanning for projects...
@@ -79,8 +79,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  0.991 s
-[INFO] Finished at: 2026-09-03T17:06:40Z
+[INFO] Total time:  1.051 s
+[INFO] Finished at: 2026-09-03T17:10:21Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-deathchest ==
 [INFO] Scanning for projects...
@@ -109,8 +109,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.040 s
-[INFO] Finished at: 2026-09-03T17:06:42Z
+[INFO] Total time:  1.096 s
+[INFO] Finished at: 2026-09-03T17:10:24Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-events ==
 [INFO] Scanning for projects...
@@ -124,31 +124,24 @@
 [INFO] Copying 1 resource from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-events ---
-[INFO] Recompiling the module because of changed source code.
-[INFO] Compiling 1 source file with javac [debug release 21] to target/classes
-[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-events/src/main/java/mavo/events/Events.java: /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-events/src/main/java/mavo/events/Events.java uses or overrides a deprecated API.
-[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-events/src/main/java/mavo/events/Events.java: Recompile with -Xlint:deprecation for details.
-[INFO] -------------------------------------------------------------
-[ERROR] COMPILATION ERROR : 
-[INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-events/src/main/java/mavo/events/Events.java:[172,55] int cannot be dereferenced
-[INFO] 1 error
-[INFO] -------------------------------------------------------------
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-events ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-events/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-events ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-events ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-events ---
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
+[INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.620 s
-[INFO] Finished at: 2026-09-03T17:06:44Z
+[INFO] Total time:  1.066 s
+[INFO] Finished at: 2026-09-03T17:10:26Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (default-compile) on project mavo-events: Compilation failure
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-events/src/main/java/mavo/events/Events.java:[172,55] int cannot be dereferenced
-[ERROR] -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
 == sources/src-guide ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -161,38 +154,24 @@
 [INFO] Copying 2 resources from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-guide ---
-[INFO] Recompiling the module because of changed source code.
-[INFO] Compiling 1 source file with javac [debug release 25] to target/classes
-[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/main/java/mavo/guide/Guide.java: /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/main/java/mavo/guide/Guide.java uses or overrides a deprecated API.
-[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/main/java/mavo/guide/Guide.java: Recompile with -Xlint:deprecation for details.
-[INFO] Some messages have been simplified; recompile with -Xdiags:verbose to get full output
-[INFO] -------------------------------------------------------------
-[ERROR] COMPILATION ERROR : 
-[INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/main/java/mavo/guide/Guide.java:[119,51] incompatible types: java.lang.String cannot be converted to capture#1 of ?
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/main/java/mavo/guide/Guide.java:[201,51] incompatible types: java.lang.String cannot be converted to capture#2 of ?
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/main/java/mavo/guide/Guide.java:[255,81] incompatible types: java.lang.String cannot be converted to capture#3 of ?
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/main/java/mavo/guide/Guide.java:[278,77] incompatible types: java.lang.String cannot be converted to capture#4 of ?
-[INFO] 4 errors 
-[INFO] -------------------------------------------------------------
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-guide ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-guide ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-guide ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-guide ---
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
+[INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.650 s
-[INFO] Finished at: 2026-09-03T17:06:47Z
+[INFO] Total time:  1.074 s
+[INFO] Finished at: 2026-09-03T17:10:28Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (default-compile) on project mavo-guide: Compilation failure: Compilation failure: 
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/main/java/mavo/guide/Guide.java:[119,51] incompatible types: java.lang.String cannot be converted to capture#1 of ?
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/main/java/mavo/guide/Guide.java:[201,51] incompatible types: java.lang.String cannot be converted to capture#2 of ?
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/main/java/mavo/guide/Guide.java:[255,81] incompatible types: java.lang.String cannot be converted to capture#3 of ?
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/main/java/mavo/guide/Guide.java:[278,77] incompatible types: java.lang.String cannot be converted to capture#4 of ?
-[ERROR] -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
 == sources/src-lucky ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -220,8 +199,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.028 s
-[INFO] Finished at: 2026-09-03T17:06:49Z
+[INFO] Total time:  1.025 s
+[INFO] Finished at: 2026-09-03T17:10:30Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-mobfarm ==
 [INFO] Scanning for projects...
@@ -250,8 +229,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.008 s
-[INFO] Finished at: 2026-09-03T17:06:52Z
+[INFO] Total time:  1.090 s
+[INFO] Finished at: 2026-09-03T17:10:33Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-professions ==
 [INFO] Scanning for projects...
@@ -280,8 +259,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.051 s
-[INFO] Finished at: 2026-09-03T17:06:54Z
+[INFO] Total time:  1.141 s
+[INFO] Finished at: 2026-09-03T17:10:35Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-shopnpc ==
 [INFO] Scanning for projects...
@@ -310,8 +289,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.014 s
-[INFO] Finished at: 2026-09-03T17:06:56Z
+[INFO] Total time:  1.072 s
+[INFO] Finished at: 2026-09-03T17:10:37Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wanderer ==
 [INFO] Scanning for projects...
@@ -340,8 +319,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.020 s
-[INFO] Finished at: 2026-09-03T17:06:58Z
+[INFO] Total time:  1.089 s
+[INFO] Finished at: 2026-09-03T17:10:39Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wild ==
 [INFO] Scanning for projects...
@@ -370,6 +349,6 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.041 s
-[INFO] Finished at: 2026-09-03T17:07:00Z
+[INFO] Total time:  1.075 s
+[INFO] Finished at: 2026-09-03T17:10:42Z
 [INFO] ------------------------------------------------------------------------
