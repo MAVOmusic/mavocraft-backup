@@ -4,7 +4,7 @@ Every MAVO jar and its commands. **Players** = anyone online · **OP** = server 
 
 ---
 
-## MAVOGuide 2.7.0
+## MAVOGuide 2.7.1
 | Command | Who | What it does |
 |---|---|---|
 | `/updates` | Players | Open the guide main menu (aliases: `/guide`, `/mods`, `/features`) |
@@ -85,12 +85,12 @@ Auto-spawns a wandering trader near a random online survival player every **30�
 
 ---
 
-## MAVOCurator 1.0.1
+## MAVOCurator 1.0.2
 | Command | Who | What it does |
 |---|---|---|
 | `/museum` | Players | Open your collection book (aliases: `/curator`, `/collection`) |
 | `/museum reload` | OP (`mavocurator.admin`) | Reload 103 sections / 1,413 items |
-| `/museum shopsgen` | OP (`mavocurator.admin`) | Generate `plugins/EconomyShopGUI/sections/MAVOMuseum.yml` + `shops/MAVOMuseum.yml` (all items, sell = 20% of buy). Then run **`/sreload`** (ESGUI reload — not `/esgui`); open with `/shop`. |
+| `/museum shopsgen` | OP (`mavocurator.admin`) | Generate the Museum shop (sections + shops YAML, all items, sell = 20% of buy) **and reload EconomyShopGUI automatically** — you get the section/shop counts in chat; open with `/shop`. |
 
 ---
 

@@ -21,14 +21,14 @@ In `plugins/`, remove every jar except the new one. Exact superseded files:
 
 | Plugin | DELETE from plugins/ | Keep (new) |
 |---|---|---|
-| MAVOGuide | `MAVOGuide-2.5.*.jar`, `MAVOGuide-2.6.0.jar` | `MAVOGuide-2.7.0.jar` |
+| MAVOGuide | `MAVOGuide-2.5.*.jar`, `MAVOGuide-2.6.0.jar`, `MAVOGuide-2.7.0.jar` | `MAVOGuide-2.7.1.jar` |
 | MAVOEvents | `MAVOEvents-1.1.0.jar` | `MAVOEvents-1.2.0.jar` |
 | MAVOLuckyCoins | `MAVOLuckyCoins-1.5.1.jar` … `1.5.4.jar` | `MAVOLuckyCoins-1.5.5.jar` |
 | MAVODeathChest | `MAVODeathChest-1.0.0.jar` | `MAVODeathChest-1.1.0.jar` |
 | MAVOAchievements | `MAVOAchievements-1.6.0.jar`, `1.7.0.jar`, `1.7.1.jar` | `MAVOAchievements-1.7.2.jar` |
 | MAVOProfessions | `MAVOProfessions-3.14.0.jar` (and 3.13.x if present) | `MAVOProfessions-3.14.1.jar` |
 | MAVOWanderer | `MAVOWanderer-1.0.0.jar` | `MAVOWanderer-1.1.0.jar` |
-| MAVOCurator | `MAVOCurator-1.0.0.jar` | `MAVOCurator-1.0.1.jar` |
+| MAVOCurator | `MAVOCurator-1.0.0.jar`, `MAVOCurator-1.0.1.jar` | `MAVOCurator-1.0.2.jar` |
 | MAVOWild | `MAVOWild-1.7.3.jar` | `MAVOWild-1.7.4.jar` |
 | MAVOShopNPC | `MAVOShopNPC-1.3.2.jar` | `MAVOShopNPC-1.3.3.jar` |
 | MAVOCasino | `MAVOCasino-1.2.0.jar`, `1.2.1.jar`, `1.2.2.jar` | `MAVOCasino-1.2.3.jar` |
@@ -42,7 +42,7 @@ Simple check: **`plugins/` must contain exactly ONE jar per plugin name** before
 
 | File to delete | Why (verified in source) |
 |---|---|
-| `plugins/MAVOGuide/config.yml` | Guide uses `saveDefaultConfig()` — an existing config is NEVER overwritten. Old file = **v13** (12 tutorial chapters, old text). New file inside the jar = **v14** (16 chapters CH0–CH15, paged What's New, 5,000–400,000 wild, 10/25/50 professions, no null names). Delete only `config.yml`. |
+| `plugins/MAVOGuide/config.yml` | Guide uses `saveDefaultConfig()` — an existing config is NEVER overwritten. Old file = **v13** (12 tutorial chapters, old text). New file inside the jar = **v15** (16 chapters CH0–CH15, paged What's New, 5,000–400,000 wild, 10/25/50 professions, v15 Museum shopsgen auto-reload). Delete only `config.yml`. |
 | `plugins/MAVOAchievements/config.yml` | Achievements reads its categories **from this file** and uses `saveDefaultConfig()`. Old file = 43 categories; new = **52** (9 new Mob Farm kill categories: bee, fox, goat, llama, panda, frog, sniffer, squid, glow_squid + aliases). Keeping the old file means the new categories never appear. Delete only `config.yml`. |
 
 **Do NOT delete alongside them:**
@@ -53,7 +53,7 @@ Simple check: **`plugins/` must contain exactly ONE jar per plugin name** before
 
 ## 4. UPLOAD — the 12 new jars
 
-`MAVOGuide-2.7.0.jar` · `MAVOEvents-1.2.0.jar` · `MAVOLuckyCoins-1.5.5.jar` · `MAVODeathChest-1.1.0.jar` · `MAVOAchievements-1.7.2.jar` · `MAVOProfessions-3.14.1.jar` · `MAVOWanderer-1.1.0.jar` · `MAVOCurator-1.0.1.jar` · `MAVOWild-1.7.4.jar` · `MAVOShopNPC-1.3.3.jar` · `MAVOCasino-1.2.3.jar` · `MAVOMobFarm-2.5.0.jar`
+`MAVOGuide-2.7.1.jar` · `MAVOEvents-1.2.0.jar` · `MAVOLuckyCoins-1.5.5.jar` · `MAVODeathChest-1.1.0.jar` · `MAVOAchievements-1.7.2.jar` · `MAVOProfessions-3.14.1.jar` · `MAVOWanderer-1.1.0.jar` · `MAVOCurator-1.0.2.jar` · `MAVOWild-1.7.4.jar` · `MAVOShopNPC-1.3.3.jar` · `MAVOCasino-1.2.3.jar` · `MAVOMobFarm-2.5.0.jar`
 
 ---
 

@@ -677,8 +677,17 @@ public final class Curator extends JavaPlugin implements Listener {
         if (a.length > 0 && a[0].equalsIgnoreCase("shopsgen")) {
             if (!s.hasPermission("mavocurator.admin")) { s.sendMessage(ChatColor.RED + "No permission."); return true; }
             int n = writeShopSection();
-            s.sendMessage(ChatColor.GREEN + "Museum shop written: " + n + " pages (" + totalItems + " items) in plugins/EconomyShopGUI/shops/MAVOMuseum.yml");
-            s.sendMessage(ChatColor.GRAY + "Restart/reload EconomyShopGUI to load the new section.");
+            Plugin es = Bukkit.getPluginManager().getPlugin("EconomyShopGUI");
+            if (es == null) {
+                s.sendMessage(ChatColor.RED + "EconomyShopGUI plugin not found - files were written but nothing was reloaded.");
+                return true;
+            }
+            int secs = countYml(new File(es.getDataFolder(), "sections"));
+            int shops = countYml(new File(es.getDataFolder(), "shops"));
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "sreload");
+            s.sendMessage(ChatColor.GREEN + "Museum shop written: " + n + " pages (" + totalItems + " items) and EconomyShopGUI reloaded.");
+            s.sendMessage(ChatColor.GRAY + "Expected: " + secs + " section configs, " + shops + " shop configs. /shop > Museum Extras (slot 43).");
+            s.sendMessage(ChatColor.GRAY + "Console shows the exact loaded counts (e.g. \"Completed loading 29 section configs\").");
             return true;
         }
         if (!(s instanceof Player p)) { s.sendMessage("Players only."); return true; }
@@ -692,6 +701,12 @@ public final class Curator extends JavaPlugin implements Listener {
      * name (MAVOMuseum) so ESGUI links the main-menu header to the shop.
      * Requires ESGUI to (re)load afterwards.
      */
+    private int countYml(File dir) {
+        if (dir == null || !dir.isDirectory()) return 0;
+        File[] f = dir.listFiles((d, name) -> name.endsWith(".yml") || name.endsWith(".yaml"));
+        return f == null ? 0 : f.length;
+    }
+
     private int writeShopSection() {
         Plugin es = Bukkit.getPluginManager().getPlugin("EconomyShopGUI");
         File base = es != null ? es.getDataFolder() : getDataFolder();

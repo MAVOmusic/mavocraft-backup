@@ -1,10 +1,18 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 14
+version: 15
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&e&lv15 &7- Museum shop auto-reload"
+    icon: CHEST
+    lines:
+      - "&7&e/museum shopsgen&7 (admin) now reloads &fEconomyShopGUI&7 itself"
+      - "&7and tells you the &fsection/shop counts&7 in chat."
+      - "&7Need /sreload or a restart? No - it is done for you."
+      - "&7Museum duplicates are sellable in &e/shop > Museum Extras&7."
+      - ""
   - title: "&c&lv14 &7- Guide menus + new events + fixes"
     icon: NETHER_STAR
     lines:
@@ -263,7 +271,7 @@ tutorial:
       - "&7each pays a coin bonus + a chat title."
       - ""
       - "&7Extra museum items are &esellable&7 at &e/shop&7"
-      - "&7(Museum section) - admins: &e/museum shopsgen&7."
+      - "&7(Museum section) - admins: &e/museum shopsgen&7 (auto-reloads)."
       - "&e/museum &7- browse your collection anywhere"
   - name: "&c&lServer Events"
     icon: FIREWORK_ROCKET
@@ -368,7 +376,7 @@ features:
       - "&aDeposit Crate&7, dump your haul, close it."
       - "&7Duplicates and custom/bound items bounce back."
       - "&7Extras are &esellable&7 in /shop (Museum section) -"
-      - "&7admins: &e/museum shopsgen &7generates the shop list."
+      - "&7admins: &e/museum shopsgen &7generates it and auto-reloads."
       - ""
       - "&7Ranks: &f25% &7/ &f50% &7/ &f75% &7/ &6100% THE CURATOR"
       - "&7Each pays a coin bonus + a chat title."

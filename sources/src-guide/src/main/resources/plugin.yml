@@ -1,5 +1,5 @@
 name: MAVOGuide
-version: 2.7.0
+version: 2.7.1
 main: mavo.guide.Guide
 api-version: '1.13'
 description: Server guide GUI, tutorial and update showcase for MAVOcraft

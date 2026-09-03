@@ -1,5 +1,5 @@
 name: MAVOCurator
-version: 1.0.1
+version: 1.0.2
 main: mavo.curator.Curator
 api-version: '1.13'
 description: The Museum - donate one of every item, complete collections, become THE CURATOR
@@ -12,5 +12,5 @@ commands:
     usage: /museum [reload|shopsgen]
 permissions:
   mavocurator.admin:
-    description: Allows /museum reload
+    description: Allows /museum reload and shopsgen
     default: op

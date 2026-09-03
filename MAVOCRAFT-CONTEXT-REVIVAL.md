@@ -573,7 +573,7 @@ these entries, or keep the file and append — this is the authoritative record)
 - /wanderer = info (all players), /wanderer spawn [player] = OP (mavowanderer.admin).
 - ~80-offer recipe pool (utility/redstone/building/farming/brewing) - no junk.
 
-## MAVOCurator 1.0.1
+## MAVOCurator 1.0.2
 - /museum shopsgen (OP) writes plugins/EconomyShopGUI/sections/MAVOMuseum.yml AND
   shops/MAVOMuseum.yml (same name = linked). Real format: section = header (enable/title/slot/item/
   fill-item), shop = pages.pageN.gui-rows:6.items with material/buy/sell. 45 items/page, NO nav-bar
@@ -597,3 +597,14 @@ these entries, or keep the file and append — this is the authoritative record)
   → invalid YAML → whole plugin rejected ("Invalid plugin.yml", "mapping values are not allowed here").
 - Fix: description quoted. Same version (1.1.0) — same filename, just replace the jar, keep `plugins/MAVOWanderer/config.yml`.
 - Verified: CI run 33789140144 passed; rebuilt jar parses cleanly; all 12 jars' plugin.yml+config.yml now YAML-valid.
+
+## 2026-09-03 HOTFIX 2 — Curator 1.0.2 + Guide 2.7.1 (v15)
+- `/museum shopsgen` now **auto-runs `/sreload`** (console) and tells the admin IN CHAT:
+  "Museum shop written: N pages (1413 items) and EconomyShopGUI reloaded.
+   Expected: X section configs, Y shop configs. /shop > Museum Extras (slot 43)."
+  (ESGUI itself never sends a chat confirm — only a console log; this fixes that gap.)
+- Guide: config v15 + plugin 2.7.1 — v15 whatsnew entry; Museum chapter/feature say
+  "shopsgen (auto-reloads)". New jar names: MAVOCurator-1.0.2.jar, MAVOGuide-2.7.1.jar.
+- DEPLOY: delete old MAVOCurator-1.0.0/1.0.1 jars + MAVOGuide-2.6.0/2.7.0 jars; delete
+  plugins/MAVOGuide/config.yml (v14→v15, saveDefaultConfig won't overwrite). Keep
+  plugins/MAVOCurator/ (config.yml + data.yml) and MAVOGuide/data.yml.
