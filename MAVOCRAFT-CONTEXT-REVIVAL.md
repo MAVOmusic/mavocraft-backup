@@ -513,6 +513,16 @@ extracts to workspace, moves everything into `_Old/` except current deliverables
 
 
 
+--- 
+
+# DEPLOY RULES (ALWAYS STATE THIS WHEN JARS CHANGE)
+**REPLACE = jar files only. DELETE = old-version jars of each plugin (one jar per plugin), PLUS exactly
+two config files this update: `plugins/MAVOGuide/config.yml` (v13→v14 content) and
+`plugins/MAVOAchievements/config.yml` (43→52 categories, new mob kills). DELETE NOTHING ELSE.**
+Full replace/delete/keep table incl. data.yml/homes.yml per plugin: `MAVOCRAFT-DEPLOY.md` in repo root.
+Never folder-delete EconomyShopGUI / LuckPerms / TAB / MAVOWild. Full restart (no /reload) for jar swaps.
+Post-start: `/updates reload`, `/museum shopsgen` + `/esgui reload`, `/shopnpc resholo`, `/mobfarm resholo`.
+
 ---
 
 # SECTION — 2026-09-03 GUIDE v14 + BIG JAR UPDATE
