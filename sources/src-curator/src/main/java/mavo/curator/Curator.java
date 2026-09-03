@@ -53,6 +53,8 @@ public final class Curator extends JavaPlugin implements Listener {
     private final LinkedHashMap<String, Cat> cats = new LinkedHashMap<>();
     /** material -> category id */
     private final Map<Material, String> matCat = new HashMap<>();
+    /** buy prices copied from the normal EconomyShopGUI shops (per-player extras list) */
+    private Map<String, double[]> shopPrices = new LinkedHashMap<>();
     private int totalItems = 0;
 
     /** cache: player -> collected material names */
@@ -65,7 +67,7 @@ public final class Curator extends JavaPlugin implements Listener {
     }
 
     static final class Holder implements InventoryHolder {
-        String view = "main";     // main | cat | vault
+        String view = "main";     // main | cat | vault | extras
         String catId = null;
         int page = 0;
         Inventory inv;
@@ -209,6 +211,7 @@ public final class Curator extends JavaPlugin implements Listener {
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp != null) econ = rsp.getProvider();
         buildRegistry();
+        refreshShopPrices();
         getServer().getPluginManager().registerEvents(this, this);
         getLogger().info("MAVOCurator enabled: " + cats.size() + " exhibit sections, " + totalItems + " collectable items.");
     }
@@ -451,6 +454,12 @@ public final class Curator extends JavaPlugin implements Listener {
                         "&7close it - every NEW item is",
                         "&7registered, the rest comes back.",
                         "", "&e\u25B6 Click to open"), false));
+        inv.setItem(52, item(Material.EMERALD, "&d&l\u2726 Museum Extras",
+                List.of("&7Everything you are STILL missing,",
+                        "&7per player - buy it here with coins.",
+                        "&7(Buy only - no selling.)",
+                        "",
+                        "&e\u25B6 Click to browse your missing items"), false));
 
         List<Cat> list = new ArrayList<>(cats.values());
         int per = 36, from = page * per, to = Math.min(from + per, list.size());
@@ -459,14 +468,22 @@ public final class Curator extends JavaPlugin implements Listener {
             int cc = catCount(u, c), max = c.items.size();
             boolean done = cc >= max;
             String name = (done ? "&a&l\u2714 " : cc > 0 ? "&e" : "&7") + ChatColor.stripColor(c.name);
+            if (done) {
+                // completed section -> GREEN BOX, no longer clickable
+                inv.setItem(9 + (i - from), item(Material.GREEN_STAINED_GLASS_PANE, "&a&l\u2714 " + ChatColor.stripColor(c.name),
+                        List.of("&8Exhibit COMPLETE",
+                                "&7Reward paid: &e" + fmt((long) max * getConfig().getLong("section-coin-per-item", 1000)) + " \u26C3",
+                                "",
+                                "&7(Completed sections are locked.)"), false));
+                continue;
+            }
             List<String> lore = new ArrayList<>();
-            lore.add("&fCollected: " + (done ? "&a" : "&e") + cc + " &7/ &f" + max);
+            lore.add("&fCollected: " + (cc > 0 ? "&e" : "&7") + cc + " &7/ &f" + max);
             lore.add(bar(cc, max));
-            if (done) lore.add("&6\u2605 EXHIBIT COMPLETE! &7(+" + fmt((long) max * getConfig().getLong("section-coin-per-item", 1000)) + " \u26C3 paid)");
-            else lore.add("&7Complete reward: &e" + fmt((long) max * getConfig().getLong("section-coin-per-item", 1000)) + " \u26C3");
+            lore.add("&7Complete reward: &e" + fmt((long) max * getConfig().getLong("section-coin-per-item", 1000)) + " \u26C3");
             lore.add("");
             lore.add("&e\u25B6 Click to browse this exhibit");
-            inv.setItem(9 + (i - from), item(c.icon, name, lore, done));
+            inv.setItem(9 + (i - from), item(c.icon, name, lore, false));
         }
         int pages = (list.size() + per - 1) / per;
         if (page > 0) inv.setItem(45, item(Material.ARROW, "&e\u25C0 Previous page", null, false));
@@ -506,8 +523,8 @@ public final class Curator extends JavaPlugin implements Listener {
             boolean have = has(u, m);
             String nice = niceName(m);
             ItemStack it = item(m, have ? "&a\u2714 " + nice : "&7" + nice,
-                    have ? List.of("&aExhibited in the museum!")
-                         : List.of("&8Not donated yet.", "", "&e\u25B6 Click to donate 1 from your inventory"),
+                    have ? List.of("&a\u2714 Already donated to the museum!", "&7Do NOT add this to the crate.")
+                         : List.of("&7\u2716 Not donated yet.", "", "&e\u25B6 Click to donate 1 from your inventory"),
                     have);
             inv.setItem(9 + (i - from), it);
         }
@@ -528,6 +545,106 @@ public final class Curator extends JavaPlugin implements Listener {
             b.append(Character.toUpperCase(s.charAt(0))).append(s.substring(1));
         }
         return b.toString();
+    }
+
+    /* ---------------- museum extras (per player, buy-only) ---------------- */
+
+    /** Reload buy prices from the normal ESGUI shops. Matched count. */
+    private int refreshShopPrices() {
+        Plugin es = Bukkit.getPluginManager().getPlugin("EconomyShopGUI");
+        File base = es != null ? es.getDataFolder() : new File(getDataFolder().getParentFile(), "EconomyShopGUI");
+        shopPrices = loadShopPrices(new File(base, "shops"));
+        return shopPrices == null ? 0 : shopPrices.size();
+    }
+
+    private double buyPrice(Material m) {
+        double[] pr = shopPrices == null ? null : shopPrices.get(m.name());
+        if (pr != null) return pr[0];
+        return priceOf(m);
+    }
+
+    private List<Material> missingFor(UUID u) {
+        List<Material> out = new ArrayList<>();
+        for (Cat c : cats.values())
+            for (Material m : c.items)
+                if (!has(u, m)) out.add(m);
+        return out;
+    }
+
+    private void openExtras(Player p, int page) {
+        Holder h = new Holder(); h.view = "extras"; h.page = page;
+        Inventory inv = Bukkit.createInventory(h, 54, ChatColor.DARK_RED + "" + ChatColor.BOLD + "\u2726 Museum Extras \u2726");
+        h.inv = inv;
+        UUID u = p.getUniqueId();
+        List<Material> miss = missingFor(u);
+        int per = 36, from = page * per, to = Math.min(from + per, miss.size());
+        int pages = Math.max(1, (miss.size() + per - 1) / per);
+        String b = p.getName();
+        inv.setItem(4, item(Material.EMERALD, "&d&l\u2726 What YOU still need",
+                List.of("&7Only items you have NOT donated yet.",
+                        "&7Missing: &f" + miss.size() + " &7of &f" + totalItems,
+                        "",
+                        "&7Click an item to &ebuy 1 &7at the normal",
+                        "&7shop price. Donate it afterwards \u2192",
+                        "",
+                        "&7Prices: " + (shopPrices == null || shopPrices.isEmpty() ? "fallback" : "real shop")), false));
+        inv.setItem(8, item(Material.CHEST, "&a&l\u25A0 Deposit Crate",
+                List.of("&7Toss in anything, close, done.", "", "&e\u25B6 Click to open"), false));
+        for (int i = from; i < to; i++) {
+            Material m = miss.get(i);
+            double price = buyPrice(m);
+            inv.setItem(9 + (i - from), item(m, "&7" + niceName(m),
+                    List.of("&7\u2716 Missing from your collection",
+                            "&eBuy: &f" + fmt(price) + " \u26C3",
+                            "",
+                            "&e\u25B6 Click to buy 1 and donate it"), false));
+        }
+        if (page > 0) inv.setItem(45, item(Material.ARROW, "&e\u25C0 Previous page", null, false));
+        inv.setItem(48, item(Material.OAK_DOOR, "&e\u25C0 Back &7- museum menu", null, false));
+        inv.setItem(49, item(Material.BARRIER, "&cClose", List.of("&7Missing items page &f" + (page + 1) + "&7/&f" + pages), false));
+        if (page < pages - 1) inv.setItem(53, item(Material.ARROW, "&eNext page \u25B6", null, false));
+        fill(inv);
+        p.openInventory(inv);
+        p.playSound(p.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 0.8f, 1.0f);
+    }
+
+    private void buyExtras(Player p, Holder h, int slot) {
+        int idx = h.page * 36 + (slot - 9);
+        List<Material> miss = missingFor(p.getUniqueId());
+        if (idx < 0 || idx >= miss.size()) return;
+        Material m = miss.get(idx);
+        if (has(p.getUniqueId(), m)) { openExtras(p, h.page); return; } // already donated: refresh
+        if (econ == null) { p.sendMessage(ChatColor.RED + "Economy not available - cannot buy."); return; }
+        double price = buyPrice(m);
+        if (!econ.has(p, price)) {
+            p.sendMessage(ChatColor.RED + "You need " + ChatColor.YELLOW + fmt(price) + " \u26C3" + ChatColor.RED + " - you have " + ChatColor.WHITE + fmt((long) econ.getBalance(p)) + " \u26C3");
+            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 0.9f);
+            return;
+        }
+        econ.withdrawPlayer(p, price);
+        var left = p.getInventory().addItem(new ItemStack(m));
+        if (!left.isEmpty()) {
+            econ.depositPlayer(p, price);
+            p.sendMessage(ChatColor.RED + "Inventory full - purchase refunded.");
+            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 0.9f);
+            return;
+        }
+        p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.4f);
+        p.sendMessage(ChatColor.GOLD + "\u2726 " + ChatColor.GREEN + "Bought " + ChatColor.WHITE + niceName(m)
+                + ChatColor.GREEN + " for " + ChatColor.YELLOW + fmt(price) + " \u26C3"
+                + ChatColor.GRAY + " - donate it to complete your collection!");
+        openExtras(p, h.page); // refresh: nothing changed yet, but keeps view consistent
+    }
+
+    /** Removes the old static ESGUI Museum Extras (it cannot be per-player). Returns files removed. */
+    private int removeEsguiMuseum(Plugin es) {
+        int n = 0;
+        File base = es != null ? es.getDataFolder() : new File(getDataFolder().getParentFile(), "EconomyShopGUI");
+        for (String rel : new String[]{"sections/MAVOMuseum.yml", "shops/MAVOMuseum.yml"}) {
+            File f = new File(base, rel);
+            if (f.exists() && f.delete()) n++;
+        }
+        return n;
     }
 
     /* ---------------- deposit crate ---------------- */
@@ -600,14 +717,34 @@ public final class Curator extends JavaPlugin implements Listener {
 
         if (h.view.equals("main")) {
             if (slot == 8) { openVault(p, h); return; }
+            if (slot == 52) { openExtras(p, 0); return; }
             if (slot == 45) { openMain(p, Math.max(0, h.page - 1)); return; }
             if (slot == 53) { openMain(p, h.page + 1); return; }
             if (slot == 49) { p.closeInventory(); return; }
             if (slot >= 9 && slot <= 44) {
                 int idx = h.page * 36 + (slot - 9);
                 List<Cat> list = new ArrayList<>(cats.values());
-                if (idx < list.size()) openCat(p, list.get(idx).id, 0);
+                if (idx < list.size()) {
+                    Cat c = list.get(idx);
+                    if (catCount(p.getUniqueId(), c) >= c.items.size()) {
+                        p.sendMessage(ChatColor.GRAY + "\u2714 " + ChatColor.stripColor(c.name)
+                                + ChatColor.GRAY + " is already complete - nothing left to donate.");
+                        p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 0.8f);
+                        return;
+                    }
+                    openCat(p, c.id, 0);
+                }
             }
+            return;
+        }
+
+        if (h.view.equals("extras")) {
+            if (slot == 8) { openVault(p, h); return; }
+            if (slot == 45) { openExtras(p, Math.max(0, h.page - 1)); return; }
+            if (slot == 53) { openExtras(p, h.page + 1); return; }
+            if (slot == 48) { openMain(p, 0); return; }
+            if (slot == 49) { p.closeInventory(); return; }
+            if (slot >= 9 && slot <= 44) { buyExtras(p, h, slot); return; }
             return;
         }
 
@@ -659,6 +796,7 @@ public final class Curator extends JavaPlugin implements Listener {
         Bukkit.getScheduler().runTask(this, () -> {
             if (!p.isOnline()) return;
             if (backCat != null) openCat(p, backCat, 0);
+            else if (h.view.equals("extras")) openExtras(p, h.page);
             else openMain(p, 0);
         });
     }
@@ -677,18 +815,20 @@ public final class Curator extends JavaPlugin implements Listener {
         if (a.length > 0 && a[0].equalsIgnoreCase("shopsgen")) {
             if (!s.hasPermission("mavocurator.admin")) { s.sendMessage(ChatColor.RED + "No permission."); return true; }
             Plugin es = Bukkit.getPluginManager().getPlugin("EconomyShopGUI");
-            int[] res = writeShopSection(es);
-            if (res == null) {
-                s.sendMessage(ChatColor.RED + "EconomyShopGUI plugin not found - files were written but nothing was reloaded.");
-                return true;
-            }
-            int secs = countYml(new File(es.getDataFolder(), "sections"));
-            int shops = countYml(new File(es.getDataFolder(), "shops"));
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "sreload");
-            s.sendMessage(ChatColor.GREEN + "Museum shop written: " + res[0] + " pages (" + totalItems + " items) and EconomyShopGUI reloaded.");
-            s.sendMessage(ChatColor.YELLOW + "Prices: " + res[1] + " items use the REAL shop prices (" + res[2] + " museum-only items use fallback).");
-            s.sendMessage(ChatColor.GRAY + "Expected: " + secs + " section configs, " + shops + " shop configs. /shop > Museum Extras (slot 43).");
-            s.sendMessage(ChatColor.GRAY + "Console shows the exact loaded counts (e.g. \"Completed loading 29 section configs\").");
+            int matched = refreshShopPrices();
+            int removed = removeEsguiMuseum(es);
+            if (es != null) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "sreload");
+            int secs = es != null ? countYml(new File(es.getDataFolder(), "sections")) : 0;
+            int shops = es != null ? countYml(new File(es.getDataFolder(), "shops")) : 0;
+            s.sendMessage(ChatColor.GREEN + "Museum Extras is now PER-PLAYER and buy-only - open it with &e/museum extras&7.");
+            s.sendMessage(ChatColor.GRAY + "Removed old EconomyShopGUI museum files: " + removed + "."
+                    + (es != null ? " EconomyShopGUI reloaded (" + secs + " section / " + shops + " shop configs)." : ""));
+            s.sendMessage(ChatColor.YELLOW + "Prices indexed from the normal shops: " + matched + " materials (museum-only items use fallback).");
+            return true;
+        }
+        if (a.length > 0 && a[0].equalsIgnoreCase("extras")) {
+            if (!(s instanceof Player p)) { s.sendMessage("Players only."); return true; }
+            openExtras(p, 0);
             return true;
         }
         if (!(s instanceof Player p)) { s.sendMessage("Players only."); return true; }
@@ -745,80 +885,6 @@ public final class Curator extends JavaPlugin implements Listener {
     private static String fmt(double v) {
         if (v == Math.rint(v) && !Double.isInfinite(v) && Math.abs(v) < 1e15) return Long.toString((long) v);
         return java.math.BigDecimal.valueOf(v).stripTrailingZeros().toPlainString();
-    }
-
-    /**
-     * Writes the Museum section + shop pair. Buy/sell are copied from the
-     * normal EconomyShopGUI shops so the museum can never be a cheaper source
-     * (no arbitrage). Items missing from the normal shops use an internal
-     * fallback. @return {pages, matchedRealShopPrices, fallbackCount} or null when ESGUI is missing.
-     */
-    private int[] writeShopSection(Plugin es) {
-        if (es == null) return null;
-        File base = es.getDataFolder();
-        File dirSec = new File(base, "sections");
-        File dirShop = new File(base, "shops");
-        if (!dirSec.exists()) dirSec.mkdirs();
-        if (!dirShop.exists()) dirShop.mkdirs();
-        // Real EconomyShopGUI layout:
-        //  sections/<name>.yml = main-menu header (enable/title/slot/item/fill-item)
-        //  shops/<name>.yml   = pages.pageN.items.<id> with material/buy/sell
-        // Both files MUST share the same name. No nav-bar override so the
-        // default shops-nav-bar (PAGE_BACK/PAGE_NEXT) handles pagination.
-        try {
-            java.nio.file.Files.writeString(new File(dirSec, "MAVOMuseum.yml").toPath(),
-                    "enable: true\n"
-                    + "title: '&8<---- &d&lMuseum Extras &8---->'\n"
-                    + "slot: 43\n"
-                    + "hidden: false\n"
-                    + "sub-section: false\n"
-                    + "item:\n"
-                    + "  displayname: '&d&lMuseum Extras'\n"
-                    + "  material: CHEST\n"
-                    + "fill-item:\n"
-                    + "  material: GRAY_STAINED_GLASS_PANE\n"
-                    + "  displayname: ' '\n",
-                    java.nio.charset.StandardCharsets.UTF_8);
-        } catch (Exception ex) {
-            getLogger().warning("Failed writing section: " + ex.getMessage());
-            return new int[]{0, 0, 0};
-        }
-        Map<String, double[]> real = loadShopPrices(dirShop);
-        // shop file: 45 items per page (6 rows x 9 minus nav-bar row)
-        StringBuilder sb = new StringBuilder();
-        sb.append("# GENERATED by MAVOCurator /museum shopsgen - prices copied from the normal EconomyShopGUI shops (no arbitrage).\n");
-        sb.append("# Matches sections/MAVOMuseum.yml - reload the shop after regenerating.\n");
-        sb.append("pages:\n");
-        int n = 0, page = 0, matched = 0, fallback = 0;
-        String v = UUID.randomUUID().toString().substring(0, 8);
-        for (Cat c : cats.values()) {
-            for (Material m : c.items) {
-                if (n % 45 == 0) {
-                    page++;
-                    sb.append("  page").append(page).append(":\n");
-                    sb.append("    gui-rows: 6\n");
-                    sb.append("    items:\n");
-                    n = 0;
-                }
-                double[] pr = real.get(m.name());
-                double buy, sell;
-                if (pr != null) { buy = pr[0]; sell = pr[1]; matched++; }
-                else { buy = priceOf(m); sell = Math.max(1, (int) (buy * 0.2)); fallback++; }
-                sb.append("      m").append(v).append(page).append("_").append(n).append(":\n");
-                sb.append("        material: \"").append(m.name()).append("\"\n");
-                sb.append("        buy: ").append(fmt(buy)).append("\n");
-                sb.append("        sell: ").append(fmt(sell)).append("\n");
-                n++;
-            }
-        }
-        try {
-            java.nio.file.Files.writeString(new File(dirShop, "MAVOMuseum.yml").toPath(), sb.toString(),
-                    java.nio.charset.StandardCharsets.UTF_8);
-        } catch (Exception ex) {
-            getLogger().warning("Failed writing shop: " + ex.getMessage());
-            return new int[]{0, 0, 0};
-        }
-        return new int[]{page, matched, fallback};
     }
 
     /** Rough villager-first price: common cheap, rares scaled up; sell stays 20%. */

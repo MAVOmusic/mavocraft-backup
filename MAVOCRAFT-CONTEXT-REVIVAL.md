@@ -624,3 +624,18 @@ these entries, or keep the file and append — this is the authoritative record)
   museum sell now = the real sell value, not a percentage.
 - Jar: MAVOCurator-1.0.3.jar. Deploy: delete MAVOCurator-1.0.0/1.0.1/1.0.2 jars, keep plugins/MAVOCurator.
 - NOTE: legacy MAVOMuseum.yml with tier prices already on disk is overwritten by the next /museum shopsgen.
+
+## 2026-09-03 HOTFIX 4 — Curator 1.0.4 + Guide 2.7.2 (v16): Museum Extras per player
+- `/museum > Museum Extras` (button slot 52 in main menu, or `/museum extras`): PER-PLAYER list of
+  items the player has NOT donated. Buy-only (no selling), buy price = normal ESGUI shop price
+  (indexed on enable/shopsgen; museum-only items fallback). Buy = Vault withdraw + 1 item into
+  inventory; inventory-full refunds. Donated items DISAPPEAR from that player's list (data.yml per player).
+- Old static ESGUI `sections/MAVOMuseum.yml` + `shops/MAVOMuseum.yml` are REMOVED by /museum shopsgen
+  (cannot be per-player) - normal shops untouched. /sreload after removal.
+- Completed sections: main menu button becomes a GREEN_STAINED_GLASS_PANE "✔ COMPLETE - reward paid",
+  not clickable (click = "already complete" message). No section refund/re-entry.
+- Donated items in category view now show lore "✔ Already donated to the museum! Do NOT add this to the crate."
+- Deposit crate already sends "✘ Already in the museum (returned): <items>" per donation pass (existing 1.0.2 behavior).
+- Deploy: replace MAVOCurator-1.0.4.jar + MAVOGuide-2.7.2.jar; DELETE plugins/MAVOGuide/config.yml (v15->v16,
+  saveDefaultConfig never overwrites); keep plugins/MAVOCurator/config.yml + data.yml (donations per player).
+- After deploy: /museum shopsgen (removes old ESGUI files + indexes prices) then players open /museum extras.
