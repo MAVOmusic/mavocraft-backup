@@ -362,7 +362,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         for (MobDef m : mobs.values()) {
             if (!m.wing.equals(lastWing)) {
                 lastWing = m.wing;
-                sender.sendMessage(ChatColor.LIGHT_PURPLE + " " + lastWing.toUpperCase(Locale.ROOT) + " wing:");
+                sender.sendMessage(ChatColor.RED + " " + lastWing.toUpperCase(Locale.ROOT) + " wing:");
             }
             sender.sendMessage(ChatColor.GRAY + "  " + m.display + ChatColor.DARK_GRAY + " [" + m.style + "]"
                     + ChatColor.WHITE + " unlock " + unlock
@@ -834,7 +834,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         fillBox(w, cx, cy, cz, 3, 3, -1, 4, -5, 1, Material.DEEPSLATE_BRICKS);
         fillBox(w, cx, cy, cz, -3, 3, -1, 4, -5, -5, Material.DEEPSLATE_BRICKS);
         for (int x = -1; x <= 1; x++)
-            w.getBlockAt(cx + x, cy + 3, cz + 1).setType(Material.TRAPDOOR, false);
+            w.getBlockAt(cx + x, cy + 3, cz + 1).setType(Material.OAK_TRAPDOOR, false);
         setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
         setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
         setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
@@ -861,11 +861,11 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
     }
 
-    /** Enderman — obsidian totem: purple/end theme, carpet floor (no water), tall slit. */
+    /** Enderman — obsidian totem: red/end theme, carpet floor (no water), tall slit. */
     private void buildTotemBay(MobDef m, World w, int cx, int cy, int cz) {
         Material wall = Material.OBSIDIAN;
         killCell(w, cx, cy, cz, wall, false, false);
-        // end theme: end stone slab floor inside pit, purple accent pillars
+        // end theme: end stone slab floor inside pit, red accent pillars
         for (int x = -1; x <= 1; x++)
             for (int z = -3; z <= -1; z++) {
                 setHopperFacing(w, cx + x, cy - 1, cz + z, BlockFace.SOUTH);
@@ -976,7 +976,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     private void buildBrutalBay(MobDef m, World w, int cx, int cy, int cz) {
         Material wall = Material.BLACKSTONE;
         killCell(w, cx, cy, cz, wall, true, false);
-        fillBox(w, cx, cy, cz, -3, 3, 3, 5, -5, 1, Material.BLACKSTONE_BRICKS);
+        fillBox(w, cx, cy, cz, -3, 3, 3, 5, -5, 1, Material.POLISHED_BLACKSTONE_BRICKS);
         for (int x = -1; x <= 1; x++) {
             w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.IRON_BARS, false);
         }
@@ -1061,7 +1061,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     private void applyThemeBlocks(MobDef m, World w, int cx, int cy, int cz) {
         Material accent = switch (m.theme) {
             case "nether" -> Material.SHROOMLIGHT;
-            case "end" -> Material.PURPLE_STAINED_GLASS;
+            case "end" -> Material.RED_STAINED_GLASS;
             case "ocean" -> Material.SEA_LANTERN;
             case "ice" -> Material.PACKED_ICE;
             case "swamp" -> Material.MOSS_BLOCK;
