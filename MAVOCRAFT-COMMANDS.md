@@ -118,17 +118,26 @@ Wild range: **5,000–400,000** blocks (1,000s comma format on the portal sign),
 
 ---
 
-## Mob Farm 2.5.0 (unchanged, for reference)
+## Mob Farm 2.5.0
 | Command | Who | What it does |
 |---|---|---|
-| `/mobfarm info` | Players | Bay layout, safe spots, loot spots |
+| `/mobfarm info` | Players | Entry cost, session length, XP scale, community coins, center, protect radius |
+| `/mobfarm prices` | Players | Spawner prices (10k/20k/40k…), unlock cost |
+| `/mobfarm hub` | Players | Teleport to the Mob Farm hub |
+| `/mobfarm status` | Players | Your session status, time left, loot/spawner counts |
 | `/mobfarm enter` | Players | 5,000 coins, 10s don't-move, then 30 min session |
 | `/mobfarm leave` | Players | Leave early (session timer keeps running) |
 | `/mobfarm buy` | Players | Buy extra spawners (10k/20k/40k…) |
+| `/mobfarm pick` | Players | Choose your bay/loot pick |
+| `/mobfarm tp` | OP (`mavomobfarm.admin`) | Teleport to the hub (admins) |
+| `/mobfarm setcenter` | OP | Move the farm center to where you stand |
+| `/mobfarm build` | OP | Build the farm complex |
+| `/mobfarm rebuild` | OP | Clear + rebuild the farm |
+| `/mobfarm clear` | OP | Clear the whole farm complex |
+| `/mobfarm clearhere [r]` | OP | Clear old structures around you (default r=80) |
+| `/mobfarm purge [r]` | OP | Remove spawned mobs only (default r=150) |
+| `/mobfarm resholo` | OP | Rebuild hub + bay floating texts |
 | `/mobfarm reload` | OP | Reload config (mobs=36) |
-| `/mobfarm clear` | OP | Clear old farm structures |
-| `/mobfarm rebuild` | OP | Rebuild the farm |
-| `/mobfarm center` | OP | Move the farm center |
 
 ---
 
