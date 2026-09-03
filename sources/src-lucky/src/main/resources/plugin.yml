@@ -1,10 +1,16 @@
 name: MAVOLuckyCoins
-version: 1.5.5
+version: 1.5.6
 main: mavo.lucky.LuckyCoins
 api-version: '1.13'
 description: Lucky coins - drop, collect, wish at the wishing well for MAVOcraft
 author: MAVO
 commands:
+  destroy:
+    description: Destroy unsellable junk from hand or inventory (keeps sellable/valuable/profession tools)
+    usage: /destroy [hand|inventory]
+  destroyall:
+    description: Wipe the main inventory (hotbar + shield kept)
+    usage: /destroyall
   wish:
     description: Wish info (wishes are made at the Wishing Well). Admin - /wish well sets the well here
     usage: /wish

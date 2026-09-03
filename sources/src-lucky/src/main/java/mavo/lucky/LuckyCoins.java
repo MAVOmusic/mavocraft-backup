@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -67,6 +69,7 @@ public final class LuckyCoins extends JavaPlugin implements Listener {
         saveConfig();
         loadWell();
         loadWellPool();
+        loadMuseumMaterials();
         getServer().getPluginManager().registerEvents(this, this);
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             if (dirty) { try { data.save(dataFile); } catch (Exception ignored) {} dirty = false; }
@@ -193,6 +196,11 @@ public final class LuckyCoins extends JavaPlugin implements Listener {
     // Format per line: MATERIAL:maxAmount:weight
     private record WishEntry(Material mat, int maxAmt, int weight) {}
     private final List<WishEntry> poolItems = new ArrayList<>();
+    private final Set<String> sellableMats = new HashSet<>(); // shop sellable -> NEVER destroyed
+    private final Set<String> museumMats = new HashSet<>();    // curator collectables (materials.txt)
+    private boolean museumListLoaded = false;
+    private final NamespacedKey profLockKey = new NamespacedKey("mavoprofessions", "proflock");
+    private final NamespacedKey profToolKey = new NamespacedKey("mavoprofessions", "proftool");
     private final List<WishEntry> poolGear = new ArrayList<>();
     private int totalItemWeight = 0;
     private int totalGearWeight = 0;
@@ -257,6 +265,7 @@ public final class LuckyCoins extends JavaPlugin implements Listener {
                 if (m.name().contains("NETHERITE")) weight = 1;
                 boolean gear = isGearMaterial(m);
                 addPoolEntry(m, maxAmt, weight, gear);
+                sellableMats.add(m.name());
                 ok++;
             }
         } catch (Exception ex) {
@@ -570,6 +579,130 @@ public final class LuckyCoins extends JavaPlugin implements Listener {
             pl.getWorld().dropItemNaturally(pl.getLocation(), rest);
     }
 
+    /** Loads the Curator museum material list (written to data/materials.txt on Curator boot). */
+    private void loadMuseumMaterials() {
+        if (museumListLoaded) return;
+        museumListLoaded = true;
+        museumMats.clear();
+        org.bukkit.plugin.Plugin cur = Bukkit.getPluginManager().getPlugin("MAVOCurator");
+        if (cur == null || !cur.isEnabled()) return;
+        File f = new File(cur.getDataFolder(), "materials.txt");
+        if (!f.isFile()) return;
+        try {
+            for (String line : java.nio.file.Files.readAllLines(f.toPath())) {
+                String n = line.trim().toUpperCase(Locale.ROOT);
+                if (!n.isEmpty()) museumMats.add(n);
+            }
+            getLogger().info("Museum protection loaded: " + museumMats.size() + " collectables.");
+        } catch (Exception ignored) {}
+    }
+
+    /** Materials the player has ALREADY donated (duplicates are junk). */
+    private Set<String> museumDonated(UUID u) {
+        org.bukkit.plugin.Plugin cur = Bukkit.getPluginManager().getPlugin("MAVOCurator");
+        if (cur == null || !cur.isEnabled()) return Set.of();
+        try {
+            File f = new File(cur.getDataFolder(), "data.yml");
+            if (!f.isFile()) return Set.of();
+            YamlConfiguration yd = YamlConfiguration.loadConfiguration(f);
+            return new HashSet<>(yd.getStringList("players." + u + ".items"));
+        } catch (Exception ex) { return Set.of(); }
+    }
+
+    /** Items that are NOT sellable in the shop but are still worth keeping. */
+    private boolean isValuable(ItemStack it) {
+        String n = it.getType().name();
+        if (n.contains("NETHERITE") || n.contains("DIAMOND") || n.equals("EMERALD")
+                || n.contains("_SPAWN_EGG") || n.contains("SPAWNER") || n.contains("MUSIC_DISC")
+                || n.contains("ELYTRA") || n.contains("TOTEM") || n.equals("BEACON")
+                || n.equals("NETHER_STAR") || n.equals("DRAGON_EGG") || n.contains("_HEAD")
+                || n.contains("_SKULL") || n.contains("HORSE_ARMOR") || n.contains("_HARNESS")
+                || n.contains("_HELMET") || n.contains("_CHESTPLATE") || n.contains("_LEGGINGS")
+                || n.contains("_BOOTS") || n.contains("_AXE") || n.contains("_PICKAXE")
+                || n.contains("_SHOVEL") || n.contains("_HOE") || n.contains("_SWORD")
+                || n.contains("ENCHANTED_BOOK") || n.equals("TRIDENT") || n.equals("SHIELD")
+                || n.equals("BOW") || n.equals("CROSSBOW") || n.equals("FISHING_ROD")
+                || n.equals("SHEARS") || n.equals("FLINT_AND_STEEL") || n.equals("COMPASS")
+                || n.equals("RECOVERY_COMPASS") || n.contains("SHULKER_BOX") || n.contains("CHEST_BOAT"))
+            return true;
+        return false;
+    }
+
+    /** True when the item may be wiped: not sellable in the shop, not protected, not valuable. */
+    private boolean destroyable(ItemStack it, UUID u) {
+        if (it == null || it.getType().isAir()) return false;
+        String n = it.getType().name();
+        if (sellableMats.contains(n)) return false;
+        if (isCoin(it)) return false;
+        if (museumMats.contains(n) && !museumDonated(u).contains(n)) return false; // still needed for museum
+        var meta = it.getItemMeta();
+        if (meta != null) {
+            if (meta.hasDisplayName()) return false;              // renamed/custom
+            if (!meta.getEnchants().isEmpty()) return false;      // enchanted
+            var pdc = meta.getPersistentDataContainer();
+            if (pdc != null) {
+                if (pdc.has(profLockKey) || pdc.has(profToolKey)) return false; // profession tools
+                if (pdc.has(placedKey)) return false;                            // lucky coins / placed items
+            }
+        }
+        return !isValuable(it);
+    }
+
+    private void handleDestroy(Player pl, String[] args) {
+        java.util.List<String> gone = new ArrayList<>();
+        int count = 0;
+        if (args.length > 0 && args[0].equalsIgnoreCase("hand")) {
+            ItemStack it = pl.getInventory().getItemInMainHand();
+            if (destroyable(it, pl.getUniqueId())) {
+                gone.add(niceMatName(it.getType())); count += it.getAmount();
+                pl.getInventory().setItemInMainHand(null);
+            }
+        } else {
+            // whole inventory (hotbar included), offhand kept
+            for (int i = 0; i < 36; i++) {
+                ItemStack it = pl.getInventory().getItem(i);
+                if (destroyable(it, pl.getUniqueId())) {
+                    gone.add(niceMatName(it.getType()) + " x" + it.getAmount()); count += it.getAmount();
+                    pl.getInventory().setItem(i, null);
+                }
+            }
+            ItemStack off = pl.getInventory().getItem(40);
+            if (destroyable(off, pl.getUniqueId())) {
+                gone.add(niceMatName(off.getType()) + " x" + off.getAmount()); count += off.getAmount();
+                pl.getInventory().setItem(40, null);
+            }
+        }
+        if (gone.isEmpty()) { pl.sendMessage(ChatColor.GRAY + "Nothing to destroy - that stuff is sellable or valuable."); return; }
+        pl.playSound(pl.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.8f, 0.8f);
+        pl.sendMessage(ChatColor.RED + "\u2718 Destroyed " + ChatColor.YELLOW + count + ChatColor.RED + " unsellable item(s): "
+                + ChatColor.GRAY + String.join(", ", gone));
+    }
+
+    private void handleDestroyAll(Player pl) {
+        int count = 0;
+        // clear every main-inventory slot (9-35) - hotbar and offhand (shield) are kept.
+        // Lucky coins and profession tools are NEVER wiped (global MAVO rule).
+        for (int i = 9; i < 36; i++) {
+            ItemStack it = pl.getInventory().getItem(i);
+            if (it == null || it.getType().isAir()) continue;
+            if (isCoin(it)) continue;
+            var pdc = it.getItemMeta() != null ? it.getItemMeta().getPersistentDataContainer() : null;
+            if (pdc != null && (pdc.has(profLockKey) || pdc.has(profToolKey))) continue;
+            count += it.getAmount();
+            pl.getInventory().setItem(i, null);
+        }
+        pl.playSound(pl.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.8f, 1.2f);
+        pl.sendMessage(ChatColor.RED + "\u2718 Cleared " + ChatColor.YELLOW + count + ChatColor.RED + " item(s) from your inventory."
+                + ChatColor.GRAY + " (hotbar + offhand shield kept)");
+    }
+
+    private String niceMatName(Material m) {
+        String[] p = m.name().toLowerCase(Locale.ROOT).split("_");
+        StringBuilder b = new StringBuilder();
+        for (String q : p) { if (b.length() > 0) b.append(' '); b.append(Character.toUpperCase(q.charAt(0))); b.append(q.substring(1)); }
+        return b.toString();
+    }
+
     public ItemStack createCoinItem(int amount) {
         return makeCoin(Math.max(1, Math.min(64, amount)));
     }
@@ -584,6 +717,8 @@ public final class LuckyCoins extends JavaPlugin implements Listener {
                 return handleWellSet(pl);
             return handleWish(pl);
         }
+        if (command.getName().equalsIgnoreCase("destroy")) { handleDestroy(pl, args); return true; }
+        if (command.getName().equalsIgnoreCase("destroyall")) { handleDestroyAll(pl); return true; }
         if (command.getName().equalsIgnoreCase("ccollect")) {
             // admin: /ccollect give [amount] - conjure genuine lucky coins for testing
             if (args.length >= 1 && args[0].equalsIgnoreCase("give") && pl.hasPermission("mavolucky.admin")) {

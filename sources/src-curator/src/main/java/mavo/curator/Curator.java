@@ -290,6 +290,20 @@ public final class Curator extends JavaPlugin implements Listener {
             totalItems += c.items.size();
         }
         // catch-all needs matCat ids fixed for dropped empties (they can't be hit anyway)
+        exportMaterialList();
+    }
+
+    /**
+     * Writes the full museum material list to data/materials.txt so other plugins
+     * (e.g. MAVOLuckyCoins /destroy) can protect not-yet-donated museum items.
+     */
+    private void exportMaterialList() {
+        try {
+            java.util.List<String> names = new ArrayList<>();
+            for (Material m : matCat.keySet()) names.add(m.name());
+            java.util.Collections.sort(names);
+            java.nio.file.Files.write(new File(getDataFolder(), "materials.txt").toPath(), names);
+        } catch (Exception ignored) {}
     }
 
     /* ---------------- player data ---------------- */
@@ -600,7 +614,7 @@ public final class Curator extends JavaPlugin implements Listener {
                     List.of("&7\u2716 Missing from your collection",
                             "&eBuy: &f" + fmt(price) + " \u26C3",
                             "",
-                            "&e\u25B6 Click to buy 1 and donate it"), false));
+                            "&e\u25B6 Click to buy it - added to the museum instantly"), false));
         }
         if (page > 0) inv.setItem(45, item(Material.ARROW, "&e\u25C0 Previous page", null, false));
         inv.setItem(48, item(Material.OAK_DOOR, "&e\u25C0 Back &7- museum menu", null, false));
@@ -617,6 +631,10 @@ public final class Curator extends JavaPlugin implements Listener {
         if (idx < 0 || idx >= miss.size()) return;
         Material m = miss.get(idx);
         if (has(p.getUniqueId(), m)) { openExtras(p, h.page); return; } // already donated: refresh
+        if (p.getGameMode() != GameMode.SURVIVAL) {
+            p.sendMessage(ChatColor.RED + "The Curator only accepts donations from SURVIVAL players.");
+            return;
+        }
         if (econ == null) { p.sendMessage(ChatColor.RED + "Economy not available - cannot buy."); return; }
         double price = buyPrice(m);
         if (!econ.has(p, price)) {
@@ -625,18 +643,12 @@ public final class Curator extends JavaPlugin implements Listener {
             return;
         }
         econ.withdrawPlayer(p, price);
-        var left = p.getInventory().addItem(new ItemStack(m));
-        if (!left.isEmpty()) {
-            econ.depositPlayer(p, price);
-            p.sendMessage(ChatColor.RED + "Inventory full - purchase refunded.");
-            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 0.9f);
-            return;
-        }
+        register(p, m); // bought item goes STRAIGHT into the museum - nothing to carry, no double buys
         p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.4f);
-        p.sendMessage(ChatColor.GOLD + "\u2726 " + ChatColor.GREEN + "Bought " + ChatColor.WHITE + niceName(m)
-                + ChatColor.GREEN + " for " + ChatColor.YELLOW + fmt(price) + " \u26C3"
-                + ChatColor.GRAY + " - donate it to complete your collection!");
-        openExtras(p, h.page); // refresh: nothing changed yet, but keeps view consistent
+        p.sendMessage(ChatColor.GOLD + "\u2726 " + ChatColor.GREEN + niceName(m)
+                + ChatColor.GREEN + " bought for " + ChatColor.YELLOW + fmt(price) + " \u26C3"
+                + ChatColor.GRAY + " and added to the museum (" + got(p.getUniqueId()).size() + "/" + totalItems + ").");
+        openExtras(p, h.page); // auto-refresh: item is now donated, so it drops off the list
     }
 
     /** Removes the old static ESGUI Museum Extras (it cannot be per-player). Returns files removed. */
@@ -660,6 +672,34 @@ public final class Curator extends JavaPlugin implements Listener {
         h.inv = inv;
         p.openInventory(inv);
         p.playSound(p.getLocation(), Sound.BLOCK_CHEST_OPEN, 0.8f, 1.1f);
+    }
+
+    /** Immediately returns anything the player should NOT have put into the crate. */
+    private void validateVault(Player p, Holder h) {
+        if (!h.view.equals("vault")) return;
+        java.util.Set<String> dupes = new java.util.LinkedHashSet<>();
+        java.util.Set<String> refused = new java.util.LinkedHashSet<>();
+        boolean survival = p.getGameMode() == GameMode.SURVIVAL;
+        ItemStack[] contents = h.inv.getContents();
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack s = contents[i];
+            if (s == null || s.getType().isAir()) continue;
+            if (!survival) { refused.add(niceName(s.getType())); h.inv.setItem(i, null); giveBack(p, s); continue; }
+            Material m = s.getType();
+            if (isProtected(s) || !matCat.containsKey(m)) { refused.add(niceName(m)); h.inv.setItem(i, null); giveBack(p, s); continue; }
+            if (has(p.getUniqueId(), m)) { dupes.add(niceName(m)); h.inv.setItem(i, null); giveBack(p, s); continue; }
+        }
+        if (!survival) {
+            p.sendMessage(ChatColor.RED + "The Curator only accepts donations from SURVIVAL players.");
+            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+        }
+        if (!dupes.isEmpty()) {
+            p.sendMessage(ChatColor.RED + "\u2718 Already in the museum (returned): " + ChatColor.GRAY + String.join(", ", dupes));
+            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1.2f);
+        }
+        if (!refused.isEmpty()) {
+            p.sendMessage(ChatColor.RED + "\u2718 The Curator refused (returned): " + ChatColor.GRAY + String.join(", ", refused));
+        }
     }
 
     private void processVault(Player p, Holder h) {
@@ -712,7 +752,12 @@ public final class Curator extends JavaPlugin implements Listener {
         if (!(e.getInventory().getHolder() instanceof Holder h)) return;
         if (!(e.getWhoClicked() instanceof Player p)) return;
 
-        if (h.view.equals("vault")) return; // free interaction inside the crate
+        if (h.view.equals("vault")) {
+            // free interaction, but after every click validate what is now inside:
+            // duplicates / protected / unknown items bounce back RIGHT AWAY
+            Bukkit.getScheduler().runTask(this, () -> validateVault(p, h));
+            return;
+        }
 
         e.setCancelled(true);
         if (e.getRawSlot() >= e.getInventory().getSize()) return;
@@ -916,10 +961,14 @@ public final class Curator extends JavaPlugin implements Listener {
 
     @Override
     public List<String> onTabComplete(CommandSender s, Command c, String l, String[] a) {
-        if (a.length == 1 && s.hasPermission("mavocurator.admin")) {
+        if (a.length == 1) {
+            String pfx = a[0].toLowerCase(Locale.ROOT);
             List<String> out = new ArrayList<>();
-            if ("reload".startsWith(a[0].toLowerCase(Locale.ROOT))) out.add("reload");
-            if ("shopsgen".startsWith(a[0].toLowerCase(Locale.ROOT))) out.add("shopsgen");
+            if ("extras".startsWith(pfx)) out.add("extras"); // players: /museum extras
+            if (s.hasPermission("mavocurator.admin")) {
+                if ("reload".startsWith(pfx)) out.add("reload");
+                if ("shopsgen".startsWith(pfx)) out.add("shopsgen");
+            }
             return out;
         }
         return List.of();

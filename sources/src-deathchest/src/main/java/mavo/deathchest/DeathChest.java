@@ -71,11 +71,18 @@ public final class DeathChest extends JavaPlugin implements Listener {
         expireKey = new NamespacedKey(this, "dcexpire");
         idKey = new NamespacedKey(this, "dcid");
         getConfig().addDefault("expire-minutes", 30);
-        getConfig().addDefault("teleport-cost-coins", 1000);
-        getConfig().addDefault("teleport-cost-lucky", 10);
+        getConfig().addDefault("teleport-cost-coins", 5000);
+        getConfig().addDefault("teleport-cost-lucky", 100);
         getConfig().addDefault("teleport-seconds", 3);
         getConfig().addDefault("monster-radius", 12);
         getConfig().options().copyDefaults(true);
+        // 1.1.1 migration: old defaults 1000/10 -> 5000/100 (late-game cost; totems stay valuable)
+        if (getConfig().getInt("teleport-cost-coins", -1) == 1000 && getConfig().getInt("teleport-cost-lucky", -1) == 10) {
+            getConfig().set("teleport-cost-coins", 5000);
+            getConfig().set("teleport-cost-lucky", 100);
+            saveConfig();
+            getLogger().info("Migrated grave teleport costs -> 5000 coins / 100 lucky coins.");
+        }
         saveConfig();
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp != null) econ = rsp.getProvider();
@@ -351,7 +358,7 @@ public final class DeathChest extends JavaPlugin implements Listener {
         lore.add("&7Opens in ~&f" + info[4] + " min");
         inv.setItem(13, item(Material.CHEST, "&4" + p.getName() + "'s grave", lore, null));
 
-        double coinCost = getConfig().getDouble("teleport-cost-coins", 1000);
+        double coinCost = getConfig().getDouble("teleport-cost-coins", 5000);
         boolean canCoins = econ != null && econ.getBalance(p) >= coinCost;
         inv.setItem(11, item(canCoins ? Material.GOLD_INGOT : Material.GRAY_DYE,
                 "&6" + (int) coinCost + " coins", List.of("&7Instant trip to your grave",
@@ -359,7 +366,7 @@ public final class DeathChest extends JavaPlugin implements Listener {
                         canCoins ? "" : "&cNot enough coins!", "&e\u25B6 Click to travel"),
                 "pay:coins"));
 
-        int lcCost = getConfig().getInt("teleport-cost-lucky", 10);
+        int lcCost = getConfig().getInt("teleport-cost-lucky", 100);
         boolean canLucky = canLucky(p, lcCost);
         ItemStack lcIcon = luckyCoinItem != null ? luckyItem(lcCost) : new ItemStack(Material.GOLD_NUGGET);
         inv.setItem(15, item(lcIcon.getType(), "&6" + lcCost + " Lucky Coins",

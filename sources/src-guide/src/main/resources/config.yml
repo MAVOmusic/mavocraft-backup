@@ -1,10 +1,23 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 17
+version: 18
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&e&lv18 &7- Fix batch: Extras, DeathChest, Casino, MobFarm"
+    icon: EMERALD
+    lines:
+      - "&7&e/museum extras&7: clicking buys &finstantly&7 and adds it"
+      - "&7to the museum - GUI &fstays open&7, item leaves the list."
+      - "&7Duplicate donations now &fbounce back&7 as you place them."
+      - "&7Grave teleport: &e5,000 coins&7 / &6100 Lucky Coins&7 (was 1,000/10)."
+      - "&7Casino bets: &e1-1,000,000 coins&7 (doubles on +) / &61-50 Lucky&7 (+1)."
+      - "&7MobFarm: 10k entry, 15 min, pick = &fshop price/16&7 (doubles per pick),"
+      - "&7extend 25k/+15 min; Portal Room danger dives 25k-5,000,000."
+      - "&7New: &e/destroy inventory|hand&7 (kills unsellable junk only),"
+      - "&7&e/destroyall&7 (clears main inventory, hotbar + shield kept)."
+      - ""
   - title: "&e&lv17 &7- Museum Extras cleanup"
     icon: EMERALD
     lines:
@@ -243,8 +256,13 @@ tutorial:
       - ""
       - "&e/grave &7opens a &fmenu&7 - every grave with its"
       - "&7coordinates, world and time left."
-      - "&7Click one to &fteleport: &e1,000 coins&7 or &610 Lucky Coins&7."
+      - "&7Click one to &fteleport: &e5,000 coins&7 or &6100 Lucky Coins&7."
       - "&73s countdown - moving cancels (and no refund)."
+      - ""
+      - "&7Only YOUR key opens it - others just see a"
+      - "&7normal chest with no label."
+      - ""
+      - "&8&oPage 2: the 30-minute lock & a tip →"
       - ""
       - "&7You have &f30 minutes &7to run back before it"
       - "&7bursts open for anyone to loot."
@@ -263,7 +281,8 @@ tutorial:
       - "&fRocket Crash (10x)&7, &fLucky Slots (8x)&7,"
       - "&fRock Paper Scissors (2x)&7, &fBlackjack 21 (2.5x)&7."
       - ""
-      - "&7Bets: &e100-5,000 coins&7 or &61-10 Lucky Coins&7."
+      - "&7Bets: &e1-1,000,000 coins&7 (doubles on +) or"
+      - "&61-50 Lucky Coins&7 (+1 per click)."
       - "&7You get &f10 attempts &7every &f10 MC days&7."
       - "&7Wins show for &f5 seconds&7 - CLOSE to skip."
       - ""
@@ -331,7 +350,10 @@ tutorial:
       - "&7Fill all 15 -> unlock another room or &eExpand Up&7."
       - ""
       - "&b&lPORTAL ROOM&7 - &e/portalroom: 26 jump portals."
-      - "&713 biome jumps + 13 danger dives, &e1,000-15,000 coins&7."
+      - "&713 biome jumps &e1,000-10,000 coins&7 (unchanged)."
+      - "&713 danger dives &e25,000-5,000,000 coins&7 - the"
+      - "&7further you go, the better the loot zone: stronghold"
+      - "&e500,000&7, trial chambers &e1,000,000&7, deep dark &e5,000,000&7."
       - "&7Every jump lands in a FRESH far-away zone -"
       - "&7the last 50 zones are never reused. &cOne-way!"
       - ""
@@ -341,15 +363,17 @@ tutorial:
     icon: SPAWNER
     lines:
       - "&7The Mob Farm sits far west at &f-15000&7."
-      - "&e/mobfarm enter &7- &f5,000 coins&7, 10s don't-move,"
-      - "&7then &f30 min &7session (timer keeps running if you leave)."
+      - "&e/mobfarm enter &7- &f10,000 coins&7, 10s don't-move,"
+      - "&7then &f15 min &7session (timer keeps running if you leave)."
       - ""
       - "&7Every mob has its &fown bay&7 - spawn room, kill"
       - "&7cell and chest. Mobs drop into the hopper feed;"
       - "&7&ecollect &7at the front chest, stand on the marked"
       - "&7safe spot (see &e/mobfarm info&7)."
       - ""
-      - "&7&e/mobfarm buy &7extra spawners (10k/20k/40k...)"
+      - "&7Pick a mob: &fshop spawner price / 16&7 (zombie 1.2M →"
+      - "&e75,000&7). Every &fextra pick&7 doubles &e75k → 150k → 300k…"
+      - "&7Stuck? &e/mobfarm extend&7 &e25,000&7 for +15 min on the same timer."
       - "&7&e/mobfarm leave &7- stash trip; Hunter/Archer XP = 30%."
       - "&7Every bay has a &fcommunity chest&7 - at &e1,000,000"
       - "&7coins the base spawner count rises forever!"
@@ -633,7 +657,7 @@ features:
       - "&7When you die, your items go into a locked grave chest"
       - "&7only YOU can open. You have 30 minutes to get back"
       - "&7before it bursts open for anyone to loot."
-      - "&e/grave &7- see where your graves are"
+      - "&e/grave &7- teleport for &e5,000 coins&7 or &6100 Lucky Coins&7"
   - id: wild
     icon: COMPASS
     name: "&a&lWild Teleport"
@@ -689,16 +713,17 @@ features:
   - id: mobfarm
     icon: SPAWNER
     name: "&c&lMob Farm"
-    short: "Paid spawner rooms — 5k entry, 30 min"
+    short: "Paid spawner rooms — 10k entry, 15 min"
     pages:
       - "&c&lMob Farm Zone"
       - "&7Every mob has its own bay - spawn room, kill cell & chest."
-      - "&e/mobfarm enter &7- &f5000 coins&7, 10s don't-move,"
-      - "&7then &f30 min &7session (timer keeps running if you leave)."
+      - "&e/mobfarm enter &7- &f10,000 coins&7, 10s don't-move,"
+      - "&7then &f15 min &7session (timer keeps running if you leave)."
+      - "&7Pick cost = &fshop spawner price / 16&7 (zombie 1.2M → 75,000);"
+      - "&7each &fextra pick&7 doubles it. &e/mobfarm extend&7: 25,000/+15 min."
       - "&7Mobs drop into the hopper feed - &ecollect &7at the front chest."
       - "&7Each bay has a marked &fsafe stand spot&7 (see &e/mobfarm info&7)."
-      - "&e/mobfarm leave &7- stash trip; &e/mobfarm buy &7extra spawners"
-      - "&7(10k/20k/40k\u2026). Extras wipe when the event ends."
+      - "&e/mobfarm buy&7 adds spawners to the SAME block."
       - "&7Hunter/Archer XP inside = &c30%&7. Non-PVP."
       - "&7Community chest funds more base spawners forever."
 

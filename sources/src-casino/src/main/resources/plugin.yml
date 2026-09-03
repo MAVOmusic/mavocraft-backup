@@ -1,5 +1,5 @@
 name: MAVOCasino
-version: 1.2.3
+version: 1.2.4
 main: mavo.casino.Casino
 api-version: '1.13'
 description: Lucky Louie's gambling den - 10 games of chance for MAVOcraft

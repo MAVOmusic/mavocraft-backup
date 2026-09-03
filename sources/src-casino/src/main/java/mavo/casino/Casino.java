@@ -49,8 +49,11 @@ public final class Casino extends JavaPlugin implements Listener {
     private File dataFile;
     private YamlConfiguration data;
 
-    private static final int[] COIN_BETS = {100, 250, 500, 1000, 2500, 5000};
-    private static final int[] LUCKY_BETS = {1, 2, 3, 5, 10};
+    // 1.2.4: coins start at 1 and DOUBLE per + click (1,2,4,...,524288, then cap 1,000,000)
+    private static final int[] COIN_BETS = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
+            4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1_000_000};
+    // lucky coins: +1 per click, 1 - 50
+    private static final int[] LUCKY_BETS = java.util.stream.IntStream.rangeClosed(1, 50).toArray();
 
     // ---- Gambler profession lucky sticks: material -> win-luck bonus ----
     // Must match the tier tools in MAVOProfessions config (gambler profession).
@@ -379,7 +382,8 @@ public final class Casino extends JavaPlugin implements Listener {
                 List.of("&7Click to switch", "&7You have: &f" + (h.lucky ? countLucky(p) : (econ == null ? 0 : (long) econ.getBalance(p))))));
         inv.setItem(30, item(Material.RED_STAINED_GLASS_PANE, "&c- Lower bet", null));
         inv.setItem(31, item(Material.PAPER, "&f&lBet: &e" + bet + (h.lucky ? " \u26C0" : " \u26C3"),
-                List.of("&7Coins: 100 - 5,000", "&7Lucky Coins: 1 - 10")));
+                List.of("&7Coins: &f1 - 1,000,000 &7(doubles on +)",
+                        "&7Lucky Coins: &f1 - 50 &7(+1 each)")));
         inv.setItem(32, item(Material.LIME_STAINED_GLASS_PANE, "&a+ Raise bet", null));
         double luck = stickLuck(p);
         if (luck >= 0)

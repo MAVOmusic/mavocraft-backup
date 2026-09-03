@@ -1,7 +1,10 @@
-# MAVOMobFarm 2.5 — unique per-mob bays @ -15000 (each mob gets its own kill cell)
-entry-cost: 5000
+# MAVOMobFarm 2.6 — unique per-mob bays @ -15000 (each mob gets its own kill cell)
+entry-cost: 10000
 entry-cancel-seconds: 10
-session-minutes: 30
+session-minutes: 15
+# /mobfarm extend: +15 min on the SAME session timer (endsAt + HUD countdown)
+extend-cost: 25000
+extend-minutes: 15
 profession-xp-scale: 0.30
 pvp: false
 
@@ -14,12 +17,52 @@ session-hud-title: "&6MobFarm &7| &e{mm}:{ss} &7left &8| &f{mob} &8| &ex{stack}"
 # Protection ONLY this far around the farm AABB (caves outside = normal)
 protect-radius: 50
 
-# Pricing (P = normal-spawner-price)
-# unlock (pick) = P / unlock-divisor   (default 16 → 625)
-# extras: P/8, P/4, P/2, P, then double…
-normal-spawner-price: 10000
+# Pricing
+# pick (unlock a mob zone) = that mob's REAL shop spawner buy price / 16
+#   (zombie 1,200,000 → 75,000); each ADDITIONAL pick in the same session DOUBLES
+#   (75,000 → 150,000 → 300,000 …). Prices below mirror EconomyShopGUI shop/Mobs/spawners.yml.
+# Mobs with no shop spawner use a class-equivalent fallback (closest existing price).
+# extra spawner stacks on the SAME block use the mob price too: /8, /4, /2, ×1 then double.
+normal-spawner-price: 10000          # fallback only for mobs missing below
 unlock-divisor: 16
-extra-divisors: [8, 4, 2, 1]   # first four extras; then doubles previous
+extra-divisors: [8, 4, 2, 1]   # first four stack extras; then doubles previous
+shop-buy:                     # entity-name -> shop spawner buy price (coins)
+  ZOMBIE: 1200000
+  HUSK: 1250000
+  SKELETON: 1250000
+  STRAY: 1250000
+  SPIDER: 450000
+  CAVE_SPIDER: 500000
+  CREEPER: 1500000
+  ENDERMAN: 1750000
+  BLAZE: 1250000
+  MAGMA_CUBE: 5000000
+  SLIME: 5500000
+  WITHER_SKELETON: 2500000
+  DROWNED: 1200000
+  GUARDIAN: 2500000
+  WITCH: 5000000
+  PILLAGER: 1750000
+  HOGLIN: 1200000
+  PIGLIN: 1200000
+  SILVERFISH: 500000
+  PHANTOM: 2500000
+  COW: 1000000
+  PIG: 1000000
+  CHICKEN: 150000
+  SHEEP: 450000
+  RABBIT: 450000
+  VILLAGER: 1000000
+  IRON_GOLEM: 10000000
+  SQUID: 1000000
+  GLOW_SQUID: 1000000
+  BEE: 150000
+  FOX: 250000
+  GOAT: 1200000
+  LLAMA: 450000
+  PANDA: 500000
+  FROG: 3950000
+  SNIFFER: 450000
 base-spawners: 2
 max-spawners: 25
 stack-spawn-interval-ticks: 40

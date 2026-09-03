@@ -53,9 +53,10 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         boolean built;
     }
     static final class Session {
-        UUID owner; String mobId; long endsAtMs;
+        UUID owner; String mobId; long endsAtMs, totalMs;
         int extraSpawners; Location returnLoc, stackLoc; boolean active = true;
         boolean unlocked; // paid pick for this session's mob
+        int picks;        // paid picks THIS session -> cost doubles per pick
         BukkitTask spawnTask; BukkitTask hudTask; BossBar hud; TextDisplay stackHolo;
     }
     static final class PendingEnter { int secondsLeft; BukkitTask task; long cost; }
@@ -75,6 +76,16 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         stackHoloKey = new NamespacedKey(this, "stackholo");
         lastHitKey = new NamespacedKey(this, "lasthit");
         saveDefaultConfig();
+        // 2.6 migration: old economy (5,000 entry / 30 min / no shop-priced picks)
+        // -> new (10,000 entry / 15 min / real shop spawner price/16, 25k extends).
+        boolean migrated = false;
+        if (getConfig().getInt("entry-cost", -1) == 5000) { getConfig().set("entry-cost", 10000); migrated = true; }
+        if (getConfig().getInt("session-minutes", -1) == 30) { getConfig().set("session-minutes", 15); migrated = true; }
+        getConfig().options().copyDefaults(true); // adds shop-buy map + extend-* keys if missing
+        saveConfig();
+        if (migrated) getLogger().info("Migrated MobFarm economy -> 10k entry / 15 min / shop-priced picks.");
+        if (!getConfig().contains("shop-buy.ZOMBIE"))
+            getLogger().warning("shop-buy map missing - picks fall back to normal-spawner-price/" + getConfig().getInt("unlock-divisor", 16));
         dataFile = new File(getDataFolder(), "data.yml");
         data = YamlConfiguration.loadConfiguration(dataFile);
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
@@ -90,7 +101,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 for (UUID u : end) endSession(u, true);
             }
         }.runTaskTimer(this, 40L, 40L);
-        getLogger().info("MAVOMobFarm 2.5.0 enabled. mobs=" + mobs.size()
+        getLogger().info("MAVOMobFarm 2.6.0 enabled. mobs=" + mobs.size()
                 + " center=" + (center == null ? "?" : center.getBlockX() + "," + center.getBlockZ())
                 + " ai=" + mobAiEnabled());
     }
@@ -161,6 +172,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     }
 
     private static String color(String s) { return ChatColor.translateAlternateColorCodes('&', s == null ? "" : s); }
+    private static String fmt(long n) { return String.format("%,d", n); }
 
     private int baseSpawners() {
         int start = getConfig().getInt("community.stack-start", getConfig().getInt("base-spawners", 2));
@@ -171,31 +183,54 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         return Math.min(getConfig().getInt("max-spawners", 25), baseSpawners() + s.extraSpawners);
     }
     private long normalPrice() { return getConfig().getLong("normal-spawner-price", 10_000L); }
-    /** Paid unlock to pick/activate a mob zone = P / unlock-divisor */
-    private long unlockCost() {
-        long p = normalPrice();
-        long d = Math.max(1L, getConfig().getLong("unlock-divisor", 16L));
-        return Math.max(1L, p / d);
+    /** Real shop spawner buy price for a mob (mirrors EconomyShopGUI shops/Mobs/spawners.yml). */
+    private long shopBuy(MobDef m) {
+        long v = getConfig().getLong("shop-buy." + m.entity.name().toUpperCase(Locale.ROOT), -1L);
+        return v > 0 ? v : Math.max(1L, normalPrice());
     }
-    /** Extra #0 = P/8, #1 = P/4, #2 = P/2, #3 = P, then double previous. */
-    private long extraCost(int extrasAlreadyBought) {
-        long p = normalPrice();
+    /** Base pick price = that mob's shop spawner buy price / 16 (zombie 1.2M -> 75,000). */
+    private long basePickCost(MobDef m) {
+        long d = Math.max(1L, getConfig().getLong("unlock-divisor", 16L));
+        return Math.max(1L, shopBuy(m) / d);
+    }
+    /** Pick price: base doubles for EVERY additional paid pick in the same session. */
+    private long pickCost(MobDef m, Session s) {
+        long c = basePickCost(m);
+        for (int i = 0; i < s.picks; i++) c = Math.min(c * 2L, Long.MAX_VALUE / 8);
+        return c;
+    }
+    private long minPickCost() {
+        long best = Long.MAX_VALUE;
+        for (MobDef m : mobs.values()) best = Math.min(best, basePickCost(m));
+        return best == Long.MAX_VALUE ? 1L : best;
+    }
+    private long extendCost() { return Math.max(1L, getConfig().getLong("extend-cost", 25_000L)); }
+    private long extendMs() { return Math.max(1L, getConfig().getLong("extend-minutes", 15)) * 60_000L; }
+    /** Extra spawner STACK on the same block: mob price /8, /4, /2, x1, then double. */
+    private long stackCost(MobDef m, int extrasAlreadyBought) {
+        long p = shopBuy(m);
         List<Integer> divs = getConfig().getIntegerList("extra-divisors");
         if (divs == null || divs.isEmpty()) divs = List.of(8, 4, 2, 1);
         if (extrasAlreadyBought < divs.size()) {
             int d = Math.max(1, divs.get(extrasAlreadyBought));
             return Math.max(1L, p / d);
         }
-        // after listed: start from full P at index size-1 if last div is 1, then double each
         long last = Math.max(1L, p / Math.max(1, divs.get(divs.size() - 1)));
         int over = extrasAlreadyBought - (divs.size() - 1);
-        // extrasAlreadyBought == size → first double after last listed
-        // e.g. size=4, bought=4 → over=1 → last*2
         long cost = last;
-        for (int i = 0; i < over; i++) {
-            cost = Math.min(cost * 2L, Long.MAX_VALUE / 4);
-        }
+        for (int i = 0; i < over; i++) cost = Math.min(cost * 2L, Long.MAX_VALUE / 4);
         return cost;
+    }
+    private List<MobDef> wingMobs(String wing) {
+        List<MobDef> out = new ArrayList<>();
+        for (MobDef m : mobs.values()) if (m.wing.equalsIgnoreCase(wing)) out.add(m);
+        out.sort((a, b) -> ChatColor.stripColor(a.display).toLowerCase(Locale.ROOT)
+                .compareTo(ChatColor.stripColor(b.display).toLowerCase(Locale.ROOT)));
+        return out;
+    }
+    private Material eggIcon(MobDef m) {
+        Material egg = Material.matchMaterial(m.entity.name() + "_SPAWN_EGG");
+        return egg != null ? egg : m.icon;
     }
     private boolean mobAiEnabled() { return getConfig().getBoolean("mob-ai", true); }
     private boolean sunSafe() { return getConfig().getBoolean("sun-safe-killpad", true); }
@@ -253,17 +288,20 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(ChatColor.GOLD + "/mobfarm enter|leave|hub|status|buy|pick|prices|info"
+            sender.sendMessage(ChatColor.GOLD + "/mobfarm enter|leave|hub|status|buy|extend|pick|prices|info"
                     + (sender.hasPermission("mavomobfarm.admin")
                     ? "|tp|setcenter|build|rebuild|clear|clearhere|purge|reload|resholo" : ""));
             return true;
         }
         String a = args[0].toLowerCase(Locale.ROOT);
         if (a.equals("info")) {
-            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.5.0 " + ChatColor.GRAY + "entry "
+            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.6.0 " + ChatColor.GRAY + "entry "
                     + ChatColor.YELLOW + getConfig().getInt("entry-cost")
                     + ChatColor.GRAY + " · " + getConfig().getInt("session-minutes") + "m"
-                    + ChatColor.GRAY + " · unlock " + ChatColor.GREEN + unlockCost()
+                    + ChatColor.GRAY + " · pick from " + ChatColor.GREEN + minPickCost()
+                    + ChatColor.GRAY + " (spawner price/16, doubles per pick)"
+                    + ChatColor.GRAY + " · extend " + ChatColor.YELLOW + extendCost()
+                    + ChatColor.GRAY + "/+" + getConfig().getInt("extend-minutes", 15) + "m"
                     + ChatColor.GRAY + " · XP×" + ChatColor.AQUA + getConfig().getDouble("profession-xp-scale"));
             sender.sendMessage(ChatColor.GRAY + "Community " + ChatColor.YELLOW + communityCoins + "/" + communityTarget
                     + ChatColor.GRAY + " · base stack " + ChatColor.GREEN + "x" + baseSpawners()
@@ -282,7 +320,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             if (!sender.hasPermission("mavomobfarm.admin")) { sender.sendMessage(ChatColor.RED + "No."); return true; }
             reloadConfig(); loadAll();
             sender.sendMessage(ChatColor.GREEN + "Reloaded. mobs=" + mobs.size()
-                    + " ai=" + mobAiEnabled() + " unlock=" + unlockCost());
+                    + " ai=" + mobAiEnabled() + " first-pick=" + minPickCost());
             for (Session s : sessions.values()) {
                 if (s.hud == null && sessionHud()) startHud(s); else updateHud(s);
             }
@@ -336,6 +374,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             case "leave" -> leaveFarm(p);
             case "status" -> showStatus(p);
             case "buy" -> buySpawner(p);
+            case "extend" -> extendSession(p);
             case "pick" -> openPick(p);
             default -> p.sendMessage(ChatColor.RED + "Unknown. /mobfarm");
         }
@@ -347,28 +386,100 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     }
 
     private void showPrices(CommandSender sender) {
-        long unlock = unlockCost();
-        long p = normalPrice();
+        if (sender instanceof Player pl) { openPrices(pl, 0); return; }
         sender.sendMessage(ChatColor.GOLD + "=== MobFarm prices ===");
         sender.sendMessage(ChatColor.YELLOW + "Session entry: " + ChatColor.WHITE + getConfig().getInt("entry-cost")
-                + ChatColor.GRAY + " · unlock mob (pick): " + ChatColor.GREEN + unlock
-                + ChatColor.DARK_GRAY + " (P/" + getConfig().getLong("unlock-divisor", 16) + ", P=" + p + ")");
-        sender.sendMessage(ChatColor.AQUA + "Extra stacks on SAME block:");
-        for (int i = 0; i < 8; i++) {
-            sender.sendMessage(ChatColor.GRAY + "  extra #" + (i + 1) + ": " + ChatColor.YELLOW + extraCost(i));
-        }
-        sender.sendMessage(ChatColor.GOLD + "--- Mobs (unlock each = " + unlock + ") ---");
-        String lastWing = "";
+                + ChatColor.GRAY + " (" + getConfig().getInt("session-minutes") + "m) · extend "
+                + ChatColor.YELLOW + extendCost() + ChatColor.GRAY + "/+" + getConfig().getInt("extend-minutes", 15) + "m");
+        sender.sendMessage(ChatColor.AQUA + "Pick = real shop spawner price / 16 (doubles per extra pick):");
         for (MobDef m : mobs.values()) {
-            if (!m.wing.equals(lastWing)) {
-                lastWing = m.wing;
-                sender.sendMessage(ChatColor.RED + " " + lastWing.toUpperCase(Locale.ROOT) + " wing:");
-            }
-            sender.sendMessage(ChatColor.GRAY + "  " + m.display + ChatColor.DARK_GRAY + " [" + m.style + "]"
-                    + ChatColor.WHITE + " unlock " + unlock
-                    + ChatColor.GRAY + " · then extras " + extraCost(0) + " → " + extraCost(1) + " → …");
+            sender.sendMessage(ChatColor.GRAY + "  " + ChatColor.stripColor(m.display) + ChatColor.WHITE
+                    + " " + basePickCost(m) + ChatColor.GRAY + " → " + (basePickCost(m) * 2) + " → " + (basePickCost(m) * 4) + "…");
         }
-        sender.sendMessage(ChatColor.RED + "Enter with ≥ " + unlock + " coins to unlock the cheapest spawner after entry.");
+    }
+
+    // ---------------- pick + prices GUIs (2.6: 2 pages: hostile / farm animals) ----------------
+    private void openPick(Player p, int wingIdx) {
+        Session s = sessions.get(p.getUniqueId());
+        if (s == null || s.endsAtMs < System.currentTimeMillis()) { p.sendMessage(ChatColor.RED + "/mobfarm enter first"); return; }
+        String wing = wingIdx == 0 ? "hostile" : "animal";
+        String label = wingIdx == 0 ? "Hostile (1/2)" : "Farm animals (2/2)";
+        Inventory inv = Bukkit.createInventory(null, 54,
+                ChatColor.DARK_RED + "MobFarm Pick — " + label);
+        int slot = 0;
+        for (MobDef m : wingMobs(wing)) {
+            ItemStack it = new ItemStack(eggIcon(m));
+            ItemMeta meta = it.getItemMeta();
+            meta.setDisplayName(m.display);
+            List<String> lore = new ArrayList<>();
+            lore.add(ChatColor.GRAY + "Wing: " + m.wing + " · " + m.style);
+            long now = pickCost(m, s);
+            lore.add(ChatColor.YELLOW + "Pick #" + (s.picks + 1) + " cost: " + fmt(now) + " coins");
+            lore.add(ChatColor.DARK_GRAY + "Next pick (this session): " + fmt(Math.min(now * 2L, Long.MAX_VALUE / 8)));
+            if (m.id.equals(s.mobId) && s.unlocked) lore.add(ChatColor.GREEN + "✓ ACTIVE");
+            else if (m.id.equals(s.mobId)) lore.add(ChatColor.GOLD + "Selected — pay to unlock");
+            lore.add(ChatColor.AQUA + "Click to pay & teleport to zone");
+            meta.setLore(lore);
+            it.setItemMeta(meta);
+            inv.setItem(slot++, it);
+        }
+        // nav + info
+        ItemStack nav = new ItemStack(Material.ARROW);
+        ItemMeta nm = nav.getItemMeta();
+        nm.setDisplayName(wingIdx == 0 ? ChatColor.GREEN + "▶ Farm animals" : ChatColor.GOLD + "◀ Hostile");
+        nav.setItemMeta(nm);
+        inv.setItem(49, nav);
+        ItemStack info = new ItemStack(Material.CLOCK);
+        ItemMeta im = info.getItemMeta();
+        im.setDisplayName(ChatColor.GOLD + "Session info");
+        im.setLore(List.of(ChatColor.YELLOW + "Entry " + fmt(getConfig().getInt("entry-cost")) + " · "
+                        + getConfig().getInt("session-minutes") + "m",
+                ChatColor.YELLOW + "Extend " + fmt(extendCost()) + "/+" + getConfig().getInt("extend-minutes", 15) + "m",
+                ChatColor.GRAY + "picks so far this session: " + s.picks,
+                ChatColor.GRAY + "balance: " + fmt((long) (econ == null ? 0 : econ.getBalance(p)))));
+        info.setItemMeta(im);
+        inv.setItem(50, info);
+        p.openInventory(inv);
+    }
+
+    private void openPrices(Player p, int wingIdx) {
+        // read-only version of the pick GUI (no payment) — /mobfarm prices from console stays chat
+        String wing = wingIdx == 0 ? "hostile" : "animal";
+        String label = wingIdx == 0 ? "Hostile (1/2)" : "Farm animals (2/2)";
+        Inventory inv = Bukkit.createInventory(null, 54,
+                ChatColor.DARK_RED + "MobFarm Prices — " + label);
+        int slot = 0;
+        for (MobDef m : wingMobs(wing)) {
+            ItemStack it = new ItemStack(eggIcon(m));
+            ItemMeta meta = it.getItemMeta();
+            meta.setDisplayName(m.display);
+            long b = basePickCost(m);
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "Shop spawner price: " + ChatColor.YELLOW + fmt(shopBuy(m)) + " coins",
+                    ChatColor.YELLOW + "Pick #1: " + fmt(b),
+                    ChatColor.YELLOW + "Pick #2: " + fmt(Math.min(b * 2L, Long.MAX_VALUE / 8)),
+                    ChatColor.YELLOW + "Pick #3: " + fmt(Math.min(b * 4L, Long.MAX_VALUE / 8)),
+                    ChatColor.DARK_GRAY + "Stack extras: " + fmt(stackCost(m, 0)) + " → "
+                            + fmt(stackCost(m, 1)) + " → " + fmt(stackCost(m, 2)),
+                    ChatColor.GRAY + "= shop buy price / 16, then doubles per pick"));
+            it.setItemMeta(meta);
+            inv.setItem(slot++, it);
+        }
+        ItemStack nav = new ItemStack(Material.ARROW);
+        ItemMeta nm = nav.getItemMeta();
+        nm.setDisplayName(wingIdx == 0 ? ChatColor.GREEN + "▶ Farm animals" : ChatColor.GOLD + "◀ Hostile");
+        nav.setItemMeta(nm);
+        inv.setItem(49, nav);
+        ItemStack info = new ItemStack(Material.CLOCK);
+        ItemMeta im = info.getItemMeta();
+        im.setDisplayName(ChatColor.GOLD + "Session info");
+        im.setLore(List.of(ChatColor.YELLOW + "Entry " + fmt(getConfig().getInt("entry-cost")) + " · "
+                        + getConfig().getInt("session-minutes") + "m",
+                ChatColor.YELLOW + "Extend " + fmt(extendCost()) + "/+" + getConfig().getInt("extend-minutes", 15) + "m",
+                ChatColor.GRAY + "Hub hologram shows the same info"));
+        info.setItemMeta(im);
+        inv.setItem(50, info);
+        p.openInventory(inv);
     }
 
     private void showStatus(Player p) {
@@ -396,14 +507,14 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             return;
         }
         if (pending.containsKey(p.getUniqueId())) { p.sendMessage(ChatColor.RED + "Already entering."); return; }
-        long cost = getConfig().getLong("entry-cost", 5000);
+        long cost = getConfig().getLong("entry-cost", 10_000L);
         if (econ == null) { p.sendMessage(ChatColor.RED + "Economy missing."); return; }
-        if (!econ.has(p, cost)) { p.sendMessage(ChatColor.RED + "Need " + cost + " coins to enter."); return; }
-        long unlock = unlockCost();
-        p.sendActionBar(ChatColor.RED + "" + ChatColor.BOLD + "MAKE SURE TO HAVE ≥ " + unlock
+        if (!econ.has(p, cost)) { p.sendMessage(ChatColor.RED + "Need " + fmt(cost) + " coins to enter."); return; }
+        long unlock = minPickCost();
+        p.sendActionBar(ChatColor.RED + "" + ChatColor.BOLD + "MAKE SURE TO HAVE ≥ " + fmt(unlock)
                 + " COINS TO UNLOCK THE CHEAPEST SPAWNER");
-        p.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "⚠ After entry you must PAY " + unlock
-                + " coins in /mobfarm pick to unlock a mob zone (no free spawner).");
+        p.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "⚠ After entry you must PAY " + fmt(unlock)
+                + "+ coins in /mobfarm pick to unlock a mob zone (no free spawner).");
         int secs = Math.max(3, getConfig().getInt("entry-cancel-seconds", 10));
         PendingEnter pe = new PendingEnter(); pe.secondsLeft = secs; pe.cost = cost;
         pe.task = new BukkitRunnable() {
@@ -412,7 +523,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 pe.secondsLeft--;
                 if (pe.secondsLeft > 0) {
                     p.sendActionBar(ChatColor.GOLD + "Mob farm in " + pe.secondsLeft + "s… don't move! "
-                            + ChatColor.RED + "Need ≥" + unlock + " after entry to unlock");
+                            + ChatColor.RED + "Need ≥" + fmt(unlock) + " after entry to unlock");
                     return;
                 }
                 pending.remove(p.getUniqueId()); cancel();
@@ -421,7 +532,8 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             }
         }.runTaskTimer(this, 20L, 20L);
         pending.put(p.getUniqueId(), pe);
-        p.sendMessage(ChatColor.GOLD + "Entering… " + secs + "s (move = cancel). Cost " + cost);
+        p.sendMessage(ChatColor.GOLD + "Entering… " + secs + "s (move = cancel). Cost " + fmt(cost)
+                + ChatColor.GRAY + " · " + getConfig().getInt("session-minutes") + "m session");
     }
 
     @EventHandler
@@ -441,16 +553,41 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         s.owner = p.getUniqueId();
         s.mobId = data.getString("players." + p.getUniqueId() + ".last-mob", "zombie");
         if (!mobs.containsKey(s.mobId)) s.mobId = mobs.isEmpty() ? "zombie" : mobs.keySet().iterator().next();
-        s.endsAtMs = System.currentTimeMillis() + getConfig().getInt("session-minutes", 30) * 60_000L;
-        s.returnLoc = p.getLocation().clone(); s.extraSpawners = 0; s.unlocked = false;
+        long sessMs = Math.max(1L, getConfig().getInt("session-minutes", 15)) * 60_000L;
+        s.totalMs = sessMs;
+        s.endsAtMs = System.currentTimeMillis() + sessMs;
+        s.returnLoc = p.getLocation().clone(); s.extraSpawners = 0; s.unlocked = false; s.picks = 0;
         sessions.put(p.getUniqueId(), s);
         startHud(s);
         goHub(p);
-        p.sendMessage(ChatColor.GREEN + "Session started. " + ChatColor.YELLOW + "Pay "
-                + unlockCost() + ChatColor.GREEN + " in " + ChatColor.AQUA + "/mobfarm pick"
+        p.sendMessage(ChatColor.GREEN + "Session started (" + getConfig().getInt("session-minutes", 15)
+                + "m). " + ChatColor.YELLOW + "Pay "
+                + fmt(minPickCost()) + "+" + ChatColor.GREEN + " in " + ChatColor.AQUA + "/mobfarm pick"
                 + ChatColor.GREEN + " to unlock a zone (teleports you there).");
         p.sendMessage(ChatColor.RED + "No free spawner — unlock required. /mobfarm prices");
         openPick(p);
+    }
+
+    /**
+     * 2.6: /mobfarm extend — 25,000 coins for +15 min.
+     * Adds to the SAME session timer (endsAtMs) so the HUD countdown shows the new time.
+     */
+    private void extendSession(Player p) {
+        Session s = sessions.get(p.getUniqueId());
+        if (s == null || s.endsAtMs < System.currentTimeMillis()) { p.sendMessage(ChatColor.RED + "No active session."); return; }
+        long cost = extendCost();
+        if (econ == null) { p.sendMessage(ChatColor.RED + "Economy missing."); return; }
+        if (!econ.has(p, cost)) { p.sendMessage(ChatColor.RED + "Need " + fmt(cost) + " coins to extend."); return; }
+        econ.withdrawPlayer(p, cost);
+        long add = extendMs();
+        s.totalMs += add;
+        s.endsAtMs += add;
+        updateHud(s);
+        long left = Math.max(0, (s.endsAtMs - System.currentTimeMillis()) / 1000L);
+        p.sendMessage(ChatColor.GREEN + "Extended +" + getConfig().getInt("extend-minutes", 15) + "m (paid "
+                + fmt(cost) + "). " + ChatColor.YELLOW + left / 60 + "m " + left % 60 + "s left"
+                + ChatColor.GRAY + " — next extend " + fmt(cost) + ".");
+        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1.6f);
     }
 
     private void leaveFarm(Player p) {
@@ -489,10 +626,12 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     private void buySpawner(Player p) {
         Session s = sessions.get(p.getUniqueId());
         if (s == null || s.endsAtMs < System.currentTimeMillis()) { p.sendMessage(ChatColor.RED + "No session."); return; }
-        if (!s.unlocked) { p.sendMessage(ChatColor.RED + "Unlock a mob first: /mobfarm pick (" + unlockCost() + " coins)"); return; }
+        MobDef sm = mobs.get(s.mobId);
+        long pick = sm == null ? minPickCost() : basePickCost(sm);
+        if (!s.unlocked) { p.sendMessage(ChatColor.RED + "Unlock a mob first: /mobfarm pick (" + fmt(pick) + " coins)"); return; }
         int max = getConfig().getInt("max-spawners", 25);
         if (stackCount(s) >= max) { p.sendMessage(ChatColor.RED + "Max stack " + max); return; }
-        long cost = extraCost(s.extraSpawners);
+        long cost = sm == null ? 1L : stackCost(sm, s.extraSpawners);
         if (econ == null || !econ.has(p, cost)) {
             p.sendMessage(ChatColor.RED + "Need " + cost + " coins for next stack.");
             return;
@@ -500,84 +639,70 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         econ.withdrawPlayer(p, cost); s.extraSpawners++; setupCellStack(s);
         updateHud(s);
         p.sendMessage(ChatColor.GREEN + "Stack now " + ChatColor.YELLOW + "x" + stackCount(s)
-                + ChatColor.GREEN + " Paid " + cost + ". Next: " + extraCost(s.extraSpawners));
+                + ChatColor.GREEN + " Paid " + fmt(cost) + ". Next: "
+                + fmt(sm == null ? 1L : stackCost(sm, s.extraSpawners)));
     }
 
-    private void openPick(Player p) {
-        Session s = sessions.get(p.getUniqueId());
-        if (s == null || s.endsAtMs < System.currentTimeMillis()) { p.sendMessage(ChatColor.RED + "/mobfarm enter first"); return; }
-        int size = 54;
-        Inventory inv = Bukkit.createInventory(null, size, ChatColor.DARK_RED + "Unlock Farm Mob (" + unlockCost() + ")");
-        int slot = 0;
-        for (MobDef m : mobs.values()) {
-            if (slot >= size) break;
-            ItemStack it = new ItemStack(m.icon);
-            ItemMeta meta = it.getItemMeta();
-            meta.setDisplayName(m.display);
-            List<String> lore = new ArrayList<>();
-            lore.add(ChatColor.GRAY + "Wing: " + m.wing + " · style: " + m.style);
-            lore.add(ChatColor.YELLOW + "UNLOCK cost: " + unlockCost() + " coins");
-            lore.add(ChatColor.DARK_GRAY + "Extras after: " + extraCost(0) + ", " + extraCost(1) + ", " + extraCost(2) + "…");
-            if (m.id.equals(s.mobId) && s.unlocked) lore.add(ChatColor.GREEN + "✓ ACTIVE");
-            else if (m.id.equals(s.mobId)) lore.add(ChatColor.GOLD + "Selected — pay to unlock");
-            lore.add(ChatColor.AQUA + "Click to pay & teleport to zone");
-            meta.setLore(lore);
-            it.setItemMeta(meta);
-            inv.setItem(slot++, it);
-        }
-        p.openInventory(inv);
-    }
+    private void openPick(Player p) { openPick(p, 0); }
 
     @EventHandler
     public void onPickClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player p)) return;
         String title = e.getView().getTitle();
-        if (title == null || !title.contains("Unlock Farm Mob")) return;
-        e.setCancelled(true);
-        if (e.getCurrentItem() == null || e.getCurrentItem().getType().isAir()) return;
-        Session s = sessions.get(p.getUniqueId());
-        if (s == null || s.endsAtMs < System.currentTimeMillis()) { p.closeInventory(); return; }
-        ItemMeta meta = e.getCurrentItem().getItemMeta();
-        if (meta == null || !meta.hasDisplayName()) return;
-        String name = meta.getDisplayName();
-        MobDef chosen = null;
-        for (MobDef m : mobs.values()) {
-            if (m.display.equals(name) || ChatColor.stripColor(m.display).equals(ChatColor.stripColor(name))) {
-                chosen = m; break;
-            }
-        }
-        if (chosen == null) {
-            // match by icon fallback
+        if (title == null) return;
+        if (title.contains("MobFarm Pick")) {
+            e.setCancelled(true);
+            if (e.getCurrentItem() == null || e.getCurrentItem().getType().isAir()) return;
+            ItemMeta meta = e.getCurrentItem().getItemMeta();
+            if (meta == null || !meta.hasDisplayName()) return;
+            String name = ChatColor.stripColor(meta.getDisplayName());
+            if (name.contains("Farm animals")) { openPick(p, 1); return; }
+            if (name.contains("Hostile")) { openPick(p, 0); return; }
+            if (name.contains("Session info")) return;
+            Session s = sessions.get(p.getUniqueId());
+            if (s == null || s.endsAtMs < System.currentTimeMillis()) { p.closeInventory(); return; }
+            MobDef chosen = null;
             for (MobDef m : mobs.values()) {
-                if (m.icon == e.getCurrentItem().getType()) { chosen = m; break; }
+                if (ChatColor.stripColor(m.display).equalsIgnoreCase(name)) { chosen = m; break; }
             }
-        }
-        if (chosen == null) return;
-        long cost = unlockCost();
-        // switching mob mid-session still requires unlock payment if different or not unlocked
-        boolean needPay = !s.unlocked || !chosen.id.equals(s.mobId);
-        if (needPay) {
-            if (econ == null || !econ.has(p, cost)) {
-                p.sendMessage(ChatColor.RED + "Need " + cost + " coins to unlock " + ChatColor.stripColor(chosen.display));
-                return;
+            if (chosen == null) return;
+            long cost = pickCost(chosen, s);
+            // switching mob mid-session still requires payment; each paid pick doubles
+            boolean needPay = !s.unlocked || !chosen.id.equals(s.mobId);
+            if (needPay) {
+                if (econ == null || !econ.has(p, cost)) {
+                    p.sendMessage(ChatColor.RED + "Need " + fmt(cost) + " coins to unlock " + ChatColor.stripColor(chosen.display));
+                    return;
+                }
+                econ.withdrawPlayer(p, cost);
+                s.picks++;
+                p.sendMessage(ChatColor.GREEN + "Paid " + fmt(cost) + " — unlocked " + chosen.display
+                        + ChatColor.GRAY + " (next pick this session: "
+                        + fmt(Math.min(cost * 2L, Long.MAX_VALUE / 8)) + ")");
             }
-            econ.withdrawPlayer(p, cost);
-            p.sendMessage(ChatColor.GREEN + "Paid " + cost + " — unlocked " + chosen.display);
+            if (s.spawnTask != null) { s.spawnTask.cancel(); s.spawnTask = null; }
+            clearSessionMobs(s); removeStackHolo(s);
+            s.mobId = chosen.id;
+            s.unlocked = true;
+            if (needPay) s.extraSpawners = 0;
+            setupCellStack(s);
+            startSpawnTask(s);
+            updateHud(s);
+            p.closeInventory();
+            teleportToSession(p, s);
+            p.sendMessage(ChatColor.AQUA + "Zone ready: " + chosen.display + ChatColor.GRAY
+                    + " · stack x" + stackCount(s) + " · hit from the safe window");
+            return;
         }
-        // stop old zone
-        if (s.spawnTask != null) { s.spawnTask.cancel(); s.spawnTask = null; }
-        clearSessionMobs(s); removeStackHolo(s);
-        s.mobId = chosen.id;
-        s.unlocked = true;
-        // keep extras when switching? reset extras on mob switch to avoid cheese
-        if (needPay) s.extraSpawners = 0;
-        setupCellStack(s);
-        startSpawnTask(s);
-        updateHud(s);
-        p.closeInventory();
-        teleportToSession(p, s);
-        p.sendMessage(ChatColor.AQUA + "Zone ready: " + chosen.display + ChatColor.GRAY
-                + " · stack x" + stackCount(s) + " · hit from the safe window");
+        if (title.contains("MobFarm Prices")) {
+            e.setCancelled(true);
+            if (e.getCurrentItem() == null || e.getCurrentItem().getType().isAir()) return;
+            ItemMeta meta = e.getCurrentItem().getItemMeta();
+            if (meta == null || !meta.hasDisplayName()) return;
+            String name = ChatColor.stripColor(meta.getDisplayName());
+            if (name.contains("Farm animals")) openPrices(p, 1);
+            else if (name.contains("Hostile")) openPrices(p, 0);
+        }
     }
 
     private void teleportToSession(Player p, Session s) {
@@ -1372,7 +1497,8 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     private void updateHud(Session s) {
         if (s.hud == null) return;
         long leftMs = Math.max(0, s.endsAtMs - System.currentTimeMillis());
-        long total = Math.max(1L, getConfig().getInt("session-minutes", 30) * 60_000L);
+        long total = Math.max(1L, s.totalMs > 0 ? s.totalMs
+                : getConfig().getInt("session-minutes", 15) * 60_000L);
         s.hud.setProgress(Math.max(0, Math.min(1, leftMs / (double) total)));
         String title = color(getConfig().getString("session-hud-title",
                 "&6MobFarm &7| &e{mm}:{ss} &7left &8| &f{mob} &8| &ex{stack}"));
@@ -1414,6 +1540,12 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         String line = ChatColor.GOLD + "" + ChatColor.BOLD + "MOBFARM HUB"
                 + "\n" + ChatColor.WHITE + "Community chest ↓"
                 + "\n" + ChatColor.YELLOW + communityCoins + "/" + communityTarget
+                + "\n" + ChatColor.AQUA + "Entry " + fmt(getConfig().getInt("entry-cost"))
+                + " · " + getConfig().getInt("session-minutes") + "m"
+                + "\n" + ChatColor.GREEN + "Pick from " + fmt(minPickCost())
+                + ChatColor.GRAY + " (shop price/16, doubles)"
+                + "\n" + ChatColor.YELLOW + "Extend " + fmt(extendCost()) + "/+"
+                + getConfig().getInt("extend-minutes", 15) + "m"
                 + "\n" + ChatColor.AQUA + "/mobfarm enter · pick · prices"
                 + "\n" + ChatColor.GRAY + "base stack x" + baseSpawners();
         w.spawn(loc, TextDisplay.class, d -> {
@@ -1862,7 +1994,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            List<String> base = new ArrayList<>(List.of("enter", "leave", "hub", "status", "buy", "pick", "prices", "info"));
+            List<String> base = new ArrayList<>(List.of("enter", "leave", "hub", "status", "buy", "extend", "pick", "prices", "info"));
             if (sender.hasPermission("mavomobfarm.admin"))
                 base.addAll(List.of("tp", "setcenter", "build", "rebuild", "clear", "clearhere", "purge", "reload", "resholo"));
             String pfx = args[0].toLowerCase(Locale.ROOT);

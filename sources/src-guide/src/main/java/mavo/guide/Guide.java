@@ -188,8 +188,8 @@ public final class Guide extends JavaPlugin implements Listener {
         for (int i = start; i < end; i++) lore.add(String.valueOf(h.lines.get(i)));
         inv.setItem(13, item(h.readerIcon, h.readerTitle, lore, null));
         inv.setItem(16, item(Material.ARROW, "&e\u25C0 Back", null, "__back"));
-        inv.setItem(18, page > 0 ? item(Material.LIME_DYE, "&a\u25C0 Newer page", null, "__rprev") : null);
-        inv.setItem(22, page < pages - 1 ? item(Material.ORANGE_DYE, "&6Older page \u25B6", null, "__rnext") : null);
+        inv.setItem(18, page > 0 ? item(Material.LIME_DYE, "&a\u25C0 Previous", null, "__rprev") : null);
+        inv.setItem(22, page < pages - 1 ? item(Material.ORANGE_DYE, "&6Next \u25B6", null, "__rnext") : null);
         inv.setItem(26, item(Material.BARRIER, "&cClose", null, "__close"));
         fillPanes(inv);
     }
