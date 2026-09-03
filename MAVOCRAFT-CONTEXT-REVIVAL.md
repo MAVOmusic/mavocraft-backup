@@ -505,7 +505,7 @@ extracts to workspace, moves everything into `_Old/` except current deliverables
 - Achievements **1.6.0**: slower curves, start L1, kill_* mob mastery (5k/5 levels), combat still exists
 - Hud **2.1.0**: %mavohud_level% %mavohud_level_line% %mavohud_deaths% %mavohud_tab_name%
 - Goals **1.2.0**: multi-tier dirt/cobble/treasury
-- Casino **1.2.0**: 10 games, random order, dual attempt pools
+- Casino **1.2.3**: 10 games, random order, dual attempt pools (plugin.yml description fixed to "10 games"; jar rebuilt 2026-09-03)
 - Tavern **1.1.0**: build20 + bar soulbound
 - MobFarm **1.0.0**: NEW plugin
 - Day reset: set world fullTime 0 (see DEPLOY-2026-09-02)
