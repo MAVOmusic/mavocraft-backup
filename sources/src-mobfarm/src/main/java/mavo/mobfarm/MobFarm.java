@@ -31,7 +31,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-/** MAVOMobFarm 2.6.6 — real kill-cell barriers (fixed front wall wipe that let mobs walk out), per-animal pen shapes/roofs, per-bay sign facing, safe containment. */
+/** MAVOMobFarm 2.7.0 — every mob has its own hand-built structure (crypt/pyramid/igloo/tower/cage/vault/obelisk/court/basin/caldera/tank/fortress/bastion + 14 unique pens), its own datapack, and its own /mobfarm build <mob>. Loot chest exposed on the trench floor; kill method + positions shared. */
 public final class MobFarm extends JavaPlugin implements Listener, TabCompleter {
 
     /**
@@ -64,7 +64,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     private Economy econ;
     private File dataFile;
     private YamlConfiguration data;
-    private Location center;
+    Location center;
     private final Map<String, MobDef> mobs = new LinkedHashMap<>();
     private final Map<UUID, Session> sessions = new HashMap<>();
     private final Map<UUID, PendingEnter> pending = new HashMap<>();
@@ -77,6 +77,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         String id, display, wing, style, theme; EntityType entity; Material icon;
         int ox, oy, oz;
         Location stand, killPad, lootChest, stackBlock, communityChest;
+        double[] cell;   // per-bay containment box {hx, hz, minY, maxY} (2.7.0)
         boolean built;
     }
     static final class Session {
@@ -142,7 +143,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 for (UUID u : end) endSession(u, true);
             }
         }.runTaskTimer(this, 40L, 40L);
-        getLogger().info("MAVOMobFarm 2.6.6 enabled. mobs=" + mobs.size()
+        getLogger().info("MAVOMobFarm 2.7.0 enabled. mobs=" + mobs.size()
                 + " center=" + (center == null ? "?" : center.getBlockX() + "," + center.getBlockZ())
                 + " ai=" + mobAiEnabled());
     }
@@ -292,10 +293,10 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         World w = o.getWorld();
         int x = o.getBlockX(), y = o.getBlockY(), z = o.getBlockZ();
         m.stand = new Location(w, x + 0.5, y + 1, z + 6.5);
-        m.killPad = new Location(w, x + 0.5, y - 1.0, z + 0.5);
-        m.stackBlock = new Location(w, x + 3, y + 1, z - 2);
-        m.lootChest = new Location(w, x + 5, y - 2, z + 3);
-        m.communityChest = new Location(w, x - 3, y, z + 5);
+        m.killPad = new Location(w, x + 0.5, y - 0.9, z - 1);
+        m.stackBlock = new Location(w, x + 6, y + 1, z - 2);
+        m.lootChest = new Location(w, x + 0.5, y - 1, z + 1.2);
+        m.communityChest = new Location(w, x - 4, y, z + 6);
     }
 
     private void recomputeAABB() {
@@ -339,7 +340,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         }
         String a = args[0].toLowerCase(Locale.ROOT);
         if (a.equals("info")) {
-            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.6.6 " + ChatColor.GRAY + "entry "
+            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.7.0 " + ChatColor.GRAY + "entry "
                     + ChatColor.YELLOW + getConfig().getInt("entry-cost")
                     + ChatColor.GRAY + " · " + getConfig().getInt("session-minutes") + "m"
                     + ChatColor.GRAY + " · pick from " + ChatColor.GREEN + minPickCost()
@@ -390,11 +391,29 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             }
             case "build" -> {
                 if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
-                buildComplex(p);
+                MobDef mb = args.length > 1 ? findMob(args[1]) : null;
+                if (args.length > 1 && mb == null) {
+                    p.sendMessage(ChatColor.RED + "Unknown mob '" + args[1] + "'. /mobfarm build <mob>");
+                    return true;
+                }
+                if (mb != null) {
+                    BayGeometry.buildMob(this, mb, p::sendMessage);
+                } else {
+                    buildComplex(p);
+                }
             }
             case "rebuild" -> {
                 if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
-                clearComplex(p); buildComplex(p);
+                MobDef mr = args.length > 1 ? findMob(args[1]) : null;
+                if (args.length > 1 && mr == null) {
+                    p.sendMessage(ChatColor.RED + "Unknown mob '" + args[1] + "'. /mobfarm rebuild <mob>");
+                    return true;
+                }
+                if (mr != null) {
+                    BayGeometry.buildMob(this, mr, p::sendMessage);
+                } else {
+                    clearComplex(p); buildComplex(p);
+                }
             }
             case "clear" -> {
                 if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
@@ -423,6 +442,15 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             default -> p.sendMessage(ChatColor.RED + "Unknown. /mobfarm");
         }
         return true;
+    }
+
+    private MobDef findMob(String id) {
+        String q = id.toLowerCase(Locale.ROOT);
+        if (mobs.containsKey(q)) return mobs.get(q);
+        for (MobDef m : mobs.values())
+            if (m.entity.name().equalsIgnoreCase(q) || ChatColor.stripColor(m.display).equalsIgnoreCase(id))
+                return m;
+        return null;
     }
 
     private static int parseInt(String s, int def) {
@@ -797,7 +825,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         for (MobDef m : mobs.values()) {
             computeGeom(m);
             try {
-                buildBay(m);
+                BayGeometry.buildMobSync(this, m);
                 m.built = true;
                 n++;
             } catch (Throwable t) {
@@ -813,623 +841,12 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 + " — stand on the marked HIT pads; loot chests face the walkway.");
     }
 
+    /** 2.7.0: every mob has its own hand-built layout (BayGeometry). */
     private void buildBay(MobDef m) {
         if (center == null) return;
-        World w = center.getWorld();
-        Location o = origin(m);
-        int cx = o.getBlockX(), cy = o.getBlockY(), cz = o.getBlockZ();
-        // clear volume
-        for (int x = -10; x <= 10; x++)
-            for (int z = -10; z <= 10; z++)
-                for (int y = -8; y <= 12; y++)
-                    setAir(w, cx + x, cy + y, cz + z);
-
-        String style = m.style == null ? "" : m.style;
-        switch (style) {
-            case "crypt" -> buildCryptBay(m, w, cx, cy, cz);
-            case "gallery" -> buildGalleryBay(m, w, cx, cy, cz);
-            case "bunker" -> buildBunkerBay(m, w, cx, cy, cz);
-            case "web" -> buildWebBay(m, w, cx, cy, cz);
-            case "totem" -> buildTotemBay(m, w, cx, cy, cz);
-            case "forge" -> buildForgeBay(m, w, cx, cy, cz);
-            case "cells" -> buildCellBay(m, w, cx, cy, cz);
-            case "arena" -> buildArenaBay(m, w, cx, cy, cz);
-            case "aqua" -> buildAquaBay(m, w, cx, cy, cz);
-            case "brutal" -> buildBrutalBay(m, w, cx, cy, cz);
-            case "barn" -> buildBarnBay(m, w, cx, cy, cz);
-            // legacy aliases from 2.4 configs
-            case "feet" -> buildGalleryBay(m, w, cx, cy, cz);
-            case "pad" -> buildCryptBay(m, w, cx, cy, cz);
-            case "spider" -> buildWebBay(m, w, cx, cy, cz);
-            case "enderman" -> buildTotemBay(m, w, cx, cy, cz);
-            case "blaze" -> buildForgeBay(m, w, cx, cy, cz);
-            case "slime" -> buildCellBay(m, w, cx, cy, cz);
-            case "water" -> buildAquaBay(m, w, cx, cy, cz);
-            case "pen" -> buildBarnBay(m, w, cx, cy, cz);
-            default -> buildCryptBay(m, w, cx, cy, cz);
-        }
-        // per-bay environment extras (never reusable "copies")
-        applyThemeBlocks(m, w, cx, cy, cz);
-        finishBayCommon(m, w, cx, cy, cz);
+        BayGeometry.build(this, m);
     }
 
-    /* ---------- shared building blocks ---------- */
-
-    private void setSlab(World w, int x, int y, int z, Material mat, boolean topHalf) {
-        Block b = w.getBlockAt(x, y, z);
-        b.setType(mat, false);
-        try {
-            Slab s = (Slab) b.getBlockData();
-            s.setType(topHalf ? Slab.Type.TOP : Slab.Type.BOTTOM);
-            b.setBlockData(s, false);
-        } catch (Throwable ignored) {}
-    }
-
-    private void setHopperFacing(World w, int x, int y, int z, BlockFace f) {
-        Block b = w.getBlockAt(x, y, z);
-        b.setType(Material.HOPPER, false);
-        try {
-            org.bukkit.block.data.type.Hopper h = (org.bukkit.block.data.type.Hopper) b.getBlockData();
-            h.setFacing(f);
-            b.setBlockData(h, false);
-        } catch (Throwable ignored) {}
-    }
-
-    private void setChest(World w, int x, int y, int z, BlockFace facing) {
-        Block b = w.getBlockAt(x, y, z);
-        b.setType(Material.CHEST, false);
-        try {
-            org.bukkit.block.data.type.Chest c = (org.bukkit.block.data.type.Chest) b.getBlockData();
-            c.setFacing(facing);
-            c.setType(org.bukkit.block.data.type.Chest.Type.SINGLE);
-            b.setBlockData(c, false);
-        } catch (Throwable ignored) {}
-    }
-
-    private void fillBox(World w, int cx, int cy, int cz, int x0, int x1, int y0, int y1, int z0, int z1, Material mat) {
-        for (int x = x0; x <= x1; x++)
-            for (int y = y0; y <= y1; y++)
-                for (int z = z0; z <= z1; z++)
-                    w.getBlockAt(cx + x, cy + y, cz + z).setType(mat, false);
-    }
-
-    /**
-     * Shared kill cell v3 (2.6.3) - safe, lootable, merges as ONE double chest:
-     * - hopper floor y=cy-1 (z=-depth..-1); columns x=-1/0 chain SOUTH into ONE
-     *   2-wide DOUBLE chest at (cx-1..cx, cy-1, cz); column x=+1 faces WEST into
-     *   column 0 so every hopper feeds the same chest (no orphan singles).
-     * - loot slot: the chest front (z=+1, y=cy-1) stays open, with a one-deep
-     *   pickup floor at y=cy-2 - step in from the trench and click both halves.
-     * - slit (z=+1, y=cy..cy+2 = bottom slab + per-style barrier + top slab):
-     *   players hit through every barrier (melee is reach-based); mobs and
-     *   projectiles are stopped, escape stopped by the 1.5-high window.
-     * slit: "slab" | "bars" | "trapdoor" | "fence" | "pane" | "glass"
-     */
-    /**
-     * Shared kill cell v4 (2.6.4):
-     * - hoppers x=-halfW..halfW all chain into ONE double chest at (cx-1..cx, cy-1, cz).
-     * - the chest top sits FLUSH with the trench floor (z=+1..+3, y=cy-1): step down
-     *   from the walkway and click the chest lid right in front of you (2.6.3 put it
-     *   in a 1-deep slot with a slab above = covered/unreachable - fixed).
-     * - slit (z=+1, y=cy+1) per style; water fills the pit for aquatic bays.
-     */
-    private void killCell(World w, int cx, int cy, int cz, Material wall, String slit, boolean openTop,
-                          int depth, int top, int water, int halfW, int slitW) {
-        // hopper pit floor: outer columns feed the centre chain, centre chains SOUTH into the chest
-        for (int x = -halfW; x <= halfW; x++)
-            for (int z = -depth; z <= -1; z++)
-                setHopperFacing(w, cx + x, cy - 1, cz + z,
-                        x < 0 ? BlockFace.EAST : x > 0 ? BlockFace.WEST : BlockFace.SOUTH);
-        // ONE double chest - every hopper column feeds it
-        placeDoubleChest(w, cx - 1, cy - 1, cz, BlockFace.SOUTH);
-        for (int x = -halfW; x <= halfW; x++)
-            if (x != -1 && x != 0) w.getBlockAt(cx + x, cy - 1, cz).setType(wall, false);
-        // pit walls + back
-        for (int y = -1; y <= top; y++) {
-            for (int z = -depth - 1; z <= 1; z++) {
-                w.getBlockAt(cx - halfW - 1, cy + y, cz + z).setType(wall, false);
-                w.getBlockAt(cx + halfW + 1, cy + y, cz + z).setType(wall, false);
-            }
-            for (int x = -halfW; x <= halfW; x++)
-                w.getBlockAt(cx + x, cy + y, cz - depth - 1).setType(wall, false);
-        }
-        // trench floor BELOW the front wall (y=cy-1, z=+1..+3) - never touch y>=cy at z=+1
-        for (int x = -3; x <= 3; x++)
-            for (int z = 1; z <= 3; z++)
-                w.getBlockAt(cx + x, cy - 1, cz + z).setType(Material.POLISHED_DEEPSLATE, false);
-        // FRONT WALL z=+1 (2.6.6: placed AFTER floors, never overwritten):
-        // bottom slab + slit + top slab = 1-high melee window; slitW=3 wide or centered 1-wide
-        for (int x = -halfW; x <= halfW; x++) {
-            boolean slitHere = slitW >= 3 || x == 0;
-            if (slitHere) {
-                setSlab(w, cx + x, cy, cz + 1, wall, false);
-                switch (slit) {
-                    case "bars" -> w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.IRON_BARS, false);
-                    case "trapdoor" -> setTrapdoor(w, cx + x, cy + 1, cz + 1, BlockFace.SOUTH);
-                    case "fence" -> w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.OAK_FENCE, false);
-                    case "pane" -> w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.PURPLE_STAINED_GLASS_PANE, false);
-                    case "glass" -> w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.LIGHT_BLUE_STAINED_GLASS_PANE, false);
-                    case "open" -> setAir(w, cx + x, cy + 1, cz + 1);
-                    default -> { }
-                }
-                setSlab(w, cx + x, cy + 2, cz + 1, wall, false);
-            } else {
-                for (int y = cy; y <= cy + 2; y++)
-                    w.getBlockAt(cx + x, y, cz + 1).setType(wall, false);
-            }
-            for (int y = 3; y <= top; y++)
-                w.getBlockAt(cx + x, cy + y, cz + 1).setType(wall, false);
-        }
-        // water level for aquatic bays
-        if (water > 0)
-            for (int x = -halfW; x <= halfW; x++)
-                for (int z = -depth; z <= -1; z++)
-                    for (int y = 1; y <= water; y++)
-                        w.getBlockAt(cx + x, cy + y, cz + z).setType(Material.WATER, false);
-        // ceiling (light-tight) unless open-top
-        if (!openTop)
-            for (int x = -halfW - 1; x <= halfW + 1; x++)
-                for (int z = -depth - 1; z <= 0; z++)
-                    w.getBlockAt(cx + x, cy + top, cz + z).setType(wall, false);
-        // trench air (z=+2..+3 ONLY - z=+1 keeps its front wall + slit!)
-        for (int x = -3; x <= 3; x++) {
-            for (int z = 2; z <= 3; z++) {
-                setAir(w, cx + x, cy, cz + z);
-                setAir(w, cx + x, cy + 1, cz + z);
-                setAir(w, cx + x, cy + 2, cz + z);
-            }
-            for (int z = 4; z <= 6; z++) {
-                w.getBlockAt(cx + x, cy, cz + z).setType(Material.SEA_LANTERN, false);
-                setAir(w, cx + x, cy + 1, cz + z);
-                setAir(w, cx + x, cy + 2, cz + z);
-            }
-            w.getBlockAt(cx + x, cy + 3, cz + 6).setType(wall, false); // porch roof edge
-        }
-        // trench side walls
-        for (int y = 0; y <= 2; y++) {
-            w.getBlockAt(cx - 3, cy + y, cz + 1).setType(wall, false);
-            w.getBlockAt(cx + 3, cy + y, cz + 1).setType(wall, false);
-            w.getBlockAt(cx - 3, cy + y, cz + 3).setType(wall, false);
-            w.getBlockAt(cx + 3, cy + y, cz + 3).setType(wall, false);
-        }
-    }
-
-    private void setPos(MobDef m, World w, double x, double y, double z, String what) {
-        Location l = new Location(w, x, y, z);
-        if ("pad".equals(what)) m.killPad = l;
-        else if ("stand".equals(what)) m.stand = l;
-        else m.lootChest = l;
-    }
-
-    /* ---------- per-mob environments ---------- */
-
-    /** One spec-driven hostile cell: pick depth/height/slit/ceiling/water per mob. */
-    private void buildSpecCell(MobDef m, World w, int cx, int cy, int cz,
-                               int depth, int top, String slit, boolean openTop, int water, int halfW) {
-        int slitW = switch (slit) {
-            case "pane", "glass" -> 1;   // aqua/cell windows are narrow
-            case "trapdoor" -> 1;        // bunker peep window
-            default -> 3;
-        };
-        killCell(w, cx, cy, cz, themeWall(m), slit, openTop, depth, top, water, halfW, slitW);
-        decorBay(m, w, cx, cy, cz, depth);
-        // aquatic mobs bob in the water; the rest stand on the hopper floor
-        double py = water > 0 ? cy + 0.4 : cy - 0.9;
-        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
-        setPos(m, w, cx + 0.5, py, cz - 2, "pad");
-        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
-    }
-
-    /** Zombie/Husk/Drowned/Witch - MOSSY CRYPT family, each a different room. */
-    private void buildCryptBay(MobDef m, World w, int cx, int cy, int cz) {
-        switch (m.entity) {
-            case HUSK -> buildSpecCell(m, w, cx, cy, cz, 3, 3, "slab", true, 0, 1);   // open sunlit tomb
-            case DROWNED -> buildSpecCell(m, w, cx, cy, cz, 3, 3, "slab", false, 2, 1); // flooded crypt
-            case WITCH -> buildSpecCell(m, w, cx, cy, cz, 3, 3, "bars", false, 0, 1);  // barred den
-            default -> buildSpecCell(m, w, cx, cy, cz, 3, 3, "slab", false, 0, 1);     // zombie crypt
-        }
-    }
-
-    /** Skeleton/Stray/Wither/Pillager - GALLEY family with unique windows + props. */
-    private void buildGalleryBay(MobDef m, World w, int cx, int cy, int cz) {
-        switch (m.entity) {
-            case STRAY -> buildSpecCell(m, w, cx, cy, cz, 4, 4, "fence", false, 0, 1);   // frozen gallery
-            case WITHER_SKELETON -> buildSpecCell(m, w, cx, cy, cz, 4, 4, "slab", false, 0, 1); // soul crypt
-            case PILLAGER -> buildSpecCell(m, w, cx, cy, cz, 4, 4, "bars", false, 0, 1);  // raider cage
-            default -> buildSpecCell(m, w, cx, cy, cz, 4, 4, "bars", false, 0, 1);        // skeleton gallery
-        }
-    }
-
-    /** Spider/Cave Spider - separate climb-proof cages. */
-    private void buildWebBay(MobDef m, World w, int cx, int cy, int cz) {
-        if (m.entity == EntityType.CAVE_SPIDER)
-            buildSpecCell(m, w, cx, cy, cz, 5, 5, "bars", false, 0, 1);   // deep cave den
-        else
-            buildSpecCell(m, w, cx, cy, cz, 4, 4, "fence", false, 0, 1);  // web cage
-    }
-
-    /** Creeper - deep blast vault, trapdoor hatches. */
-    private void buildBunkerBay(MobDef m, World w, int cx, int cy, int cz) {
-        killCell(w, cx, cy, cz, Material.OBSIDIAN, "trapdoor", false, 5, 5, 0, 1, 1);
-        fillBox(w, cx, cy, cz, -3, -3, -1, 4, -7, 1, Material.DEEPSLATE_BRICKS);
-        fillBox(w, cx, cy, cz, 3, 3, -1, 4, -7, 1, Material.DEEPSLATE_BRICKS);
-        fillBox(w, cx, cy, cz, -3, 3, -1, 4, -7, -7, Material.DEEPSLATE_BRICKS);
-        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
-        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
-        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
-    }
-
-    /** Enderman - tall obsidian totem hall with a purple-glass window. */
-    private void buildTotemBay(MobDef m, World w, int cx, int cy, int cz) {
-        killCell(w, cx, cy, cz, Material.OBSIDIAN, "pane", false, 3, 5, 0, 1, 1);
-        fillBox(w, cx, cy, cz, -2, -2, -1, 5, -4, 1, Material.PURPUR_PILLAR);
-        fillBox(w, cx, cy, cz, 2, 2, -1, 5, -4, 1, Material.PURPUR_PILLAR);
-        w.getBlockAt(cx, cy + 1, cz - 4).setType(Material.ENDER_CHEST, false);
-        w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.SEA_LANTERN, false);
-        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
-        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
-        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
-    }
-
-    /** Blaze - open-sky nether forge, magma floor, bar window. */
-    private void buildForgeBay(MobDef m, World w, int cx, int cy, int cz) {
-        killCell(w, cx, cy, cz, Material.NETHER_BRICKS, "bars", true, 3, 3, 0, 1, 3);
-        fillBox(w, cx, cy, cz, -1, 1, 2, 2, -4, -4, Material.MAGMA_BLOCK);
-        for (int x = -1; x <= 1; x++)
-            w.getBlockAt(cx + x, cy + 1, cz - 4).setType(Material.NETHER_WART_BLOCK, false);
-        w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.SOUL_LANTERN, false);
-        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
-        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
-        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
-    }
-
-    /** Slime/Magma/Silverfish - each in its own chamber type. */
-    private void buildCellBay(MobDef m, World w, int cx, int cy, int cz) {
-        switch (m.entity) {
-            case SLIME -> buildSpecCell(m, w, cx, cy, cz, 3, 3, "glass", false, 1, 1);     // swamp pond cells
-            case MAGMA_CUBE -> buildSpecCell(m, w, cx, cy, cz, 3, 3, "pane", false, 0, 1); // magma cells
-            default -> buildSpecCell(m, w, cx, cy, cz, 3, 3, "slab", false, 0, 1);         // stone maze
-        }
-    }
-
-    /** Phantom - tall open sky court (AI off - stays low, no dives). */
-    private void buildArenaBay(MobDef m, World w, int cx, int cy, int cz) {
-        Material wall = Material.DEEPSLATE_BRICKS;
-        killCell(w, cx, cy, cz, wall, "pane", true, 3, 5, 0, 1, 3);
-        for (int y = 4; y <= 8; y++) {
-            for (int z = -6; z <= 2; z++) {
-                w.getBlockAt(cx - 3, cy + y, cz + z).setType(wall, false);
-                w.getBlockAt(cx + 3, cy + y, cz + z).setType(wall, false);
-            }
-            for (int x = -2; x <= 2; x++) {
-                w.getBlockAt(cx + x, cy + y, cz - 5).setType(wall, false);
-                w.getBlockAt(cx + x, cy + y, cz + 2).setType(wall, false);
-            }
-        }
-        for (int x = -2; x <= 2; x += 2)
-            w.getBlockAt(cx + x, cy + 6, cz - 5).setType(Material.SEA_LANTERN, false);
-        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
-        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
-        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
-    }
-
-    /** Guardian/Squid/Glow Squid - flooded tanks, glass window, kelp. */
-    private void buildAquaBay(MobDef m, World w, int cx, int cy, int cz) {
-        buildSpecCell(m, w, cx, cy, cz, 3, 3, "glass", false, 2, 1);
-    }
-
-    /** Hoglin/Piglin - brutal pens, each with its own fortress look. */
-    private void buildBrutalBay(MobDef m, World w, int cx, int cy, int cz) {
-        killCell(w, cx, cy, cz, Material.BLACKSTONE, "bars", false, 4, 4, 0, 1, 3);
-        fillBox(w, cx, cy, cz, -3, 3, 3, 5, -6, 1, Material.POLISHED_BLACKSTONE_BRICKS);
-        w.getBlockAt(cx, cy + 1, cz - 4).setType(Material.GOLD_BLOCK, false);
-        w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.SOUL_LANTERN, false);
-        setPos(m, w, cx + 0.5, cy, cz + 2.5, "stand");
-        setPos(m, w, cx + 0.5, cy - 0.9, cz - 2, "pad");
-        setPos(m, w, cx + 0.5, cy - 1, cz + 0.6, "loot");
-    }
-
-    /** Animals - a unique pasture/coop per mob, all feeding the ONE barn chest below. */
-    /** Per-animal pen shape: size, height, fence material, roof pattern (2.6.6 - silhouettes differ). */
-    private record PenSpec(int half, int h, Material fence, String roof, boolean waterPit) {
-        static PenSpec of(EntityType t) {
-            return switch (t) {
-                case COW -> new PenSpec(4, 1, Material.OAK_FENCE, "none", false);
-                case PIG -> new PenSpec(3, 1, Material.OAK_FENCE, "none", false);
-                case CHICKEN -> new PenSpec(3, 2, Material.OAK_FENCE, "full", false);
-                case SHEEP -> new PenSpec(4, 1, Material.OAK_FENCE, "none", false);
-                case RABBIT -> new PenSpec(3, 2, Material.OAK_FENCE, "half", false);
-                case VILLAGER -> new PenSpec(4, 2, Material.STONE_BRICKS, "corners", false);
-                case IRON_GOLEM -> new PenSpec(4, 2, Material.IRON_BLOCK, "corners", false);
-                case BEE -> new PenSpec(3, 2, Material.OAK_FENCE, "full", false);
-                case FOX -> new PenSpec(4, 2, Material.OAK_FENCE, "half", false);
-                case GOAT -> new PenSpec(4, 3, Material.PACKED_ICE, "none", false);
-                case LLAMA -> new PenSpec(4, 1, Material.OAK_FENCE, "none", false);
-                case PANDA -> new PenSpec(4, 2, Material.OAK_FENCE, "half", false);
-                case FROG -> new PenSpec(3, 1, Material.OAK_FENCE, "none", true);
-                case SNIFFER -> new PenSpec(4, 1, Material.OAK_FENCE, "none", false);
-                default -> new PenSpec(4, 1, Material.OAK_FENCE, "none", false);
-            };
-        }
-    }
-
-    private void buildBarnBay(MobDef m, World w, int cx, int cy, int cz) {
-        Material wall = themeWall(m);
-        Material floor = themeFloor(m);
-        PenSpec ps = PenSpec.of(m.entity);
-        int half = ps.half();
-        int penFloorY = cy + 2;   // animals walk on the grate
-        int edgeTop = penFloorY + 1 + ps.h(); // fence top row
-        for (int x = -half; x <= half; x++)
-            for (int z = -half; z <= half; z++) {
-                w.getBlockAt(cx + x, cy - 1, cz + z).setType(floor, false);
-                setAir(w, cx + x, cy, cz + z);
-                setAir(w, cx + x, cy + 1, cz + z);
-                boolean open = Math.abs(x) <= half - 1 && Math.abs(z) <= half - 1;
-                if (ps.waterPit() && open)
-                    w.getBlockAt(cx + x, penFloorY, cz + z).setType(Material.WATER, false);
-                else if (open)
-                    w.getBlockAt(cx + x, penFloorY, cz + z).setType(Material.IRON_BARS, false);
-                else
-                    w.getBlockAt(cx + x, penFloorY, cz + z).setType(floor, false);
-                boolean edge = Math.abs(x) == half || Math.abs(z) == half;
-                boolean corner = Math.abs(x) == half && Math.abs(z) == half;
-                if (edge) {
-                    for (int y = 0; y < ps.h(); y++)
-                        w.getBlockAt(cx + x, penFloorY + 1 + y, cz + z).setType(ps.fence(), false);
-                    if ("full".equals(ps.roof()) || ("corners".equals(ps.roof()) && corner))
-                        w.getBlockAt(cx + x, edgeTop, cz + z).setType(wall, false);
-                } else {
-                    setAir(w, cx + x, penFloorY + 1, cz + z);
-                    setAir(w, cx + x, penFloorY + 2, cz + z);
-                    boolean back = z <= -1;
-                    if ("full".equals(ps.roof())) w.getBlockAt(cx + x, edgeTop, cz + z).setType(wall, false);
-                    else if ("half".equals(ps.roof()) && back)
-                        w.getBlockAt(cx + x, edgeTop, cz + z).setType(wall, false);
-                }
-            }
-        // hopper field under the grate feeding the ONE double chest
-        for (int x = -3; x <= 3; x++)
-            for (int z = -3; z <= 3; z++)
-                if (Math.abs(x) <= 2 && Math.abs(z) <= 2)
-                    setHopperFacing(w, cx + x, cy + 1, cz + z,
-                            x > 0 ? BlockFace.WEST : x < 0 ? BlockFace.EAST : BlockFace.SOUTH);
-        placeDoubleChest(w, cx - 1, cy + 1, cz + 3, BlockFace.SOUTH);
-        for (int x = -1; x <= 0; x++)
-            setAir(w, cx + x, cy + 2, cz + 3);
-        decorPasture(m, w, cx, cy, cz, half);
-        setPos(m, w, cx + 0.5, cy + 0.1, cz + 1.5, "stand");
-        setPos(m, w, cx + 0.5, cy + penFloorY + 0.2, cz + 1.5, "pad");
-        setPos(m, w, cx + 0.5, cy + 1, cz + 3.5, "loot");
-    }
-
-    /** Only set a block - never throws on item materials (2.6.5 safety). */
-    private static void setBlock(World w, int x, int y, int z, Material m) {
-        if (m != null && m.isBlock()) try { w.getBlockAt(x, y, z).setType(m, false); } catch (Throwable ignored) {}
-    }
-
-    /** Unique props per hostile mob (props change the bay's whole look). */
-    private void decorBay(MobDef m, World w, int cx, int cy, int cz, int depth) {
-        switch (m.entity) {
-            case ZOMBIE -> {
-                for (int[] p : new int[][]{{-2, -3}, {2, -2}, {-2, 1}, {2, 1}, {0, -4}, {0, -1}}) {
-                    w.getBlockAt(cx + p[0], cy + 3, cz + p[1]).setType(
-                            ((Math.abs(p[0]) + Math.abs(p[1])) & 1) == 0
-                                    ? Material.MOSSY_STONE_BRICKS : Material.MOSSY_COBBLESTONE, false);
-                }
-                setBlock(w, cx, cy + 3, cz - 2, Material.CANDLE);
-                setBlock(w, cx, cy + 3, cz, Material.SOUL_LANTERN);
-            }
-            case HUSK -> {
-                for (int[] p : new int[][]{{-2, -3}, {2, -2}, {-2, 1}, {2, 1}})
-                    setBlock(w, cx + p[0], cy + 3, cz + p[1], Material.SANDSTONE);
-                setBlock(w, cx - 2, cy + 1, cz - 4, Material.CACTUS);
-                setBlock(w, cx + 2, cy + 1, cz - 4, Material.CACTUS);
-                setBlock(w, cx, cy + 3, cz - 2, Material.SMOOTH_SANDSTONE);
-            }
-            case SKELETON -> {
-                for (int x = -1; x <= 1; x++) {
-                    w.getBlockAt(cx + x, cy + 1, cz - 5).setType(x == 0 ? Material.TARGET : Material.SCAFFOLDING, false);
-                    setBlock(w, cx + x, cy + 2, cz - 5, Material.DEEPSLATE_TILES);
-                }
-                setBlock(w, cx, cy + 3, cz - 2, Material.LANTERN);
-            }
-            case STRAY -> {
-                for (int x = -1; x <= 1; x++)
-                    setBlock(w, cx + x, cy + 1, cz - 5, Material.PACKED_ICE);
-                setBlock(w, cx, cy + 3, cz - 2, Material.LANTERN);
-                setBlock(w, cx - 2, cy + 2, cz - 2, Material.SNOW_BLOCK);
-                setBlock(w, cx + 2, cy + 2, cz - 2, Material.SNOW_BLOCK);
-            }
-            case SPIDER -> {
-                for (int x = -1; x <= 1; x++)
-                    for (int z = -3; z <= -1; z++)
-                        if (((x + z) & 1) == 0) setBlock(w, cx + x, cy + 2, cz + z, Material.COBWEB);
-                setBlock(w, cx, cy + 3, cz - 4, Material.COBWEB);
-            }
-            case CAVE_SPIDER -> {
-                for (int x = -1; x <= 1; x++)
-                    setBlock(w, cx + x, cy + 1, cz - 6, Material.MOSS_BLOCK);
-                setBlock(w, cx, cy + 3, cz - 2, Material.CANDLE);
-                for (int x = -1; x <= 1; x++)
-                    setBlock(w, cx + x, cy + 3, cz - 1, Material.OBSIDIAN);
-            }
-            case CREEPER -> {
-                for (int x = -1; x <= 1; x++)
-                    setBlock(w, cx + x, cy + 3, cz - 2, Material.OAK_TRAPDOOR);
-                setBlock(w, cx, cy + 1, cz - 5, Material.SEA_LANTERN);
-            }
-            case ENDERMAN -> { /* built in buildTotemBay */ }
-            case BLAZE -> { /* built in buildForgeBay */ }
-            case MAGMA_CUBE -> {
-                for (int x = -1; x <= 1; x++)
-                    for (int z = -2; z <= -1; z++)
-                        setBlock(w, cx + x, cy + 2, cz + z, Material.MAGMA_BLOCK);
-                setBlock(w, cx, cy + 3, cz - 2, Material.SHROOMLIGHT);
-            }
-            case SLIME -> {
-                for (int x = -1; x <= 1; x++)
-                    for (int z = -3; z <= -1; z++)
-                        if (((x + z) & 1) == 0) setBlock(w, cx + x, cy + 2, cz + z, Material.LILY_PAD);
-                for (int y = 0; y <= 2; y++) {
-                    setBlock(w, cx - 1, cy + y, cz - 1, Material.LIME_STAINED_GLASS);
-                    setBlock(w, cx + 1, cy + y, cz - 1, Material.LIME_STAINED_GLASS);
-                }
-            }
-            case SILVERFISH -> {
-                setBlock(w, cx, cy + 1, cz - 3, Material.MOSSY_COBBLESTONE);
-                setBlock(w, cx - 1, cy + 2, cz - 2, Material.INFESTED_STONE_BRICKS);
-                setBlock(w, cx + 1, cy + 2, cz - 2, Material.MOSSY_STONE_BRICKS);
-                setBlock(w, cx, cy + 3, cz - 2, Material.STONE_BRICKS);
-            }
-            case PHANTOM -> { /* built in buildArenaBay */ }
-            case WITHER_SKELETON -> {
-                for (int x = -1; x <= 1; x++)
-                    setBlock(w, cx + x, cy + 1, cz - 5, Material.SOUL_SAND);
-                setBlock(w, cx, cy + 3, cz - 2, Material.SOUL_LANTERN);
-            }
-            case PILLAGER -> {
-                for (int x = -1; x <= 1; x++) {
-                    setBlock(w, cx + x, cy + 1, cz - 5, Material.DARK_OAK_LOG);
-                    setBlock(w, cx + x, cy + 3, cz - 2, Material.DARK_OAK_LOG);
-                }
-                setBlock(w, cx - 1, cy + 2, cz - 4, Material.GRAY_WOOL);
-                setBlock(w, cx + 1, cy + 2, cz - 4, Material.GRAY_WOOL);
-            }
-            case GUARDIAN -> {
-                for (int x = -1; x <= 1; x++)
-                    setBlock(w, cx + x, cy + 1, cz - 4, Material.KELP);
-                setBlock(w, cx, cy + 3, cz - 2, Material.SEA_LANTERN);
-                setBlock(w, cx - 2, cy + 1, cz - 2, Material.PRISMARINE);
-                setBlock(w, cx + 2, cy + 1, cz - 2, Material.PRISMARINE);
-            }
-            case SQUID -> {
-                for (int x = -1; x <= 1; x++)
-                    setBlock(w, cx + x, cy + 1, cz - 4, Material.KELP);
-                setBlock(w, cx, cy + 3, cz - 2, Material.SOUL_LANTERN);
-            }
-            case GLOW_SQUID -> {
-                for (int x = -1; x <= 1; x++)
-                    setBlock(w, cx + x, cy + 1, cz - 4, Material.KELP);
-                for (int x = -1; x <= 1; x += 2)
-                    setBlock(w, cx + x, cy + 2, cz - 2, Material.SEA_LANTERN);
-            }
-            case HOGLIN -> {
-                setBlock(w, cx, cy + 1, cz - 4, Material.GOLD_BLOCK);
-                setBlock(w, cx - 1, cy + 2, cz - 4, Material.CRIMSON_NYLIUM);
-                setBlock(w, cx + 1, cy + 2, cz - 4, Material.CRIMSON_NYLIUM);
-            }
-            case PIGLIN -> {
-                setBlock(w, cx, cy + 1, cz - 4, Material.GOLD_BLOCK);
-                for (int x = -2; x <= 2; x += 4)
-                    setBlock(w, cx + x, cy + 1, cz - 3, Material.GOLD_BLOCK);
-            }
-            default -> { }
-        }
-    }
-
-    /** Unique props per farm animal (every pen looks different). */
-    private void decorPasture(MobDef m, World w, int cx, int cy, int cz, int half) {
-        int py = cy + 2; // pen floor level
-        switch (m.entity) {
-            case COW -> {
-                for (int x = -1; x <= 1; x++) {
-                    setBlock(w, cx + x, py + 1, cz - half + 1, Material.WATER);
-                    setBlock(w, cx + x, py + 2, cz - half + 1, Material.OAK_FENCE);
-                }
-                for (int[] p : new int[][]{{-2, 2}, {2, 2}, {0, -2}})
-                    setBlock(w, cx + p[0], py + 1, cz + p[1], Material.POPPY);
-            }
-            case PIG -> {
-                for (int x = -2; x <= 2; x += 2)
-                    setBlock(w, cx + x, py + 1, cz - half + 1, Material.HAY_BLOCK);
-                for (int x = -2; x <= 2; x += 4)
-                    setBlock(w, cx + x, py, cz + 2, Material.MUD);
-            }
-            case CHICKEN -> {
-                for (int x = -1; x <= 1; x++)
-                    for (int z = -1; z <= 1; z++)
-                        setBlock(w, cx + x, py + 1, cz + z, Material.HAY_BLOCK);
-                setBlock(w, cx, py + 2, cz, Material.LANTERN);
-            }
-            case SHEEP -> {
-                for (int x = -2; x <= 2; x += 2)
-                    setBlock(w, cx + x, py + 1, cz - half + 1, Material.WHITE_WOOL);
-                setBlock(w, cx - 1, py + 1, cz + 2, Material.YELLOW_WOOL);
-                setBlock(w, cx + 1, py + 1, cz + 2, Material.PINK_WOOL);
-            }
-            case RABBIT -> {
-                for (int x = -1; x <= 1; x++)
-                    setBlock(w, cx + x, py + 1, cz - half + 1, Material.CARROTS);
-                setBlock(w, cx, py + 2, cz, Material.CARROTS);
-            }
-            case VILLAGER -> {
-                setBlock(w, cx, py + 1, cz - 1, Material.WATER);
-                for (int y = 0; y <= 1; y++) {
-                    setBlock(w, cx - 1, py + 1 + y, cz - 1, Material.STONE_BRICKS);
-                    setBlock(w, cx + 1, py + 1 + y, cz - 1, Material.STONE_BRICKS);
-                }
-                setBlock(w, cx, py + 3, cz - 1, Material.LANTERN);
-            }
-            case IRON_GOLEM -> {
-                setBlock(w, cx, py + 1, cz - 1, Material.IRON_BLOCK);
-                setBlock(w, cx, py + 2, cz - 1, Material.CARVED_PUMPKIN);
-                setBlock(w, cx, py + 2, cz + 2, Material.LANTERN);
-            }
-            case BEE -> {
-                for (int[] p : new int[][]{{-2, -2}, {2, -2}, {0, 2}}) {
-                    setBlock(w, cx + p[0], py + 1, cz + p[1], Material.BEEHIVE);
-                    setBlock(w, cx + p[0], py, cz + p[1], Material.OAK_FENCE);
-                }
-                for (int x = -2; x <= 2; x += 4)
-                    for (int z = -2; z <= 2; z += 4)
-                        setBlock(w, cx + x, py + 1, cz + z, Material.SUNFLOWER);
-            }
-            case FOX -> {
-                for (int x = -1; x <= 1; x++)
-                    setBlock(w, cx + x, py + 1, cz - half + 1, Material.SWEET_BERRY_BUSH);
-                for (int x = -2; x <= 2; x += 4)
-                    setBlock(w, cx + x, py + 1, cz + 2, Material.SWEET_BERRY_BUSH);
-                setBlock(w, cx, py + 2, cz, Material.LANTERN);
-            }
-            case GOAT -> {
-                for (int x = -3; x <= 3; x += 2)
-                    setBlock(w, cx + x, py, cz - half + 1, Material.PACKED_ICE);
-                setBlock(w, cx, py + 1, cz, Material.SNOW_BLOCK);
-                setBlock(w, cx - 2, py + 1, cz + 2, Material.SNOW_BLOCK);
-                setBlock(w, cx + 2, py + 1, cz + 2, Material.SNOW_BLOCK);
-            }
-            case LLAMA -> {
-                for (int x = -2; x <= 2; x += 4) {
-                    setBlock(w, cx + x, py + 1, cz, Material.RED_CARPET);
-                }
-                for (int x = -1; x <= 1; x++)
-                    setBlock(w, cx + x, py + 1, cz - half + 1, Material.HAY_BLOCK);
-            }
-            case PANDA -> {
-                for (int x = -2; x <= 2; x += 2)
-                    for (int z = -2; z <= 2; z += 2)
-                        setBlock(w, cx + x, py + 1, cz + z, Material.BAMBOO);
-                setBlock(w, cx, py + 2, cz, Material.BAMBOO);
-            }
-            case FROG -> {
-                for (int x = -2; x <= 2; x += 4)
-                    for (int z = -2; z <= 2; z += 4)
-                        setBlock(w, cx + x, py + 1, cz + z, Material.LILY_PAD);
-                for (int x = -1; x <= 1; x++)
-                    setBlock(w, cx + x, py + 1, cz + 3, Material.SEAGRASS);
-            }
-            case SNIFFER -> {
-                for (int x = -2; x <= 2; x += 4)
-                    setBlock(w, cx + x, py, cz + 1, Material.SAND);
-                setBlock(w, cx, py + 1, cz, Material.TORCHFLOWER);
-                setBlock(w, cx - 1, py + 1, cz + 2, Material.TORCHFLOWER);
-            }
-            default -> { }
-        }
-    }
-
-    /** Style-appropriate pedestal under the stack spawner display. */
     private Material pedestal(MobDef m) {
         return switch (m.style) {
             case "forge" -> Material.NETHER_BRICKS;
@@ -1445,100 +862,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         };
     }
 
-    private Material themeWall(MobDef m) {
-        return switch (m.theme) {
-            case "nether" -> Material.NETHER_BRICKS;
-            case "end" -> Material.OBSIDIAN;
-            case "ocean" -> Material.PRISMARINE_BRICKS;
-            case "ice" -> Material.PACKED_ICE;
-            case "desert" -> Material.SANDSTONE;
-            case "swamp" -> Material.MOSSY_COBBLESTONE;
-            case "mine" -> Material.DEEPSLATE_BRICKS;
-            case "raid" -> Material.DARK_OAK_LOG;
-            case "village" -> Material.OAK_LOG;
-            case "animal" -> Material.OAK_PLANKS;
-            default -> Material.STONE_BRICKS;
-        };
-    }
-    private Material themeFloor(MobDef m) {
-        return switch (m.theme) {
-            case "nether" -> Material.NETHERRACK;
-            case "end" -> Material.END_STONE;
-            case "ocean" -> Material.PRISMARINE;
-            case "ice" -> Material.SNOW_BLOCK;
-            case "desert" -> Material.SAND;
-            case "swamp" -> Material.MUD;
-            case "animal", "village" -> Material.GRASS_BLOCK;
-            default -> Material.DEEPSLATE_TILES;
-        };
-    }
-
-    private void applyThemeBlocks(MobDef m, World w, int cx, int cy, int cz) {
-        Material accent = switch (m.theme) {
-            case "nether" -> Material.SHROOMLIGHT;
-            case "end" -> Material.RED_STAINED_GLASS;
-            case "ocean" -> Material.SEA_LANTERN;
-            case "ice" -> Material.PACKED_ICE;
-            case "swamp" -> Material.MOSS_BLOCK;
-            case "desert" -> Material.CACTUS;
-            case "mine" -> Material.DEEPSLATE_TILES;
-            default -> Material.SEA_LANTERN;
-        };
-        for (int[] d : new int[][]{{-7, -7}, {-7, 7}, {7, -7}, {7, 7}}) {
-            w.getBlockAt(cx + d[0], cy, cz + d[1]).setType(accent, false);
-        }
-    }
-
-    private void finishBayCommon(MobDef m, World w, int cx, int cy, int cz) {
-        // stack spawner display east of bay (themed pedestal per style)
-        w.getBlockAt(cx + 6, cy, cz - 2).setType(pedestal(m), false);
-        w.getBlockAt(cx + 6, cy + 1, cz - 2).setType(Material.SPAWNER, false);
-        m.stackBlock = new Location(w, cx + 6, cy + 1, cz - 2);
-        if (w.getBlockAt(cx + 6, cy + 1, cz - 2).getState() instanceof CreatureSpawner cs) {
-            try {
-                cs.setSpawnedType(m.entity);
-                cs.setDelay(Integer.MAX_VALUE / 4);
-                try { cs.setSpawnCount(0); cs.setMinSpawnDelay(99999); cs.setMaxSpawnDelay(99999); } catch (Throwable ignored) {}
-                cs.update(true, false);
-            } catch (Throwable ignored) {}
-        }
-        // community chest at walkway entry (reachable) - faces NORTH so it opens
-        // towards the walkway the player stands on (was SOUTH = opened into the wall)
-        placeDoubleChest(w, cx - 4, cy, cz + 6, BlockFace.NORTH);
-        m.communityChest = new Location(w, cx - 4, cy, cz + 6);
-        Block baySign = w.getBlockAt(cx - 4, cy + 1, cz + 6);
-        baySign.setType(Material.OAK_SIGN, false);
-        faceSign(baySign, BlockFace.NORTH);
-        writeSign(baySign, ChatColor.GOLD + "COMMUNITY", ChatColor.stripColor(m.display),
-                ChatColor.WHITE + "Donate loot", ChatColor.GRAY + "→ stack");
-        // name plate + hit pad marker
-        Block name = w.getBlockAt(cx, cy + 1, cz + 7);
-        name.setType(Material.OAK_SIGN, false);
-        faceSign(name, BlockFace.NORTH);
-        writeSign(name, ChatColor.GOLD + "ZONE", ChatColor.stripColor(m.display),
-                ChatColor.GRAY + m.style + "/" + m.theme, ChatColor.AQUA + "HIT ▶");
-        Block hitpad = w.getBlockAt(cx, cy, cz + 4);
-        hitpad.setType(Material.LIME_WOOL, false);
-        Block hitSgn = w.getBlockAt(cx, cy + 1, cz + 4);
-        faceSign(hitSgn, BlockFace.NORTH);
-        writeSign(hitSgn, ChatColor.GREEN + "HIT", ChatColor.WHITE + "HERE",
-                ChatColor.GRAY + "stand ↓", ChatColor.YELLOW + "/mobfarm pick");
-        // loot chest marker above chest row
-        Block lootSign = w.getBlockAt(cx, cy + 1, cz + 2);
-        lootSign.setType(Material.OAK_SIGN, false);
-        faceSign(lootSign, BlockFace.SOUTH);
-        writeSign(lootSign, ChatColor.GOLD + "LOOT", ChatColor.WHITE + "↓ chest",
-                ChatColor.GRAY + "hopper fed", ChatColor.YELLOW + "collect ↓");
-        // ladder back to path
-        for (int y = 0; y <= 3; y++) {
-            w.getBlockAt(cx + 6, cy + y, cz + 6).setType(Material.LADDER, false);
-        }
-        if (m.stand == null) m.stand = new Location(w, cx + 0.5, cy + 1, cz + 6.5);
-        if (m.killPad == null) m.killPad = new Location(w, cx + 0.5, cy - 1, cz + 0.5);
-        if (m.lootChest == null) m.lootChest = new Location(w, cx + 0.5, cy - 1, cz + 0.5);
-    }
-
-        /**
+    /**
      * Places a proper DOUBLE chest pair along +X (facing-aware LEFT/RIGHT).
      * Bukkit LEFT/RIGHT are relative to the chest itself (opposite to the player's view):
      *   face NORTH -> west block (x) = LEFT, east block (x+1) = RIGHT
@@ -1548,7 +872,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
      * so the server never has a moment to "un-merge" them; a next-tick check
      * re-applies if the game still reports a single.
      */
-    private void placeDoubleChest(World w, int x, int y, int z, BlockFace facing) {
+    void placeDoubleChest(World w, int x, int y, int z, BlockFace facing) {
         Block b1 = w.getBlockAt(x, y, z);
         Block b2 = w.getBlockAt(x + 1, y, z);
         b1.setType(Material.CHEST, false);
@@ -1586,7 +910,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         } catch (Throwable ignored) {}
     }
 
-    private void setTrapdoor(World w, int x, int y, int z, BlockFace facing) {
+    void setTrapdoor(World w, int x, int y, int z, BlockFace facing) {
         Block b = w.getBlockAt(x, y, z);
         b.setType(Material.OAK_TRAPDOOR, false);
         try {
@@ -1599,7 +923,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     }
 
     /** Rotate a sign block so its writing faces `facing` (works on standing + wall signs). */
-    private static void faceSign(Block b, BlockFace facing) {
+    static void faceSign(Block b, BlockFace facing) {
         try {
             org.bukkit.block.data.BlockData d = b.getBlockData();
             if (d instanceof org.bukkit.block.data.Rotatable r) r.setRotation(facing);
@@ -1608,7 +932,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         } catch (Throwable ignored) {}
     }
 
-    private void writeSign(Block b, String l0, String l1, String l2, String l3) {
+    void writeSign(Block b, String l0, String l1, String l2, String l3) {
         if (!(b.getState() instanceof Sign si)) return;
         try {
             si.getSide(Side.FRONT).setLine(0, nz(l0));
@@ -1787,21 +1111,9 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
 
     /** Per-bay containment box around the pad: {halfX, halfZ, minY, maxY}. */
     private double[] cellBox(MobDef m, Location pad) {
-        double hx, hz, minY, maxY;
-        if ("barn".equals(m.style) || "pen".equals(m.style)) {
-            PenSpec ps = PenSpec.of(m.entity);
-            hx = ps.half() + 1.6; hz = ps.half() + 2.6;
-            minY = pad.getY() - 3.4; maxY = pad.getY() + 1.2 + ps.h();
-        } else if ("arena".equals(m.style)) {
-            hx = 3.9; hz = 6.6; minY = pad.getY() - 1.8; maxY = pad.getY() + 9.5;
-        } else {
-            hx = 3.2; hz = 4.9; minY = pad.getY() - 1.8;
-            maxY = switch (m.entity) {
-                case ENDERMAN, CAVE_SPIDER, CREEPER -> pad.getY() + 5.4;
-                case DROWNED, GUARDIAN, SQUID, GLOW_SQUID, SLIME -> pad.getY() + 2.4;
-                default -> pad.getY() + 2.8;
-            };
-        }
+        if (m.cell != null) return m.cell;  // 2.7.0 per-bay box set by the builder
+        double hx = 3.4, hz = 5.0, minY = pad.getY() - 1.8, maxY = pad.getY() + 3.2;
+        if ("barn".equals(m.style) || "pen".equals(m.style)) { hx = 3.6; hz = 4.6; minY = pad.getY() - 3.4; maxY = pad.getY() + 4.5; }
         return new double[]{hx, hz, minY, maxY};
     }
 
@@ -2412,6 +1724,13 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             String pfx = args[0].toLowerCase(Locale.ROOT);
             base.removeIf(s -> !s.startsWith(pfx));
             return base;
+        }
+        if (args.length == 2 && (args[0].equalsIgnoreCase("build") || args[0].equalsIgnoreCase("rebuild"))
+                && sender.hasPermission("mavomobfarm.admin")) {
+            List<String> ids = new ArrayList<>(mobs.keySet());
+            String pfx = args[1].toLowerCase(Locale.ROOT);
+            ids.removeIf(s -> !s.startsWith(pfx));
+            return ids;
         }
         return List.of();
     }
