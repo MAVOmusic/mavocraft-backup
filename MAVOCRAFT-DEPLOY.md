@@ -1,4 +1,4 @@
-# MAVOcraft — UPDATE GUIDE (2026-09-04: MobFarm 2.6.3 + Professions 3.14.2 + AuctionHouse 1.0.0)
+# MAVOcraft — UPDATE GUIDE (2026-09-04: MobFarm 2.6.4 + AuctionHouse 1.0.1)
 
 Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
@@ -6,60 +6,53 @@ Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
 ## 2. DELETE these files from plugins/ (jars only)
 
-    MAVOMobFarm-2.6.2.jar              <- replace it with 2.6.3
-    MAVOProfessions-3.14.1.jar         <- replace it with 3.14.2
-    MAVOMobFarm-2.6.1.jar / 2.6.0.jar (if still there)
-    MAVOProfessions-3.14.0.jar (if still there)
+    MAVOMobFarm-2.6.3.jar              <- replace it with 2.6.4
+    MAVOAuctionHouse-1.0.0.jar         <- replace it with 1.0.1
+    MAVOMobFarm-2.6.2.jar / 2.6.1.jar (if still there)
 
 Keep: every other jar. Check plugins/ has exactly ONE jar per plugin.
 
-## 3. UPLOAD these 3 jars into plugins/
+## 3. UPLOAD these 2 jars into plugins/
 
-    MAVOMobFarm-2.6.3.jar         (true double loot chests, safe containment, distinct bay designs)
-    MAVOProfessions-3.14.2.jar    (bound hoe no longer blocked - tilling counts Farmer XP)
-    MAVOAuctionHouse-1.0.0.jar    (NEW - the auction house)
+    MAVOMobFarm-2.6.4.jar         (loot chests reachable again + every bay designed individually)
+    MAVOAuctionHouse-1.0.1.jar    (keepers open the AH, no longer sunk, shop sell prices scanned)
 
-## 4. DELETE config: NOTHING
+MAVOProfessions-3.14.2.jar stays as it is - no re-upload needed.
 
-- plugins/MAVOMobFarm/config.yml + data.yml: KEEP (auto-migrates, shop prices rewritten on boot).
-- plugins/MAVOProfessions/: KEEP all.
-- MAVOAuctionHouse: no config yet - created when first loaded. You must build the house:
-  `/ah setcenter` (stand where the floor centre should be), then `/ah build` (OP).
+## 4. KEEP all configs / data
+
+- plugins/MAVOMobFarm/config.yml + data.yml: KEEP (auto-migrates).
+- plugins/MAVOAuctionHouse/data.yml: KEEP (your listings + inbox live there).
 
 ## 5. START the server
 
 ## 6. After start (console/OP)
 
     /updates reload
-    /mobfarm resholo
-    /ah setcenter
+    /mobfarm rebuild
     /ah build
 
+`/mobfarm rebuild` is REQUIRED - old bay geometry stays otherwise.
+`/ah build` is REQUIRED - it puts the keepers on top of the floor and re-wires them to the AH.
+
 Boot log must show:
-- "MAVOMobFarm 2.6.3 enabled" (+ "shop prices embedded: 36 mobs (zombie pick 75000)")
-- "MAVOProfessions" 3.14.2 loads
-- "MAVOAuctionHouse 1.0.0 enabled" (+ "shop sell prices loaded:" line)
+- "MAVOMobFarm 2.6.4 enabled" (+ shop prices embedded line)
+- "MAVOAuctionHouse 1.0.1 enabled" + "shop sell: scanned N EconomyShopGUI yml files -> M prices (netherite ingot ...)"
 
 ## 7. Check in game — MobFarm
 
-- Hub + EVERY bay: ONE double chest (merged) at the community chest and at the loot row.
-- Bay community chest opens toward the walkway (NORTH) and donations count.
-- Loot slot: step into the 1-deep hole in front of the double chest, click both halves.
-- No mob ever appears on the walkway; mobs cannot hurt you (even their arrows/fireballs);
-  if one escapes its cell it is teleported back to the pad.
-- Each style looks/acts DIFFERENT (see HOTFIX 9): crypt slab, gallery bars, bunker trapdoor,
-  web fence, totem purple pane, forge bars, cells glass, arena tall open court, aqua water,
-  brutal blackstone, barn fence pen.
+- Every bay: loot chest ONE double chest, lid level with the trench floor - step into the trench and click it.
+- Every bay looks DIFFERENT (see HOTFIX 10): husk sand tomb, drowned flooded crypt, skeleton target gallery,
+  pillager raider cage, creeper blast vault, enderman totem hall, blaze open forge, slime swamp cells,
+  phantom open court, guardian kelp tank, 14 distinct pastures (coop, warren, well, beehives, bamboo...).
+- Mobs stay in their cells and cannot hurt you (arrows/fireballs cancelled too).
 
 ## 8. Check in game — Auction House
 
-- Bedrock box + 5 keeper villagers appear; right-click any keeper = same /ah GUI.
-- /ah add hand 34 340 12h posts 34 items for 340 coins; countdown shows.
-- Slots: /ah slots - unlock slot 2 for 50,000 coins or 100 Lucky, then 100k/200, 150k/300 ...
-- Tax: posted at the AH = 5%, posted by command = 20%; shown on every listing.
-- Buy something: item appears in /inbox tag "auction" (bound - cannot be re-listed).
-- Let one expire or cancel it: item appears in /inbox tag "auction expired"/"auction cancelled".
-- Minimum posting price = 110% of the shop sell price (netherite ingot 756 -> 832).
+- Right-click ANY keeper -> the /ah menu opens (NOT villager trades).
+- Keepers stand ON the floor (not sunk).
+- /ah slots + /ah inbox + /ah cancel appear in tab-complete; typing /ah tab lists them.
+- Boot log shows a real price count (e.g. "netherite ingot 756"), so min price = 110% shop sell works.
 
 ## 9. NEVER delete (standing rule)
 
