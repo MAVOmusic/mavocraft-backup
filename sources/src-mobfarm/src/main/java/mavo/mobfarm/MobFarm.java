@@ -1095,7 +1095,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     /** Phantom - tall open sky court (AI off - stays low, no dives). */
     private void buildArenaBay(MobDef m, World w, int cx, int cy, int cz) {
         Material wall = Material.DEEPSLATE_BRICKS;
-        killCell(w, cx, cy, cz, wall, "slab", true, 3, 5, 0, 1, 3);
+        killCell(w, cx, cy, cz, wall, "pane", true, 3, 5, 0, 1, 3);
         for (int y = 4; y <= 8; y++) {
             for (int z = -6; z <= 2; z++) {
                 w.getBlockAt(cx - 3, cy + y, cz + z).setType(wall, false);

@@ -581,8 +581,8 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         int az = Math.abs(z - regionCenter.getBlockZ());
         if (ax <= regionHalf && az <= regionHalf
                 && y >= regionCenter.getBlockY() - 1 && y <= regionCenter.getBlockY() + regionHalf + 2) return true;
-        // terrace zone (south of the box, includes the parapet + step)
-        return ax <= 3 && az >= regionHalf + 1 && az <= regionHalf + 4
+        // terrace zone (south of the box, includes the parapets)
+        return ax <= 3 && az >= regionHalf + 1 && az <= regionHalf + 3
                 && y >= regionCenter.getBlockY() && y <= regionCenter.getBlockY() + 3;
     }
 
@@ -779,12 +779,10 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
             }
             w.getBlockAt(cx + x, cy + 3, cz + h + 2).setType(Material.SEA_LANTERN, false);
         }
-        // far parapet (south edge of the terrace) + step
+        // far parapet (south edge of the terrace) - fully closed, no step/perch outside
         for (int x = -2; x <= 2; x++)
             for (int y = 0; y < 2; y++)
                 w.getBlockAt(cx + x, cy + 1 + y, cz + h + 3).setType(Material.OBSIDIAN, false);
-        for (int x = -1; x <= 1; x++)
-            w.getBlockAt(cx + x, cy, cz + h + 4).setType(Material.BLACKSTONE, false);
         saveData();
         msg(admin, "&aAuction house built at " + cx + " " + cy + " " + cz
                 + " (bedrock box, " + (2 * h + 1) + " wide) with keepers " + (data.getConfigurationSection("keepers") != null
