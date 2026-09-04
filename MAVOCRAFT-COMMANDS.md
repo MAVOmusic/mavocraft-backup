@@ -121,11 +121,11 @@ Wild range: **5,000–400,000** blocks (1,000s comma format on the portal sign),
 
 ---
 
-## Mob Farm 2.5.0
+## Mob Farm 2.6.1
 | Command | Who | What it does |
 |---|---|---|
 | `/mobfarm info` | Players | Entry cost, session, pick prices, extend cost, XP scale, community, center |
-| `/mobfarm prices` | Players | Price GUI: egg icons per mob (shop price / 16, doubles per pick) + stack extras |
+| `/mobfarm prices` | Players | Price GUI: egg icons per mob (REAL shop price / 16, doubles per pick) + stack extras |
 | `/mobfarm hub` | Players | Teleport to the Mob Farm hub |
 | `/mobfarm extend` | Players | 25,000 coins → +15 min on the same session timer (HUD countdown updates) |
 | `/mobfarm status` | Players | Your session status, time left, loot/spawner counts |
