@@ -1,4 +1,4 @@
-## build log Thu Sep  3 17:10:15 UTC 2026
+## build log Fri Sep  4 01:53:15 UTC 2026
 == sources/src-achievements ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -6,27 +6,34 @@
 [INFO] Building mavo-achievements 1.7.2
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-achievements ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-achievements ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-achievements ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-achievements/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-achievements ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-achievements ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-achievements ---
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
+[INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.066 s
-[INFO] Finished at: 2026-09-03T17:10:17Z
+[INFO] Total time:  0.756 s
+[INFO] Finished at: 2026-09-04T01:53:16Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal on project mavo-achievements: Could not collect dependencies for project mavo:mavo-achievements:jar:1.7.2
-[ERROR] Failed to read artifact descriptor for com.github.MilkBowl:VaultAPI:jar:1.7.2
-[ERROR] 	Caused by: The following artifacts could not be resolved: com.github.MilkBowl:VaultAPI:pom:1.7.2 (absent): Could not transfer artifact com.github.MilkBowl:VaultAPI:pom:1.7.2 from/to jitpack (https://jitpack.io): status code: 401, reason phrase: Unauthorized (401)
-[ERROR] -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/DependencyResolutionException
 == sources/src-casino ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] --------------------------< mavo:mavo-casino >--------------------------
-[INFO] Building mavo-casino 1.2.3
+[INFO] Building mavo-casino 1.2.4
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -49,14 +56,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.037 s
-[INFO] Finished at: 2026-09-03T17:10:19Z
+[INFO] Total time:  0.743 s
+[INFO] Finished at: 2026-09-04T01:53:18Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-curator ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------------------< mavo:mavo-curator >--------------------------
-[INFO] Building mavo-curator 1.0.1
+[INFO] Building mavo-curator 1.0.6
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -79,14 +86,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.051 s
-[INFO] Finished at: 2026-09-03T17:10:21Z
+[INFO] Total time:  0.716 s
+[INFO] Finished at: 2026-09-04T01:53:19Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-deathchest ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] ------------------------< mavo:mavo-deathchest >------------------------
-[INFO] Building mavo-deathchest 1.1.0
+[INFO] Building mavo-deathchest 1.1.1
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -109,8 +116,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.096 s
-[INFO] Finished at: 2026-09-03T17:10:24Z
+[INFO] Total time:  0.756 s
+[INFO] Finished at: 2026-09-04T01:53:21Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-events ==
 [INFO] Scanning for projects...
@@ -139,14 +146,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.066 s
-[INFO] Finished at: 2026-09-03T17:10:26Z
+[INFO] Total time:  0.705 s
+[INFO] Finished at: 2026-09-04T01:53:22Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-guide ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] --------------------------< mavo:mavo-guide >---------------------------
-[INFO] Building mavo-guide 2.7.0
+[INFO] Building mavo-guide 2.8.0
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -169,14 +176,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.074 s
-[INFO] Finished at: 2026-09-03T17:10:28Z
+[INFO] Total time:  0.752 s
+[INFO] Finished at: 2026-09-04T01:53:24Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-lucky ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] --------------------------< mavo:mavo-lucky >---------------------------
-[INFO] Building mavo-lucky 1.5.5
+[INFO] Building mavo-lucky 1.5.6
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -199,14 +206,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.025 s
-[INFO] Finished at: 2026-09-03T17:10:30Z
+[INFO] Total time:  0.752 s
+[INFO] Finished at: 2026-09-04T01:53:26Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-mobfarm ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------------------< mavo:mavo-mobfarm >--------------------------
-[INFO] Building mavo-mobfarm 2.5.0
+[INFO] Building mavo-mobfarm 2.6.2
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -214,24 +221,47 @@
 [INFO] Copying 2 resources from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.13.0:compile (default-compile) @ mavo-mobfarm ---
-[INFO] Nothing to compile - all classes are up to date.
-[INFO] 
-[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-mobfarm ---
-[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/test/resources
-[INFO] 
-[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ mavo-mobfarm ---
-[INFO] No sources to compile
-[INFO] 
-[INFO] --- surefire:3.5.4:test (default-test) @ mavo-mobfarm ---
-[INFO] Tests are skipped.
-[INFO] 
-[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-mobfarm ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1 source file with javac [debug release 21] to target/classes
+[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/MobFarm.java: /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/MobFarm.java uses or overrides a deprecated API.
+[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/MobFarm.java: Recompile with -Xlint:deprecation for details.
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/MobFarm.java:[1833,58] CHORUS_FRUIT in org.bukkit.event.player.PlayerTeleportEvent.TeleportCause has been deprecated and marked for removal
+[INFO] 1 warning
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/MobFarm.java:[2017,89] cannot find symbol
+  symbol:   method getLocation()
+  location: interface org.bukkit.inventory.InventoryHolder
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/MobFarm.java:[2019,107] cannot find symbol
+  symbol:   method getLocation()
+  location: interface org.bukkit.inventory.InventoryHolder
+[INFO] 2 errors 
+[INFO] -------------------------------------------------------------
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
+[INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.090 s
-[INFO] Finished at: 2026-09-03T17:10:33Z
+[INFO] Total time:  1.401 s
+[INFO] Finished at: 2026-09-04T01:53:28Z
 [INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project mavo-mobfarm: Compilation failure: Compilation failure: 
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/MobFarm.java:[2017,89] cannot find symbol
+[ERROR]   symbol:   method getLocation()
+[ERROR]   location: interface org.bukkit.inventory.InventoryHolder
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/MobFarm.java:[2019,107] cannot find symbol
+[ERROR]   symbol:   method getLocation()
+[ERROR]   location: interface org.bukkit.inventory.InventoryHolder
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
 == sources/src-professions ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -259,8 +289,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.141 s
-[INFO] Finished at: 2026-09-03T17:10:35Z
+[INFO] Total time:  0.789 s
+[INFO] Finished at: 2026-09-04T01:53:30Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-shopnpc ==
 [INFO] Scanning for projects...
@@ -289,8 +319,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.072 s
-[INFO] Finished at: 2026-09-03T17:10:37Z
+[INFO] Total time:  0.697 s
+[INFO] Finished at: 2026-09-04T01:53:31Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wanderer ==
 [INFO] Scanning for projects...
@@ -319,8 +349,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.089 s
-[INFO] Finished at: 2026-09-03T17:10:39Z
+[INFO] Total time:  0.721 s
+[INFO] Finished at: 2026-09-04T01:53:33Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wild ==
 [INFO] Scanning for projects...
@@ -349,6 +379,6 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.075 s
-[INFO] Finished at: 2026-09-03T17:10:42Z
+[INFO] Total time:  0.727 s
+[INFO] Finished at: 2026-09-04T01:53:34Z
 [INFO] ------------------------------------------------------------------------
