@@ -260,7 +260,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
 
     /** Find a Material in a dotted key path, e.g. shop-items.minecraft:torch.sellPrice -> TORCH. */
     private Material materialFromPath(String path) {
-        String[] parts = path.split("\.");
+        String[] parts = path.split("\\.");
         for (String part : parts) {
             if (part.startsWith("minecraft:")) return Material.matchMaterial(part);
         }
