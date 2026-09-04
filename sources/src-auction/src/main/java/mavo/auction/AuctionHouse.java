@@ -56,7 +56,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * MAVOAuctionHouse 1.0.1 - community auction house.
+ * MAVOAuctionHouse 1.0.2 - community auction house.
  *
  * - fancy bedrock-box auction house with keeper villagers (same GUI)
  * - /ah /auctionhouse /auction + /inbox
@@ -110,7 +110,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         getServer().getPluginManager().registerEvents(this, this);
         respawnKeepers();
         startExpiryTask();
-        getLogger().info("MAVOAuctionHouse 1.0.1 enabled. shopSell=" + shopSell.size()
+        getLogger().info("MAVOAuctionHouse 1.0.2 enabled. shopSell=" + shopSell.size()
                 + " listings=" + listings.size() + " region=" + (regionCenter != null));
     }
 
@@ -222,18 +222,24 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
 
     private void loadShopPrices() {
         shopSell.clear();
+        // scan the LIVE shop configs only - never sections/ or *backup* folders
         List<File> files = new ArrayList<>();
-        collectYml(new File(getDataFolder().getParentFile(), "EconomyShopGUI"), files);
+        File shops = new File(getDataFolder().getParentFile(), "EconomyShopGUI/shops");
+        if (!shops.isDirectory()) shops = new File(getDataFolder().getParentFile(), "EconomyShopGUI");
+        collectYml(shops, files);
         int checked = 0;
         for (File f : files) {
+            if (f.getAbsolutePath().toLowerCase(Locale.ROOT).contains("backup")) continue;
             try {
                 YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
                 for (Map.Entry<String, Object> en : y.getValues(true).entrySet()) {
-                    String key = en.getKey().toLowerCase(Locale.ROOT).replace("_", "-");
-                    if (!(key.endsWith("sellprice") || key.endsWith("sell-price") || key.endsWith(".sell"))) continue;
+                    // real per-item price is the LEAF "sell" key (sell-prices = multi-currency list, skipped)
+                    String key = en.getKey();
+                    if (!key.endsWith(".sell")) continue;
                     long price = parseNum(en.getValue());
                     if (price <= 0) continue;
-                    Material mat = materialFromPath(en.getKey());
+                    Material mat = materialFromPath(key);
+                    if (mat == null) mat = materialFromNode(y, key);
                     if (mat != null && price > shopSell.getOrDefault(mat, 0L)) shopSell.put(mat, price);
                 }
                 checked++;
@@ -244,7 +250,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
             Material m = Material.matchMaterial(k);
             if (m != null && over.getLong(k, 0) > 0) shopSell.put(m, over.getLong(k));
         }
-        getLogger().info("AuctionHouse shop sell: scanned " + checked + " EconomyShopGUI yml files -> "
+        getLogger().info("AuctionHouse shop sell: scanned " + checked + " shop yml files (backups skipped) -> "
                 + shopSell.size() + " prices (netherite ingot "
                 + shopSell.getOrDefault(Material.NETHERITE_INGOT, 0L) + ").");
     }
@@ -258,7 +264,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         }
     }
 
-    /** Find a Material in a dotted key path, e.g. shop-items.minecraft:torch.sellPrice -> TORCH. */
+    /** Material from the key path itself (shop-items.minecraft:xxx.sell format). */
     private Material materialFromPath(String path) {
         String[] parts = path.split("\\.");
         for (String part : parts) {
@@ -268,7 +274,23 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
             Material m = Material.matchMaterial(part.replace("_", "-"));
             if (m != null) return m;
         }
-        return parts.length >= 2 ? Material.matchMaterial(parts[parts.length - 2]) : null;
+        return null;
+    }
+
+    /** Material from the sibling "material:" value (pages.pages1.items.N.sell format). */
+    private Material materialFromNode(YamlConfiguration y, String key) {
+        String parent = key.substring(0, key.length() - ".sell".length());
+        String mat = y.getString(parent + ".material");
+        if (mat == null) {
+            // climb parents in case the item section is deeper
+            String cur = parent;
+            while (cur.contains(".")) {
+                cur = cur.substring(0, cur.lastIndexOf('.'));
+                mat = y.getString(cur + ".material");
+                if (mat != null) break;
+            }
+        }
+        return mat == null ? null : Material.matchMaterial(mat.replace(" ", "_"));
     }
 
     private static long parseNum(Object v) {
@@ -1197,7 +1219,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         if (!cmd.getName().equalsIgnoreCase("ah")) return super.onTabComplete(sender, cmd, label, args);
         if (args.length == 1) {
-            List<String> out = new ArrayList<>(List.of("add", "inbox", "slots", "cancel", "help"));
+            List<String> out = new ArrayList<>(List.of("add", "hub", "inbox", "slots", "cancel", "help"));
             if (sender.hasPermission("mavoauction.admin")) out.addAll(List.of("setcenter", "build", "reload"));
             return out;
         }
@@ -1223,9 +1245,17 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         if (cmd.getName().equalsIgnoreCase("inbox")) { openInbox(p, 0); return true; }
         if (args.length == 0) { openMain(p, 0); return true; }
         switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "hub", "home" -> {
+                if (regionCenter == null) { msg(p, "&cThe auction house is not set up yet."); return true; }
+                Location to = regionCenter.clone().add(0.5, 1, Math.min(4.5, regionHalf - 0.5));
+                to.setYaw(180f); to.setPitch(0f);
+                p.teleport(to);
+                msg(p, "&aWelcome to the Auction House! Right-click a keeper, or use &e/ah&a to browse.");
+            }
             case "help" -> {
                 p.sendMessage(color("&6Auction House:"));
                 p.sendMessage(color("&e/ah &7- open the auction house"));
+                p.sendMessage(color("&e/ah hub &7- teleport to the auction house"));
                 p.sendMessage(color("&e/ah add hand <amount> <price> <duration> &7- post what you hold"));
                 p.sendMessage(color("&e/ah add <material> <amount> <price> <duration> &7- post from inventory"));
                 p.sendMessage(color("&e/ah inbox &7| &e/inbox &7- collect bought/expired/cancelled items"));

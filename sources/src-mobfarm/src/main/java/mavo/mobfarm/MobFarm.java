@@ -31,7 +31,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-/** MAVOMobFarm 2.6.4 — every bay individually designed (36 unique cells/pastures), reachable ONE double loot chest, safe containment, no mob damage, paid pick. */
+/** MAVOMobFarm 2.6.5 — every bay individually designed; bulletproof block placement (item materials can never crash a rebuild); safe containment; no mob damage. */
 public final class MobFarm extends JavaPlugin implements Listener, TabCompleter {
 
     /**
@@ -142,7 +142,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 for (UUID u : end) endSession(u, true);
             }
         }.runTaskTimer(this, 40L, 40L);
-        getLogger().info("MAVOMobFarm 2.6.4 enabled. mobs=" + mobs.size()
+        getLogger().info("MAVOMobFarm 2.6.5 enabled. mobs=" + mobs.size()
                 + " center=" + (center == null ? "?" : center.getBlockX() + "," + center.getBlockZ())
                 + " ai=" + mobAiEnabled());
     }
@@ -339,7 +339,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         }
         String a = args[0].toLowerCase(Locale.ROOT);
         if (a.equals("info")) {
-            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.6.4 " + ChatColor.GRAY + "entry "
+            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.6.5 " + ChatColor.GRAY + "entry "
                     + ChatColor.YELLOW + getConfig().getInt("entry-cost")
                     + ChatColor.GRAY + " · " + getConfig().getInt("session-minutes") + "m"
                     + ChatColor.GRAY + " · pick from " + ChatColor.GREEN + minPickCost()
@@ -796,9 +796,13 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         int n = 0;
         for (MobDef m : mobs.values()) {
             computeGeom(m);
-            buildBay(m);
-            m.built = true;
-            n++;
+            try {
+                buildBay(m);
+                m.built = true;
+                n++;
+            } catch (Throwable t) {
+                getLogger().warning("buildBay " + m.id + " failed: " + t);
+            }
         }
         recomputeAABB();
         data.set("built", true); saveData();
@@ -1153,6 +1157,11 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         setPos(m, w, cx + 0.5, cy + 1, cz + 3.5, "loot");
     }
 
+    /** Only set a block - never throws on item materials (2.6.5 safety). */
+    private static void setBlock(World w, int x, int y, int z, Material m) {
+        if (m != null && m.isBlock()) try { w.getBlockAt(x, y, z).setType(m, false); } catch (Throwable ignored) {}
+    }
+
     /** Unique props per hostile mob (props change the bay's whole look). */
     private void decorBay(MobDef m, World w, int cx, int cy, int cz, int depth) {
         switch (m.entity) {
@@ -1162,112 +1171,112 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                             ((Math.abs(p[0]) + Math.abs(p[1])) & 1) == 0
                                     ? Material.MOSSY_STONE_BRICKS : Material.MOSSY_COBBLESTONE, false);
                 }
-                w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.CANDLE, false);
-                w.getBlockAt(cx, cy + 3, cz).setType(Material.SOUL_LANTERN, false);
+                setBlock(w, cx, cy + 3, cz - 2, Material.CANDLE);
+                setBlock(w, cx, cy + 3, cz, Material.SOUL_LANTERN);
             }
             case HUSK -> {
                 for (int[] p : new int[][]{{-2, -3}, {2, -2}, {-2, 1}, {2, 1}})
-                    w.getBlockAt(cx + p[0], cy + 3, cz + p[1]).setType(Material.SANDSTONE, false);
-                w.getBlockAt(cx - 2, cy + 1, cz - 4).setType(Material.CACTUS, false);
-                w.getBlockAt(cx + 2, cy + 1, cz - 4).setType(Material.CACTUS, false);
-                w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.SMOOTH_SANDSTONE, false);
+                    setBlock(w, cx + p[0], cy + 3, cz + p[1], Material.SANDSTONE);
+                setBlock(w, cx - 2, cy + 1, cz - 4, Material.CACTUS);
+                setBlock(w, cx + 2, cy + 1, cz - 4, Material.CACTUS);
+                setBlock(w, cx, cy + 3, cz - 2, Material.SMOOTH_SANDSTONE);
             }
             case SKELETON -> {
                 for (int x = -1; x <= 1; x++) {
                     w.getBlockAt(cx + x, cy + 1, cz - 5).setType(x == 0 ? Material.TARGET : Material.SCAFFOLDING, false);
-                    w.getBlockAt(cx + x, cy + 2, cz - 5).setType(Material.DEEPSLATE_TILES, false);
+                    setBlock(w, cx + x, cy + 2, cz - 5, Material.DEEPSLATE_TILES);
                 }
-                w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.LANTERN, false);
+                setBlock(w, cx, cy + 3, cz - 2, Material.LANTERN);
             }
             case STRAY -> {
                 for (int x = -1; x <= 1; x++)
-                    w.getBlockAt(cx + x, cy + 1, cz - 5).setType(Material.PACKED_ICE, false);
-                w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.LANTERN, false);
-                w.getBlockAt(cx - 2, cy + 2, cz - 2).setType(Material.SNOW_BLOCK, false);
-                w.getBlockAt(cx + 2, cy + 2, cz - 2).setType(Material.SNOW_BLOCK, false);
+                    setBlock(w, cx + x, cy + 1, cz - 5, Material.PACKED_ICE);
+                setBlock(w, cx, cy + 3, cz - 2, Material.LANTERN);
+                setBlock(w, cx - 2, cy + 2, cz - 2, Material.SNOW_BLOCK);
+                setBlock(w, cx + 2, cy + 2, cz - 2, Material.SNOW_BLOCK);
             }
             case SPIDER -> {
                 for (int x = -1; x <= 1; x++)
                     for (int z = -3; z <= -1; z++)
-                        if (((x + z) & 1) == 0) w.getBlockAt(cx + x, cy + 2, cz + z).setType(Material.COBWEB, false);
-                w.getBlockAt(cx, cy + 3, cz - 4).setType(Material.COBWEB, false);
+                        if (((x + z) & 1) == 0) setBlock(w, cx + x, cy + 2, cz + z, Material.COBWEB);
+                setBlock(w, cx, cy + 3, cz - 4, Material.COBWEB);
             }
             case CAVE_SPIDER -> {
                 for (int x = -1; x <= 1; x++)
-                    w.getBlockAt(cx + x, cy + 1, cz - 6).setType(Material.MOSS_BLOCK, false);
-                w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.CANDLE, false);
+                    setBlock(w, cx + x, cy + 1, cz - 6, Material.MOSS_BLOCK);
+                setBlock(w, cx, cy + 3, cz - 2, Material.CANDLE);
                 for (int x = -1; x <= 1; x++)
-                    w.getBlockAt(cx + x, cy + 3, cz - 1).setType(Material.OBSIDIAN, false);
+                    setBlock(w, cx + x, cy + 3, cz - 1, Material.OBSIDIAN);
             }
             case CREEPER -> {
                 for (int x = -1; x <= 1; x++)
-                    w.getBlockAt(cx + x, cy + 3, cz - 2).setType(Material.OAK_TRAPDOOR, false);
-                w.getBlockAt(cx, cy + 1, cz - 5).setType(Material.SEA_LANTERN, false);
+                    setBlock(w, cx + x, cy + 3, cz - 2, Material.OAK_TRAPDOOR);
+                setBlock(w, cx, cy + 1, cz - 5, Material.SEA_LANTERN);
             }
             case ENDERMAN -> { /* built in buildTotemBay */ }
             case BLAZE -> { /* built in buildForgeBay */ }
             case MAGMA_CUBE -> {
                 for (int x = -1; x <= 1; x++)
                     for (int z = -2; z <= -1; z++)
-                        w.getBlockAt(cx + x, cy + 2, cz + z).setType(Material.MAGMA_BLOCK, false);
-                w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.SHROOMLIGHT, false);
+                        setBlock(w, cx + x, cy + 2, cz + z, Material.MAGMA_BLOCK);
+                setBlock(w, cx, cy + 3, cz - 2, Material.SHROOMLIGHT);
             }
             case SLIME -> {
                 for (int x = -1; x <= 1; x++)
                     for (int z = -3; z <= -1; z++)
-                        if (((x + z) & 1) == 0) w.getBlockAt(cx + x, cy + 2, cz + z).setType(Material.LILY_PAD, false);
+                        if (((x + z) & 1) == 0) setBlock(w, cx + x, cy + 2, cz + z, Material.LILY_PAD);
                 for (int y = 0; y <= 2; y++) {
-                    w.getBlockAt(cx - 1, cy + y, cz - 1).setType(Material.LIME_STAINED_GLASS, false);
-                    w.getBlockAt(cx + 1, cy + y, cz - 1).setType(Material.LIME_STAINED_GLASS, false);
+                    setBlock(w, cx - 1, cy + y, cz - 1, Material.LIME_STAINED_GLASS);
+                    setBlock(w, cx + 1, cy + y, cz - 1, Material.LIME_STAINED_GLASS);
                 }
             }
             case SILVERFISH -> {
-                w.getBlockAt(cx, cy + 1, cz - 3).setType(Material.MOSSY_COBBLESTONE, false);
-                w.getBlockAt(cx - 1, cy + 2, cz - 2).setType(Material.INFESTED_STONE_BRICKS, false);
-                w.getBlockAt(cx + 1, cy + 2, cz - 2).setType(Material.MOSSY_STONE_BRICKS, false);
-                w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.STONE_BRICKS, false);
+                setBlock(w, cx, cy + 1, cz - 3, Material.MOSSY_COBBLESTONE);
+                setBlock(w, cx - 1, cy + 2, cz - 2, Material.INFESTED_STONE_BRICKS);
+                setBlock(w, cx + 1, cy + 2, cz - 2, Material.MOSSY_STONE_BRICKS);
+                setBlock(w, cx, cy + 3, cz - 2, Material.STONE_BRICKS);
             }
             case PHANTOM -> { /* built in buildArenaBay */ }
             case WITHER_SKELETON -> {
                 for (int x = -1; x <= 1; x++)
-                    w.getBlockAt(cx + x, cy + 1, cz - 5).setType(Material.SOUL_SAND, false);
-                w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.SOUL_LANTERN, false);
+                    setBlock(w, cx + x, cy + 1, cz - 5, Material.SOUL_SAND);
+                setBlock(w, cx, cy + 3, cz - 2, Material.SOUL_LANTERN);
             }
             case PILLAGER -> {
                 for (int x = -1; x <= 1; x++) {
-                    w.getBlockAt(cx + x, cy + 1, cz - 5).setType(Material.DARK_OAK_LOG, false);
-                    w.getBlockAt(cx + x, cy + 3, cz - 2).setType(Material.DARK_OAK_LOG, false);
+                    setBlock(w, cx + x, cy + 1, cz - 5, Material.DARK_OAK_LOG);
+                    setBlock(w, cx + x, cy + 3, cz - 2, Material.DARK_OAK_LOG);
                 }
-                w.getBlockAt(cx - 1, cy + 2, cz - 4).setType(Material.GRAY_WOOL, false);
-                w.getBlockAt(cx + 1, cy + 2, cz - 4).setType(Material.GRAY_WOOL, false);
+                setBlock(w, cx - 1, cy + 2, cz - 4, Material.GRAY_WOOL);
+                setBlock(w, cx + 1, cy + 2, cz - 4, Material.GRAY_WOOL);
             }
             case GUARDIAN -> {
                 for (int x = -1; x <= 1; x++)
-                    w.getBlockAt(cx + x, cy + 1, cz - 4).setType(Material.KELP, false);
-                w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.SEA_LANTERN, false);
-                w.getBlockAt(cx - 2, cy + 1, cz - 2).setType(Material.PRISMARINE, false);
-                w.getBlockAt(cx + 2, cy + 1, cz - 2).setType(Material.PRISMARINE, false);
+                    setBlock(w, cx + x, cy + 1, cz - 4, Material.KELP);
+                setBlock(w, cx, cy + 3, cz - 2, Material.SEA_LANTERN);
+                setBlock(w, cx - 2, cy + 1, cz - 2, Material.PRISMARINE);
+                setBlock(w, cx + 2, cy + 1, cz - 2, Material.PRISMARINE);
             }
             case SQUID -> {
                 for (int x = -1; x <= 1; x++)
-                    w.getBlockAt(cx + x, cy + 1, cz - 4).setType(Material.KELP, false);
-                w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.SOUL_LANTERN, false);
+                    setBlock(w, cx + x, cy + 1, cz - 4, Material.KELP);
+                setBlock(w, cx, cy + 3, cz - 2, Material.SOUL_LANTERN);
             }
             case GLOW_SQUID -> {
                 for (int x = -1; x <= 1; x++)
-                    w.getBlockAt(cx + x, cy + 1, cz - 4).setType(Material.KELP, false);
+                    setBlock(w, cx + x, cy + 1, cz - 4, Material.KELP);
                 for (int x = -1; x <= 1; x += 2)
-                    w.getBlockAt(cx + x, cy + 2, cz - 2).setType(Material.SEA_LANTERN, false);
+                    setBlock(w, cx + x, cy + 2, cz - 2, Material.SEA_LANTERN);
             }
             case HOGLIN -> {
-                w.getBlockAt(cx, cy + 1, cz - 4).setType(Material.GOLD_BLOCK, false);
-                w.getBlockAt(cx - 1, cy + 2, cz - 4).setType(Material.CRIMSON_NYLIUM, false);
-                w.getBlockAt(cx + 1, cy + 2, cz - 4).setType(Material.CRIMSON_NYLIUM, false);
+                setBlock(w, cx, cy + 1, cz - 4, Material.GOLD_BLOCK);
+                setBlock(w, cx - 1, cy + 2, cz - 4, Material.CRIMSON_NYLIUM);
+                setBlock(w, cx + 1, cy + 2, cz - 4, Material.CRIMSON_NYLIUM);
             }
             case PIGLIN -> {
-                w.getBlockAt(cx, cy + 1, cz - 4).setType(Material.GOLD_BLOCK, false);
+                setBlock(w, cx, cy + 1, cz - 4, Material.GOLD_BLOCK);
                 for (int x = -2; x <= 2; x += 4)
-                    w.getBlockAt(cx + x, cy + 1, cz - 3).setType(Material.GOLD_BLOCK, false);
+                    setBlock(w, cx + x, cy + 1, cz - 3, Material.GOLD_BLOCK);
             }
             default -> { }
         }
@@ -1279,96 +1288,96 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         switch (m.entity) {
             case COW -> {
                 for (int x = -1; x <= 1; x++) {
-                    w.getBlockAt(cx + x, py + 1, cz - half + 1).setType(Material.WATER, false);
-                    w.getBlockAt(cx + x, py + 2, cz - half + 1).setType(Material.OAK_FENCE, false);
+                    setBlock(w, cx + x, py + 1, cz - half + 1, Material.WATER);
+                    setBlock(w, cx + x, py + 2, cz - half + 1, Material.OAK_FENCE);
                 }
                 for (int[] p : new int[][]{{-2, 2}, {2, 2}, {0, -2}})
-                    w.getBlockAt(cx + p[0], py + 1, cz + p[1]).setType(Material.POPPY, false);
+                    setBlock(w, cx + p[0], py + 1, cz + p[1], Material.POPPY);
             }
             case PIG -> {
                 for (int x = -2; x <= 2; x += 2)
-                    w.getBlockAt(cx + x, py + 1, cz - half + 1).setType(Material.HAY_BLOCK, false);
+                    setBlock(w, cx + x, py + 1, cz - half + 1, Material.HAY_BLOCK);
                 for (int x = -2; x <= 2; x += 4)
-                    w.getBlockAt(cx + x, py, cz + 2).setType(Material.MUD, false);
+                    setBlock(w, cx + x, py, cz + 2, Material.MUD);
             }
             case CHICKEN -> {
                 for (int x = -1; x <= 1; x++)
                     for (int z = -1; z <= 1; z++)
-                        w.getBlockAt(cx + x, py + 1, cz + z).setType(Material.HAY_BLOCK, false);
-                w.getBlockAt(cx, py + 2, cz).setType(Material.LANTERN, false);
+                        setBlock(w, cx + x, py + 1, cz + z, Material.HAY_BLOCK);
+                setBlock(w, cx, py + 2, cz, Material.LANTERN);
             }
             case SHEEP -> {
                 for (int x = -2; x <= 2; x += 2)
-                    w.getBlockAt(cx + x, py + 1, cz - half + 1).setType(Material.WHITE_WOOL, false);
-                w.getBlockAt(cx - 1, py + 1, cz + 2).setType(Material.YELLOW_WOOL, false);
-                w.getBlockAt(cx + 1, py + 1, cz + 2).setType(Material.PINK_WOOL, false);
+                    setBlock(w, cx + x, py + 1, cz - half + 1, Material.WHITE_WOOL);
+                setBlock(w, cx - 1, py + 1, cz + 2, Material.YELLOW_WOOL);
+                setBlock(w, cx + 1, py + 1, cz + 2, Material.PINK_WOOL);
             }
             case RABBIT -> {
                 for (int x = -1; x <= 1; x++)
-                    w.getBlockAt(cx + x, py + 1, cz - half + 1).setType(Material.CARROTS, false);
-                w.getBlockAt(cx, py + 2, cz).setType(Material.CARROT, false);
+                    setBlock(w, cx + x, py + 1, cz - half + 1, Material.CARROTS);
+                setBlock(w, cx, py + 2, cz, Material.CARROTS);
             }
             case VILLAGER -> {
-                w.getBlockAt(cx, py + 1, cz - 1).setType(Material.WATER, false);
+                setBlock(w, cx, py + 1, cz - 1, Material.WATER);
                 for (int y = 0; y <= 1; y++) {
-                    w.getBlockAt(cx - 1, py + 1 + y, cz - 1).setType(Material.STONE_BRICKS, false);
-                    w.getBlockAt(cx + 1, py + 1 + y, cz - 1).setType(Material.STONE_BRICKS, false);
+                    setBlock(w, cx - 1, py + 1 + y, cz - 1, Material.STONE_BRICKS);
+                    setBlock(w, cx + 1, py + 1 + y, cz - 1, Material.STONE_BRICKS);
                 }
-                w.getBlockAt(cx, py + 3, cz - 1).setType(Material.LANTERN, false);
+                setBlock(w, cx, py + 3, cz - 1, Material.LANTERN);
             }
             case IRON_GOLEM -> {
-                w.getBlockAt(cx, py + 1, cz - 1).setType(Material.IRON_BLOCK, false);
-                w.getBlockAt(cx, py + 2, cz - 1).setType(Material.CARVED_PUMPKIN, false);
-                w.getBlockAt(cx, py + 2, cz + 2).setType(Material.LANTERN, false);
+                setBlock(w, cx, py + 1, cz - 1, Material.IRON_BLOCK);
+                setBlock(w, cx, py + 2, cz - 1, Material.CARVED_PUMPKIN);
+                setBlock(w, cx, py + 2, cz + 2, Material.LANTERN);
             }
             case BEE -> {
                 for (int[] p : new int[][]{{-2, -2}, {2, -2}, {0, 2}}) {
-                    w.getBlockAt(cx + p[0], py + 1, cz + p[1]).setType(Material.BEEHIVE, false);
-                    w.getBlockAt(cx + p[0], py, cz + p[1]).setType(Material.OAK_FENCE, false);
+                    setBlock(w, cx + p[0], py + 1, cz + p[1], Material.BEEHIVE);
+                    setBlock(w, cx + p[0], py, cz + p[1], Material.OAK_FENCE);
                 }
                 for (int x = -2; x <= 2; x += 4)
                     for (int z = -2; z <= 2; z += 4)
-                        w.getBlockAt(cx + x, py + 1, cz + z).setType(Material.SUNFLOWER, false);
+                        setBlock(w, cx + x, py + 1, cz + z, Material.SUNFLOWER);
             }
             case FOX -> {
                 for (int x = -1; x <= 1; x++)
-                    w.getBlockAt(cx + x, py + 1, cz - half + 1).setType(Material.SWEET_BERRY_BUSH, false);
+                    setBlock(w, cx + x, py + 1, cz - half + 1, Material.SWEET_BERRY_BUSH);
                 for (int x = -2; x <= 2; x += 4)
-                    w.getBlockAt(cx + x, py + 1, cz + 2).setType(Material.SWEET_BERRY_BUSH, false);
-                w.getBlockAt(cx, py + 2, cz).setType(Material.LANTERN, false);
+                    setBlock(w, cx + x, py + 1, cz + 2, Material.SWEET_BERRY_BUSH);
+                setBlock(w, cx, py + 2, cz, Material.LANTERN);
             }
             case GOAT -> {
                 for (int x = -3; x <= 3; x += 2)
-                    w.getBlockAt(cx + x, py, cz - half + 1).setType(Material.PACKED_ICE, false);
-                w.getBlockAt(cx, py + 1, cz).setType(Material.SNOW_BLOCK, false);
-                w.getBlockAt(cx - 2, py + 1, cz + 2).setType(Material.SNOW_BLOCK, false);
-                w.getBlockAt(cx + 2, py + 1, cz + 2).setType(Material.SNOW_BLOCK, false);
+                    setBlock(w, cx + x, py, cz - half + 1, Material.PACKED_ICE);
+                setBlock(w, cx, py + 1, cz, Material.SNOW_BLOCK);
+                setBlock(w, cx - 2, py + 1, cz + 2, Material.SNOW_BLOCK);
+                setBlock(w, cx + 2, py + 1, cz + 2, Material.SNOW_BLOCK);
             }
             case LLAMA -> {
                 for (int x = -2; x <= 2; x += 4) {
-                    w.getBlockAt(cx + x, py + 1, cz).setType(Material.RED_CARPET, false);
+                    setBlock(w, cx + x, py + 1, cz, Material.RED_CARPET);
                 }
                 for (int x = -1; x <= 1; x++)
-                    w.getBlockAt(cx + x, py + 1, cz - half + 1).setType(Material.HAY_BLOCK, false);
+                    setBlock(w, cx + x, py + 1, cz - half + 1, Material.HAY_BLOCK);
             }
             case PANDA -> {
                 for (int x = -2; x <= 2; x += 2)
                     for (int z = -2; z <= 2; z += 2)
-                        w.getBlockAt(cx + x, py + 1, cz + z).setType(Material.BAMBOO, false);
-                w.getBlockAt(cx, py + 2, cz).setType(Material.BAMBOO, false);
+                        setBlock(w, cx + x, py + 1, cz + z, Material.BAMBOO);
+                setBlock(w, cx, py + 2, cz, Material.BAMBOO);
             }
             case FROG -> {
                 for (int x = -2; x <= 2; x += 4)
                     for (int z = -2; z <= 2; z += 4)
-                        w.getBlockAt(cx + x, py + 1, cz + z).setType(Material.LILY_PAD, false);
+                        setBlock(w, cx + x, py + 1, cz + z, Material.LILY_PAD);
                 for (int x = -1; x <= 1; x++)
-                    w.getBlockAt(cx + x, py + 1, cz + 3).setType(Material.SEAGRASS, false);
+                    setBlock(w, cx + x, py + 1, cz + 3, Material.SEAGRASS);
             }
             case SNIFFER -> {
                 for (int x = -2; x <= 2; x += 4)
-                    w.getBlockAt(cx + x, py, cz + 1).setType(Material.SAND, false);
-                w.getBlockAt(cx, py + 1, cz).setType(Material.TORCHFLOWER, false);
-                w.getBlockAt(cx - 1, py + 1, cz + 2).setType(Material.TORCHFLOWER, false);
+                    setBlock(w, cx + x, py, cz + 1, Material.SAND);
+                setBlock(w, cx, py + 1, cz, Material.TORCHFLOWER);
+                setBlock(w, cx - 1, py + 1, cz + 2, Material.TORCHFLOWER);
             }
             default -> { }
         }

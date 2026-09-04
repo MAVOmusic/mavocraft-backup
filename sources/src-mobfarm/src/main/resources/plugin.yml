@@ -1,5 +1,5 @@
 name: MAVOMobFarm
-version: 2.6.4
+version: 2.6.5
 main: mavo.mobfarm.MobFarm
 api-version: '1.21'
 description: Dual-wing unique-zone mob farm at -15000 with paid picks
