@@ -1,4 +1,4 @@
-# MAVOcraft — UPDATE GUIDE (2026-09-04: MobFarm 2.6.5 + AuctionHouse 1.0.2)
+# MAVOcraft — UPDATE GUIDE (2026-09-04: MobFarm 2.6.6 + AuctionHouse 1.0.3)
 
 Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
@@ -6,16 +6,16 @@ Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
 ## 2. DELETE these files from plugins/ (jars only)
 
-    MAVOMobFarm-2.6.4.jar              <- replace it with 2.6.5 (this one crashed on /rebuild)
-    MAVOAuctionHouse-1.0.1.jar         <- replace it with 1.0.2
-    MAVOMobFarm-2.6.3.jar / 2.6.2.jar (if still there)
+    MAVOMobFarm-2.6.5.jar              <- replace it with 2.6.6 (barrier + shape fix)
+    MAVOAuctionHouse-1.0.2.jar         <- replace it with 1.0.3 (keeper dedupe + terrace)
+    MAVOMobFarm-2.6.4.jar / 2.6.3.jar / 2.6.2.jar (if still there)
 
 Keep: every other jar. Check plugins/ has exactly ONE jar per plugin.
 
 ## 3. UPLOAD these 2 jars into plugins/
 
-    MAVOMobFarm-2.6.5.jar         (rebuild no longer crashes - rabbit warren uses the right block)
-    MAVOAuctionHouse-1.0.2.jar    (/ah hub teleport + shop sell prices scanned correctly)
+    MAVOMobFarm-2.6.6.jar         (front-wall wipe fixed - mobs can't walk out; barns rebuilt per-animal shapes)
+    MAVOAuctionHouse-1.0.3.jar    (duplicate keepers removed on boot + /ah build; enclosed entrance terrace)
 
 MAVOProfessions-3.14.2.jar stays as it is - no re-upload needed.
 
@@ -26,22 +26,28 @@ MAVOProfessions-3.14.2.jar stays as it is - no re-upload needed.
 
 ## 5. START the server
 
-## 6. After start (console/OP)
+## 6. After start (console/OP) - full rebuild so the new shapes + barriers replace the old cells
 
     /updates reload
-    /mobfarm rebuild
+    /mobfarm purge
+    /mobfarm clear
+    /mobfarm setcenter      (x2 - once per range, as before)
+    /mobfarm build
     /ah build
 
 Boot log must show:
-- "MAVOMobFarm 2.6.5 enabled" (no "buildBay ... failed" warnings)
-- "MAVOAuctionHouse 1.0.2 enabled" + "shop sell: scanned N shop yml files (backups skipped) -> M prices (netherite ingot ...)"
-- NO error stack traces about shops-backup folders (old 1.0.1 scanned them)
+- "MAVOMobFarm 2.6.6 enabled" (no "buildBay ... failed" warnings)
+- "MAVOAuctionHouse 1.0.3 enabled" + "shop sell: scanned N shop yml files (backups skipped) -> M prices (netherite ingot ...)"
+- If duplicates existed, a line "AuctionHouse: removed N duplicate/stuck keeper(s), respawned clean."
+- NO error stack traces about shops-backup folders.
 
 ## 7. Check in game
 
-- /mobfarm rebuild finishes and builds all 36 bays (unique designs from 2.6.4).
-- /ah hub (or /ah home) teleports you into the auction house - works for EVERY player, no OP needed.
-- Right-click any keeper -> the /ah menu opens.
+- Every bay now has a real front wall with a 1-high window (slab slit + bars/trapdoor/fence/pane/glass) - mobs stay inside, you can still hit them through it. No more open hole.
+- Barns are no longer clones: chicken/bee full-roof hut, rabbit/fox/panda half-roof den, villager/golem corner-pillar plaza, goat ice arena (3-high), frog water pit, pig 3x3 pen, cow/sheep/llama meadow - different size, height and roof per animal.
+- Bay labels, zone and HIT signs face the walkway; LOOT and COMMUNITY chest signs printed toward the trench.
+- /ah hub teleports you into the auction house; the entrance balcony has 2-high parapets - you cannot fall off; walk through the 3-wide opening.
+- Right-click any keeper -> the /ah menu opens; there is exactly ONE keeper per spot (any stuck copies are deleted on boot / /ah build).
 - Boot log netherite ingot check: if it does not show 756, add to plugins/MAVOAuctionHouse/config.yml:
   min-sell-prices:
     NETHERITE_INGOT: 756
