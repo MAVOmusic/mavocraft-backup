@@ -56,7 +56,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * MAVOAuctionHouse 1.0.0 - community auction house.
+ * MAVOAuctionHouse 1.0.1 - community auction house.
  *
  * - fancy bedrock-box auction house with keeper villagers (same GUI)
  * - /ah /auctionhouse /auction + /inbox
@@ -110,7 +110,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         getServer().getPluginManager().registerEvents(this, this);
         respawnKeepers();
         startExpiryTask();
-        getLogger().info("MAVOAuctionHouse 1.0.0 enabled. shopSell=" + shopSell.size()
+        getLogger().info("MAVOAuctionHouse 1.0.1 enabled. shopSell=" + shopSell.size()
                 + " listings=" + listings.size() + " region=" + (regionCenter != null));
     }
 
@@ -222,54 +222,53 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
 
     private void loadShopPrices() {
         shopSell.clear();
-        File shops = new File(getDataFolder().getParentFile(), "EconomyShopGUI/shops");
-        if (!shops.isDirectory()) shops = new File(getDataFolder().getParentFile(), "EconomyShopGUI");
-        scanYml(shops);
+        List<File> files = new ArrayList<>();
+        collectYml(new File(getDataFolder().getParentFile(), "EconomyShopGUI"), files);
+        int checked = 0;
+        for (File f : files) {
+            try {
+                YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
+                for (Map.Entry<String, Object> en : y.getValues(true).entrySet()) {
+                    String key = en.getKey().toLowerCase(Locale.ROOT).replace("_", "-");
+                    if (!(key.endsWith("sellprice") || key.endsWith("sell-price") || key.endsWith(".sell"))) continue;
+                    long price = parseNum(en.getValue());
+                    if (price <= 0) continue;
+                    Material mat = materialFromPath(en.getKey());
+                    if (mat != null && price > shopSell.getOrDefault(mat, 0L)) shopSell.put(mat, price);
+                }
+                checked++;
+            } catch (Throwable ignored) {}
+        }
         ConfigurationSection over = getConfig().getConfigurationSection("min-sell-prices");
         if (over != null) for (String k : over.getKeys(false)) {
             Material m = Material.matchMaterial(k);
             if (m != null && over.getLong(k, 0) > 0) shopSell.put(m, over.getLong(k));
         }
-        if (!shopSell.isEmpty())
-            getLogger().info("AuctionHouse shop sell prices loaded: " + shopSell.size()
-                    + " items (netherite ingot " + shopSell.getOrDefault(Material.NETHERITE_INGOT, 0L) + ").");
+        getLogger().info("AuctionHouse shop sell: scanned " + checked + " EconomyShopGUI yml files -> "
+                + shopSell.size() + " prices (netherite ingot "
+                + shopSell.getOrDefault(Material.NETHERITE_INGOT, 0L) + ").");
     }
 
-    private void scanYml(File dir) {
+    private void collectYml(File dir, List<File> out) {
         File[] files = dir.listFiles();
         if (files == null) return;
         for (File f : files) {
-            if (f.isDirectory()) { scanYml(f); continue; }
-            if (!f.getName().toLowerCase(Locale.ROOT).endsWith(".yml")) continue;
-            try {
-                YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
-                walk(y.getValues(false), "");
-            } catch (Throwable ignored) {}
+            if (f.isDirectory()) { collectYml(f, out); continue; }
+            if (f.getName().toLowerCase(Locale.ROOT).endsWith(".yml")) out.add(f);
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void walk(Map<String, Object> node, String path) {
-        for (Map.Entry<String, Object> en : node.entrySet()) {
-            Object v = en.getValue();
-            if (v instanceof Map) { walk((Map<String, Object>) v, path + en.getKey() + "."); continue; }
-            String key = en.getKey().toLowerCase(Locale.ROOT).replace("_", "-").replace(" ", "");
-            if (!(key.equals("sell-price") || key.equals("sellprice") || key.equals("sell"))) continue;
-            long price = parseNum(v);
-            if (price <= 0) continue;
-            Material m = Material.matchMaterial(lastMaterialKey(path));
-            if (m != null && price > shopSell.getOrDefault(m, 0L)) shopSell.put(m, price);
+    /** Find a Material in a dotted key path, e.g. shop-items.minecraft:torch.sellPrice -> TORCH. */
+    private Material materialFromPath(String path) {
+        String[] parts = path.split("\.");
+        for (String part : parts) {
+            if (part.startsWith("minecraft:")) return Material.matchMaterial(part);
         }
-    }
-
-    private static String lastMaterialKey(String path) {
-        String[] parts = path.split("\\.");
-        for (int i = parts.length - 1; i >= 0; i--) {
-            String s = parts[i].trim();
-            if (s.isEmpty()) continue;
-            if (Material.matchMaterial(s) != null) return s;
+        for (String part : parts) {
+            Material m = Material.matchMaterial(part.replace("_", "-"));
+            if (m != null) return m;
         }
-        return null;
+        return parts.length >= 2 ? Material.matchMaterial(parts[parts.length - 2]) : null;
     }
 
     private static long parseNum(Object v) {
@@ -586,7 +585,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent e) {
         if (e.getEntity() instanceof Villager v
-                && v.getPersistentDataContainer().has(keeperKey, PersistentDataType.BYTE)) {
+                && v.getPersistentDataContainer().has(keeperKey, PersistentDataType.STRING)) {
             e.setCancelled(true);
         }
     }
@@ -601,7 +600,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
     @EventHandler
     public void onInteractKeeper(PlayerInteractEntityEvent e) {
         if (!(e.getRightClicked() instanceof Villager v)) return;
-        if (!v.getPersistentDataContainer().has(keeperKey, PersistentDataType.BYTE)) return;
+        if (!v.getPersistentDataContainer().has(keeperKey, PersistentDataType.STRING)) return;
         e.setCancelled(true);
         data.set("players." + e.getPlayer().getUniqueId() + ".keeper", System.currentTimeMillis());
         saveData();
@@ -610,21 +609,21 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
 
     private void respawnKeepers() {
         if (regionCenter == null) return;
+        World w = regionCenter.getWorld();
+        // clear ANY tagged keeper near the house (including sunk ones from 1.0.0)
+        for (Entity en : new ArrayList<>(w.getEntities()))
+            if (en instanceof Villager v && v.getPersistentDataContainer().has(keeperKey, PersistentDataType.STRING)
+                    && inAH(en.getLocation())) en.remove();
         ConfigurationSection ks = data.getConfigurationSection("keepers");
         if (ks == null) return;
+        int floorY = regionCenter.getBlockY() + 1; // villager feet on top of the floor block
         for (String k : ks.getKeys(false)) {
             ConfigurationSection e = ks.getConfigurationSection(k);
             if (e == null) continue;
-            World w = regionCenter.getWorld();
-            Location loc = new Location(w, e.getInt("x"), e.getInt("y"), e.getInt("z"));
-            boolean found = false;
-            for (Entity en : w.getNearbyEntities(loc, 1, 2, 1))
-                if (en instanceof Villager v && v.getPersistentDataContainer().has(keeperKey, PersistentDataType.BYTE)
-                        && k.equals(v.getPersistentDataContainer().get(keeperKey, PersistentDataType.STRING))) {
-                    found = true; break;
-                }
-            if (found) continue;
-            spawnKeeper(k, loc, e.getString("name", "&6Auction Keeper"), e.getString("profession", "LIBRARIAN"));
+            int y = e.getInt("y", floorY);
+            if (y <= regionCenter.getBlockY()) y = floorY; // fix 1.0.0 sunk keeper positions
+            spawnKeeper(k, new Location(w, e.getInt("x"), y, e.getInt("z")),
+                    e.getString("name", "&6Auction Keeper"), e.getString("profession", "LIBRARIAN"));
         }
     }
 
@@ -714,15 +713,16 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         }
         // remove old keepers then place new ones from config
         for (Entity en : new ArrayList<>(w.getEntities()))
-            if (en instanceof Villager v && v.getPersistentDataContainer().has(keeperKey, PersistentDataType.BYTE))
+            if (en instanceof Villager v && v.getPersistentDataContainer().has(keeperKey, PersistentDataType.STRING))
                 en.remove();
         data.set("keepers", null);
         ConfigurationSection ks = getConfig().getConfigurationSection("keepers");
         if (ks != null) for (String k : ks.getKeys(false)) {
             ConfigurationSection c = ks.getConfigurationSection(k);
             if (c == null) continue;
-            int kx = cx + c.getInt("x", 0), kz = cz + c.getInt("z", 0), ky = cy + c.getInt("y", 0);
-            // pedestal
+            int kx = cx + c.getInt("x", 0), kz = cz + c.getInt("z", 0);
+            int ky = cy + 1 + c.getInt("y", 0); // 1.0.0 bug: spawn was INSIDE the floor -> sunk 1 block
+            // pedestal under the keeper's feet (replaces the floor tile)
             w.getBlockAt(kx, ky - 1, kz).setType(Material.QUARTZ_PILLAR, false);
             w.getBlockAt(kx, ky, kz).setType(Material.AIR, false);
             String key = k;
@@ -1192,6 +1192,27 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
     }
 
     /* ------------------------------------------------------------------ commands */
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!cmd.getName().equalsIgnoreCase("ah")) return super.onTabComplete(sender, cmd, label, args);
+        if (args.length == 1) {
+            List<String> out = new ArrayList<>(List.of("add", "inbox", "slots", "cancel", "help"));
+            if (sender.hasPermission("mavoauction.admin")) out.addAll(List.of("setcenter", "build", "reload"));
+            return out;
+        }
+        if (args[0].equalsIgnoreCase("add")) {
+            if (args.length == 2) return List.of("hand");
+            if (args.length == 4) return List.of("1h", "6h", "12h", "24h", "48h");
+        }
+        if (args[0].equalsIgnoreCase("cancel") && args.length == 2) {
+            List<String> ids = new ArrayList<>();
+            for (Listing l : listings.values())
+                if (sender instanceof Player p && l.seller().equals(p.getUniqueId())) ids.add(l.id());
+            return ids;
+        }
+        return List.of();
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
