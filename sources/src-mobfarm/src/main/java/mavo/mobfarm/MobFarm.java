@@ -31,7 +31,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-/** MAVOMobFarm 2.7.0 — every mob has its own hand-built structure (crypt/pyramid/igloo/tower/cage/vault/obelisk/court/basin/caldera/tank/fortress/bastion + 14 unique pens), its own datapack, and its own /mobfarm build <mob>. Loot chest exposed on the trench floor; kill method + positions shared. */
+/** MAVOMobFarm 2.7.1 — every mob has its own hand-built structure (crypt/pyramid/igloo/tower/cage/vault/obelisk/court/basin/caldera/tank/fortress/bastion + 14 unique pens), its own datapack, and its own /mobfarm build <mob>. Loot chest exposed on the trench floor; kill method + positions shared. */
 public final class MobFarm extends JavaPlugin implements Listener, TabCompleter {
 
     /**
@@ -77,7 +77,8 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         String id, display, wing, style, theme; EntityType entity; Material icon;
         int ox, oy, oz;
         Location stand, killPad, lootChest, stackBlock, communityChest;
-        double[] cell;   // per-bay containment box {hx, hz, minY, maxY} (2.7.0)
+        double[] cell;   // containment AABB {minX, maxX, minZ, maxZ, minY, maxY}, pit interior only
+        boolean pit;     // true = sunken pit bay (slit window), false = animal pen
         boolean built;
     }
     static final class Session {
@@ -143,7 +144,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 for (UUID u : end) endSession(u, true);
             }
         }.runTaskTimer(this, 40L, 40L);
-        getLogger().info("MAVOMobFarm 2.7.0 enabled. mobs=" + mobs.size()
+        getLogger().info("MAVOMobFarm 2.7.1 enabled. mobs=" + mobs.size()
                 + " center=" + (center == null ? "?" : center.getBlockX() + "," + center.getBlockZ())
                 + " ai=" + mobAiEnabled());
     }
@@ -340,7 +341,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         }
         String a = args[0].toLowerCase(Locale.ROOT);
         if (a.equals("info")) {
-            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.7.0 " + ChatColor.GRAY + "entry "
+            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.7.1 " + ChatColor.GRAY + "entry "
                     + ChatColor.YELLOW + getConfig().getInt("entry-cost")
                     + ChatColor.GRAY + " · " + getConfig().getInt("session-minutes") + "m"
                     + ChatColor.GRAY + " · pick from " + ChatColor.GREEN + minPickCost()
@@ -372,6 +373,16 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             return true;
         }
         if (!(sender instanceof Player p)) { sender.sendMessage("Players only."); return true; }
+        if (args.length == 2 && args[1].equalsIgnoreCase("save")) {
+            if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
+            MobDef ms = findMob(args[0]);
+            if (ms == null) {
+                p.sendMessage(ChatColor.RED + "Unknown mob '" + args[0] + "'. /mobfarm <mob> save");
+                return true;
+            }
+            BayGeometry.saveBay(this, ms, p::sendMessage);
+            return true;
+        }
         switch (a) {
             case "setcenter" -> {
                 if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
@@ -786,7 +797,10 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         p.teleport(dest);
     }
 
-    // ---------------- build (2.5: unique per-mob bays + real loot plumbing) ----------------
+    // ---------------- build (2.7.1: packs + hub only; per-bay apply is separate) ----------------
+    /** /mobfarm build (no arg): generate all 36 <id>-datapack.zip into world/datapacks/
+     *  AND build the hub/HUD platform ONLY. No per-bay build is applied (the packs are
+     *  picked up at the next server START, then /mobfarm build <mob> applies one bay). */
     private void buildComplex(Player admin) {
         if (center == null) { admin.sendMessage(ChatColor.RED + "Set center first."); return; }
         stopAllFarmActivity("build");
@@ -821,25 +835,37 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         writeSign(as, ChatColor.GREEN + "ANIMAL", ChatColor.WHITE + "WING → EAST",
                 ChatColor.GRAY + "/mobfarm pick", ChatColor.DARK_GRAY + "pay unlock");
 
+        // generate every mob's datapack from its pristine Java layout (bays cleared again;
+        // only the packs + hub remain - /mobfarm build <mob> applies packs from here on)
         int n = 0;
+        List<String> bad = new ArrayList<>();
         for (MobDef m : mobs.values()) {
             computeGeom(m);
             try {
-                BayGeometry.buildMobSync(this, m);
-                m.built = true;
-                n++;
+                if (BayGeometry.generatePack(this, m)) { m.built = true; n++; }
+                else bad.add(m.id);
             } catch (Throwable t) {
-                getLogger().warning("buildBay " + m.id + " failed: " + t);
+                getLogger().warning("generatePack " + m.id + " failed: " + t);
+                bad.add(m.id);
             }
         }
         recomputeAABB();
-        data.set("built", true); saveData();
+        // nothing is built in the world yet: sessions stay closed until /mobfarm build <mob>
+        data.set("built", false); saveData();
         spawnHubHolo(); refreshBayHolos();
-        admin.sendMessage(ChatColor.GREEN + "Built hub + " + n + " unique bays. AABB "
-                + minX + ".." + maxX + " / " + minZ + ".." + maxZ + " protect+" + protectRadius());
+        String dir = BayGeometry.packDir(w).getAbsolutePath();
+        admin.sendMessage(ChatColor.GREEN + "Hub built + " + n + "/" + mobs.size()
+                + " datapacks generated -> " + dir);
+        admin.sendMessage(ChatColor.YELLOW + "The server scans datapacks at STARTUP only: "
+                + "restart once, then /mobfarm build <mob> builds each bay from its zip.");
         admin.sendMessage(ChatColor.GRAY + "TP: /tp @s " + hx + " " + (hy + 1) + " " + hz
-                + " — stand on the marked HIT pads; loot chests face the walkway.");
+                + " — stand on the marked HIT pads in the trench; loot chests face the walkway.");
+        if (!bad.isEmpty())
+            admin.sendMessage(ChatColor.RED + "Pack generation FAILED for: " + String.join(" ", bad)
+                    + " (check the server log for 'writePack ... FAILED').");
     }
+
+    void markBuilt() { data.set("built", true); saveData(); }
 
     /** 2.7.0: every mob has its own hand-built layout (BayGeometry). */
     private void buildBay(MobDef m) {
@@ -1109,21 +1135,21 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         le.setVelocity(new Vector(0, -0.1, 0));
     }
 
-    /** Per-bay containment box around the pad: {halfX, halfZ, minY, maxY}. */
+    /** Per-bay containment AABB {minX, maxX, minZ, maxZ, minY, maxY} - set by the
+     *  builders to the pit/pen INTERIOR, so mobs can never reach the trench/walkway. */
     private double[] cellBox(MobDef m, Location pad) {
-        if (m.cell != null) return m.cell;  // 2.7.0 per-bay box set by the builder
-        double hx = 3.4, hz = 5.0, minY = pad.getY() - 1.8, maxY = pad.getY() + 3.2;
-        if ("barn".equals(m.style) || "pen".equals(m.style)) { hx = 3.6; hz = 4.6; minY = pad.getY() - 3.4; maxY = pad.getY() + 4.5; }
-        return new double[]{hx, hz, minY, maxY};
+        if (m.cell != null) return m.cell;
+        return new double[]{pad.getX() - 3.4, pad.getX() + 3.4, pad.getZ() - 4.6, pad.getZ() + 3.6,
+                pad.getY() - 1.6, pad.getY() + 3.8};
     }
 
-    /** Safety (2.6.3): any farm mob outside its cell box is teleported back to the kill pad. */
+    /** Safety net: any farm mob outside its cell box is teleported back to the kill pad. */
     private void containMob(LivingEntity le, MobDef md, Location pad, boolean ai) {
         Location loc = le.getLocation();
         double[] b = cellBox(md, pad);
-        boolean out = Math.abs(loc.getX() - pad.getX()) > b[0]
-                || Math.abs(loc.getZ() - pad.getZ()) > b[1]
-                || loc.getY() < b[2] || loc.getY() > b[3];
+        boolean out = loc.getX() < b[0] || loc.getX() > b[1]
+                || loc.getZ() < b[2] || loc.getZ() > b[3]
+                || loc.getY() < b[4] || loc.getY() > b[5];
         if (out) {
             le.teleport(pad.clone().add(
                     (ThreadLocalRandom.current().nextDouble() - 0.5) * 0.5,
@@ -1723,14 +1749,21 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 base.addAll(List.of("tp", "setcenter", "build", "rebuild", "clear", "clearhere", "purge", "reload", "resholo"));
             String pfx = args[0].toLowerCase(Locale.ROOT);
             base.removeIf(s -> !s.startsWith(pfx));
+            // /mobfarm <mob> save: offer mob ids too
+            if (sender.hasPermission("mavomobfarm.admin"))
+                for (String id : mobs.keySet())
+                    if (id.startsWith(pfx)) base.add(id);
             return base;
         }
-        if (args.length == 2 && (args[0].equalsIgnoreCase("build") || args[0].equalsIgnoreCase("rebuild"))
-                && sender.hasPermission("mavomobfarm.admin")) {
-            List<String> ids = new ArrayList<>(mobs.keySet());
-            String pfx = args[1].toLowerCase(Locale.ROOT);
-            ids.removeIf(s -> !s.startsWith(pfx));
-            return ids;
+        if (args.length == 2 && sender.hasPermission("mavomobfarm.admin")) {
+            if (args[0].equalsIgnoreCase("build") || args[0].equalsIgnoreCase("rebuild")) {
+                List<String> ids = new ArrayList<>(mobs.keySet());
+                String pfx = args[1].toLowerCase(Locale.ROOT);
+                ids.removeIf(s -> !s.startsWith(pfx));
+                return ids;
+            }
+            if (findMob(args[0]) != null && "save".startsWith(args[1].toLowerCase(Locale.ROOT)))
+                return List.of("save");
         }
         return List.of();
     }

@@ -12,6 +12,7 @@ import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.entity.EntityType;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,13 +27,23 @@ import java.util.zip.ZipOutputStream;
  * caldera, maze, court, dome, tank, fortress, bastion + 14 unique animal pens).
  *
  * The KILL METHOD stays identical everywhere: hopper floor feeding ONE double loot chest
- * that stands ON the trench floor (front face flush - clickable, never covered), a 2-high
- * see-through barrier window you hit through, and teleport containment as backup.
+ * that stands ON the trench floor (front face flush - clickable, never covered). Land bays
+ * get a SOLID sill + 1-high OPEN slit: you melee straight through it, but no 1.95-block
+ * mob fits it and none can jump it (their feet stay below the sill line), so the bay is
+ * sealed. Water bays keep the full see-through barrier so the water stays in. A tight
+ * containment AABB (pit interior ONLY, set by pit()/pen()) teleports any escapee back to
+ * the kill pad as a hard safety net.
  *
  * Every mob also owns its own datapack: world/datapacks/&lt;id&gt;-datapack.zip with
- * clear (fill bay box air) + build (exact block states). /mobfarm build &lt;mob&gt; runs
- * clear, waits 5s, re-writes + reloads the pack, then applies the build - so one bay can
- * be redesigned and rebuilt without touching the other 35.
+ * clear (fill bay box air) + build (exact block states).
+ *   /mobfarm build          -> generates all 36 packs (Java build, snapshot to zip, then
+ *                              clears the bay) + hub/HUD; packs load on server START.
+ *   /mobfarm build &lt;mob&gt;   -> clears the old pack build, waits 5s, disables/enables the
+ *                              pack, runs its build function, patches, and VERIFIES the
+ *                              result before reporting success.
+ *   /mobfarm &lt;mob&gt; save     -> snapshots the bay's CURRENT in-world blocks (your edits,
+ *                              spawner/hopper positions untouched) into its zip - the
+ *                              backup/version mechanism; build <mob> then loads it.
  */
 final class BayGeometry {
 
@@ -157,11 +168,17 @@ final class BayGeometry {
     /**
      * Hopper floor (z=-depth..0) -> ONE double loot chest resting ON the trench floor
      * at z=+1 (its front face is flush with the player's footing - always clickable),
-     * 2-high barrier window above the chest, wall above that, sunken trench + walkway.
+     * solid sill + 1-high open slit + wall above (land bays) or full barrier window
+     * (water bays), sunken trench + walkway.
      */
-    private static void pit(MobFarm f, World w, int cx, int cy, int cz,
+    private static void pit(MobFarm f, MobDef m, World w, int cx, int cy, int cz,
                             int depth, int halfW, int winW, Material barrier,
                             Material wallM, boolean water, int waterLevel, int top, boolean openTop) {
+        // tight containment box = pit interior ONLY: mobs may never reach the trench/walkway
+        m.cell = new double[]{cx - halfW + 0.3, cx + halfW - 0.3,
+                cz - depth + 0.2, cz + 0.35,
+                cy - 1.3, cy + top + (openTop ? 2.6 : -0.4)};
+        m.pit = true;
         // hopper floor: outer columns feed the centre chain, centre feeds the chest halves
         for (int x = -halfW; x <= halfW; x++)
             for (int z = -depth; z <= 0; z++)
@@ -180,11 +197,18 @@ final class BayGeometry {
             for (int x = -halfW - 1; x <= halfW + 1; x++)
                 b(w, cx + x, cy + y, cz - depth - 1, wallM);
         }
-        // front wall at z=+1: winW-wide 2-high window (see-through barrier), wall elsewhere
+        // front wall: solid sill at y=0, then a 1-high OPEN slit at y=1 for land bays -
+        // you hit straight through it, but no mob fits it or can jump it (feet stay below
+        // the sill line), so the bay stays sealed. Water bays keep the full 2-high
+        // see-through barrier (glass/bars) so the water stays inside.
         for (int x = -halfW; x <= halfW; x++) {
             boolean win = Math.abs(x) <= winW;
-            for (int y = 0; y <= top; y++)
-                b(w, cx + x, cy + y, cz + 1, win && y <= 1 ? barrier : wallM);
+            for (int y = 0; y <= top; y++) {
+                boolean waterWindow = win && y <= 1 && water; // full barrier window
+                boolean slit = win && y == 1 && !water;       // land bays: open slit
+                if (slit) continue;
+                b(w, cx + x, cy + y, cz + 1, waterWindow ? barrier : wallM);
+            }
         }
         // water level inside aquatic bays (contained by full glass window)
         if (water && waterLevel > 0)
@@ -216,8 +240,13 @@ final class BayGeometry {
      * from half/fence height/material/roof mode which every builder sets differently.
      * roofMode: 0 none, 1 full, 2 back half, 3 corner pillars, 4 full + ridge line.
      */
-    private static void pen(MobFarm f, World w, int cx, int cy, int cz, int half, int fenceH,
+    private static void pen(MobFarm f, MobDef m, World w, int cx, int cy, int cz, int half, int fenceH,
                             Material floorM, Material fenceM, int roofMode, boolean pond) {
+        // tight containment box = pen interior only (animals never leave the grate area)
+        m.cell = new double[]{cx - half + 0.3, cx + half - 0.3,
+                cz - half + 0.3, cz + half - 0.3,
+                cy + (pond ? 1.2 : 2.3), cy + 2 + fenceH + 1.8};
+        m.pit = false;
         int penFloorY = cy + 2;   // grate level - animals walk here
         int edgeTop = penFloorY + fenceH;
         for (int x = -half; x <= half; x++)
@@ -265,8 +294,12 @@ final class BayGeometry {
 
     private static void finish(MobFarm f, MobDef m, World w, int cx, int cy, int cz,
                                double hx, double hz, double minY, double maxY, double padY) {
-        m.cell = new double[]{hx, hz, minY, maxY};
-        m.stand = new Location(w, cx + 0.5, cy + 1, cz + 6.5);
+        if (m.cell == null) m.cell = new double[]{
+                cx + 0.5 - hx, cx + 0.5 + hx, cz - 1 - hz, cz - 1 + hz, minY, maxY};
+        // player stands in the TRENCH (z=+2.5) right at the slit: mobs are ~2 blocks away
+        // (kill pad inside the pit) - in reach, out of the mobs' reach, sign in view.
+        m.stand = new Location(w, cx + 0.5, cy, cz + 2.5);
+        if (!m.pit) m.stand = new Location(w, cx + 0.5, cy + 1, cz + 6.5);
         m.killPad = new Location(w, cx + 0.5, cy + padY, cz - 1);
         m.lootChest = new Location(w, cx + 0.5, cy - 1, cz + 1.2);
         // stack spawner display east side with its own floor pad
@@ -292,31 +325,31 @@ final class BayGeometry {
         f.faceSign(baySign, BlockFace.NORTH);
         f.writeSign(baySign, ChatColor.GOLD + "COMMUNITY", ChatColor.stripColor(m.display),
                 ChatColor.WHITE + "Donate loot", ChatColor.GRAY + "→ stack");
-        // zone plate + hit pad (on the walkway)
+        // zone plate on the walkway edge (arrival marker), hit pad in the trench
         Block name = w.getBlockAt(cx, cy + 1, cz + 7);
         name.setType(Material.OAK_SIGN, false);
         f.faceSign(name, BlockFace.NORTH);
         f.writeSign(name, ChatColor.GOLD + "ZONE", ChatColor.stripColor(m.display),
                 ChatColor.GRAY + m.style + "/" + m.theme, ChatColor.AQUA + "HIT ▶");
-        Block hitpad = w.getBlockAt(cx, cy, cz + 5);
+        // kill pad on the trench floor in front of the slit, flanked by LOOT + HIT signs
+        Block hitpad = w.getBlockAt(cx, cy - 1, cz + 2);
         hitpad.setType(Material.LIME_WOOL, false);
-        Block hitSgn = w.getBlockAt(cx, cy + 1, cz + 5);
+        Block hitSgn = w.getBlockAt(cx + 2, cy, cz + 2);
         hitSgn.setType(Material.OAK_SIGN, false);
-        f.faceSign(hitSgn, BlockFace.NORTH);
+        f.faceSign(hitSgn, BlockFace.WEST);
         f.writeSign(hitSgn, ChatColor.GREEN + "HIT", ChatColor.WHITE + "HERE",
-                ChatColor.GRAY + "stand ↓", ChatColor.YELLOW + "/mobfarm pick");
-        // LOOT standing sign ON the chest face, readable from the trench
-        Block lootSign = w.getBlockAt(cx, cy, cz + 1);
+                ChatColor.GRAY + "stand ↑", ChatColor.YELLOW + "/mobfarm pick");
+        Block lootSign = w.getBlockAt(cx - 2, cy, cz + 2);
         lootSign.setType(Material.OAK_SIGN, false);
-        f.faceSign(lootSign, BlockFace.SOUTH);
+        f.faceSign(lootSign, BlockFace.EAST);
         f.writeSign(lootSign, ChatColor.GOLD + "LOOT", ChatColor.WHITE + "↓ chest",
                 ChatColor.GRAY + "hopper fed", ChatColor.YELLOW + "collect ↓");
-        // community pedestal sign for barns uses the same markers
     }
 
     /** re-apply things a setblock snapshot cannot carry: chest pairing, spawner, sign text. */
     private static void patch(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        f.placeDoubleChest(w, cx - 1, cy - 1, cz + 1, BlockFace.SOUTH);
+        if (m.pit) f.placeDoubleChest(w, cx - 1, cy - 1, cz + 1, BlockFace.SOUTH);
+        else f.placeDoubleChest(w, cx - 1, cy + 1, cz + 3, BlockFace.SOUTH);
         f.placeDoubleChest(w, cx - 4, cy, cz + 6, BlockFace.NORTH);
         Block sp = w.getBlockAt(cx + 6, cy + 1, cz - 2);
         if (sp.getState() instanceof CreatureSpawner cs) {
@@ -333,20 +366,26 @@ final class BayGeometry {
         Block name = w.getBlockAt(cx, cy + 1, cz + 7);
         f.writeSign(name, ChatColor.GOLD + "ZONE", ChatColor.stripColor(m.display),
                 ChatColor.GRAY + m.style + "/" + m.theme, ChatColor.AQUA + "HIT ▶");
-        Block hitSgn = w.getBlockAt(cx, cy + 1, cz + 5);
+        w.getBlockAt(cx, cy - 1, cz + 2).setType(Material.LIME_WOOL, false);
+        Block hitSgn = w.getBlockAt(cx + 2, cy, cz + 2);
         f.writeSign(hitSgn, ChatColor.GREEN + "HIT", ChatColor.WHITE + "HERE",
-                ChatColor.GRAY + "stand ↓", ChatColor.YELLOW + "/mobfarm pick");
-        Block lootSign = w.getBlockAt(cx, cy, cz + 1);
+                ChatColor.GRAY + "stand ↑", ChatColor.YELLOW + "/mobfarm pick");
+        Block lootSign = w.getBlockAt(cx - 2, cy, cz + 2);
         f.writeSign(lootSign, ChatColor.GOLD + "LOOT", ChatColor.WHITE + "↓ chest",
                 ChatColor.GRAY + "hopper fed", ChatColor.YELLOW + "collect ↓");
     }
 
     /* ------------------------------------------------ per-mob datapacks (2.7.0) */
 
-    private static File packFile(World w, String id) {
+    /** world/datapacks/ (the REAL world folder; the absolute path is always printed). */
+    static File packDir(World w) {
         File d = new File(w.getWorldFolder(), "datapacks");
         if (!d.exists()) d.mkdirs();
-        return new File(d, id + "-datapack.zip");
+        return d;
+    }
+
+    private static File packFile(World w, String id) {
+        return new File(packDir(w), id + "-datapack.zip");
     }
 
     private static void runConsole(MobFarm f, String cmd) {
@@ -376,90 +415,225 @@ final class BayGeometry {
         return out;
     }
 
-    private static void writePack(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
+    private static String nums(double... v) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < v.length; i++) {
+            if (i > 0) sb.append(',');
+            sb.append((float) v[i]);
+        }
+        return sb.toString();
+    }
+
+    /** Writes the bay's CURRENT blocks (world state, user edits included) into its zip
+     *  plus state.txt (pit flag, stand/kill-pad/cell relative to the bay origin), so the
+     *  pack is fully self-describing. Never silently fails: null + log on error. */
+    private static File writePack(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         try {
+            List<String> snap = snapshot(f, w, cx, cy, cz);
             File zf = packFile(w, m.id);
             File tmp = new File(zf.getParentFile(), zf.getName() + ".tmp");
             try (ZipOutputStream zo = new ZipOutputStream(new FileOutputStream(tmp))) {
                 zo.putNextEntry(new ZipEntry("pack.mcmeta"));
-                zo.write(("{\"pack\":{\"pack_format\":48,\"supported_formats\":{\"min_format\":48,"
-                        + "\"max_format\":999},\"description\":\"MAVOMobFarm " + m.id + " bay builder\"}}")
+                // Paper 26.2 rejects ranges and old formats: pack_format 81, exact, like the
+                // known-good MAVOcraft-builder-datapack.zip (ranges error on this server).
+                zo.write(("{\"pack\":{\"pack_format\":81,\"description\":\"MAVOMobFarm " + m.id + " bay builder\"}}")
                         .getBytes(StandardCharsets.UTF_8));
+                zo.closeEntry();
+                // self-describing geometry state (relative to the bay origin cx,cy,cz)
+                StringBuilder st = new StringBuilder("pit=" + m.pit + "\n");
+                if (m.stand != null) st.append("stand=").append(nums(m.stand.getX() - cx, m.stand.getY() - cy, m.stand.getZ() - cz)).append('\n');
+                if (m.killPad != null) st.append("killpad=").append(nums(m.killPad.getX() - cx, m.killPad.getY() - cy, m.killPad.getZ() - cz)).append('\n');
+                if (m.stackBlock != null) st.append("stack=").append(nums(m.stackBlock.getX() - cx, m.stackBlock.getY() - cy, m.stackBlock.getZ() - cz)).append('\n');
+                if (m.lootChest != null) st.append("loot=").append(nums(m.lootChest.getX() - cx, m.lootChest.getY() - cy, m.lootChest.getZ() - cz)).append('\n');
+                if (m.communityChest != null) st.append("community=").append(nums(m.communityChest.getX() - cx, m.communityChest.getY() - cy, m.communityChest.getZ() - cz)).append('\n');
+                if (m.cell != null) st.append("cell=").append(nums(
+                        m.cell[0] - cx, m.cell[1] - cx, m.cell[2] - cz, m.cell[3] - cz, m.cell[4] - cy, m.cell[5] - cy)).append('\n');
+                zo.putNextEntry(new ZipEntry("state.txt"));
+                zo.write(st.toString().getBytes(StandardCharsets.UTF_8));
                 zo.closeEntry();
                 zo.putNextEntry(new ZipEntry("data/mavomobfarm/function/" + m.id + "/clear.mcfunction"));
                 zo.write(("fill " + (cx - 12) + " " + (cy - 10) + " " + (cz - 12) + " "
                         + (cx + 12) + " " + (cy + 16) + " " + (cz + 10) + " air").getBytes(StandardCharsets.UTF_8));
                 zo.closeEntry();
                 zo.putNextEntry(new ZipEntry("data/mavomobfarm/function/" + m.id + "/build.mcfunction"));
-                for (String line : snapshot(f, w, cx, cy, cz)) {
+                for (String line : snap) {
                     zo.write(line.getBytes(StandardCharsets.UTF_8));
                     zo.write('\n');
                 }
                 zo.closeEntry();
             }
-            if (zf.exists()) zf.delete();
-            tmp.renameTo(zf);
+            if (!zf.getParentFile().isDirectory() && !zf.getParentFile().mkdirs())
+                throw new java.io.IOException("cannot create " + zf.getParentFile().getAbsolutePath());
+            if (zf.exists() && !zf.delete())
+                throw new java.io.IOException("cannot replace " + zf.getAbsolutePath());
+            if (!tmp.renameTo(zf))
+                throw new java.io.IOException("cannot rename to " + zf.getAbsolutePath());
+            if (!zf.isFile() || zf.length() == 0)
+                throw new java.io.IOException("zip missing/empty after write: " + zf.getAbsolutePath());
+            f.getLogger().info("MAVOMobFarm: wrote " + zf.getAbsolutePath() + " (" + snap.size() + " blocks)");
+            return zf;
         } catch (Throwable t) {
-            f.getLogger().warning("writePack " + m.id + " failed: " + t);
+            f.getLogger().warning("MAVOMobFarm: writePack " + m.id + " FAILED: " + t);
+            return null;
         }
     }
 
-    /** True when the mob's datapack already exists (it was built before). */
+    /** Restores m.pit/stand/killPad/cell/... from the pack's state.txt (relative -> absolute). */
+    private static boolean loadState(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
+        File zf = packFile(w, m.id);
+        try (java.util.zip.ZipFile z = new java.util.zip.ZipFile(zf)) {
+            java.util.zip.ZipEntry e = z.getEntry("state.txt");
+            if (e == null) return false;
+            try (BufferedReader r = new BufferedReader(new java.io.InputStreamReader(
+                    z.getInputStream(e), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = r.readLine()) != null) {
+                    int eq = line.indexOf('=');
+                    if (eq < 0) continue;
+                    String k = line.substring(0, eq);
+                    String[] v = line.substring(eq + 1).split(",");
+                    double[] d = new double[v.length];
+                    for (int i = 0; i < v.length; i++) d[i] = Double.parseDouble(v[i]);
+                    switch (k) {
+                        case "pit" -> m.pit = Boolean.parseBoolean(v[0]);
+                        case "stand" -> m.stand = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
+                        case "killpad" -> m.killPad = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
+                        case "stack" -> m.stackBlock = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
+                        case "loot" -> m.lootChest = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
+                        case "community" -> m.communityChest = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
+                        case "cell" -> m.cell = new double[]{cx + d[0], cx + d[1], cz + d[2], cz + d[3], cy + d[4], cy + d[5]};
+                    }
+                }
+            }
+            return m.cell != null;
+        } catch (Throwable t) {
+            f.getLogger().warning("MAVOMobFarm: loadState " + m.id + " failed: " + t);
+            return false;
+        }
+    }
+
+    /** True when the mob's datapack already exists on disk. */
     static boolean wasBuilt(MobFarm f, MobDef m) {
         if (f.center == null) return false;
-        return packFile(f.center.getWorld(), m.id).exists();
+        File zf = packFile(f.center.getWorld(), m.id);
+        return zf.isFile() && zf.length() > 0;
     }
 
-    /** Java build + write pack + (re)enable pack + apply via its build function + patch. */
-    private static void applyBuild(MobFarm f, MobDef m) {
-        buildMobSync(f, m);
-        f.getLogger().info("MAVOMobFarm: applied " + m.id + " build via " + m.id + "-datapack.zip");
+    /** The bay is REALLY applied only when its signature blocks came back. */
+    private static boolean verifyBuilt(World w, int cx, int cy, int cz, MobDef m) {
+        boolean sp = w.getBlockAt(cx + 6, cy + 1, cz - 2).getType() == Material.SPAWNER;
+        if (m.pit)
+            return sp && w.getBlockAt(cx, cy - 1, cz).getType() == Material.HOPPER
+                    && w.getBlockAt(cx, cy - 1, cz + 2).getType() == Material.LIME_WOOL;
+        return sp && w.getBlockAt(cx, cy + 1, cz).getType() == Material.HOPPER
+                && w.getBlockAt(cx - 1, cy + 1, cz + 3).getType() == Material.CHEST;
     }
 
-    /** synchronous per-mob build (used by /mobfarm build all + the reload path). */
-    static void buildMobSync(MobFarm f, MobDef m) {
-        if (f.center == null) return;
+    /** Replaces the bay in the world by the pack's build function + patch, then VERIFIES.
+     *  Geometry state (pit/cell/stand...) is restored from the pack's state.txt; the
+     *  FINAL blocks are whatever the pack's build function sets (user saves win). */
+    private static boolean applyPack(MobFarm f, MobDef m) {
+        if (f.center == null) return false;
         World w = f.center.getWorld();
         Location o = f.center.clone().add(m.ox, m.oy, m.oz);
         int cx = o.getBlockX(), cy = o.getBlockY(), cz = o.getBlockZ();
-        // clear volume so a redesign fully replaces the old shell
-        for (int x = -12; x <= 12; x++)
-            for (int z = -12; z <= 10; z++)
-                for (int y = -10; y <= 16; y++)
-                    air(w, cx + x, cy + y, cz + z);
-        build(f, m);
-        writePack(f, m, w, cx, cy, cz);
+        if (!loadState(f, m, w, cx, cy, cz)) {
+            // pre-2.7.1 pack without state.txt: derive state via one Java build (result is
+            // still fully overwritten by the pack function below; leaves state correct)
+            build(f, m);
+        }
         runConsole(f, "datapack disable \"file/" + m.id + "-datapack\"");
         runConsole(f, "datapack enable \"file/" + m.id + "-datapack\"");
         loadBayChunks(w, cx, cy, cz);
         runConsole(f, "function mavomobfarm:" + m.id + "/build");
         patch(f, m, w, cx, cy, cz);
+        return verifyBuilt(w, cx, cy, cz, m);
     }
 
-    /** /mobfarm build <mob>: clear what the old pack built, wait 5s, reload + apply. */
+    /** Java-builds the bay, snapshots it into its zip, then clears the bay again:
+     *  /mobfarm build (no arg) ONLY generates all packs + hub - nothing is applied here. */
+    static boolean generatePack(MobFarm f, MobDef m) {
+        if (f.center == null) return false;
+        World w = f.center.getWorld();
+        Location o = f.center.clone().add(m.ox, m.oy, m.oz);
+        int cx = o.getBlockX(), cy = o.getBlockY(), cz = o.getBlockZ();
+        for (int x = -12; x <= 12; x++)
+            for (int z = -12; z <= 10; z++)
+                for (int y = -10; y <= 16; y++)
+                    air(w, cx + x, cy + y, cz + z);
+        build(f, m);
+        File zf = writePack(f, m, w, cx, cy, cz);
+        // leave NO per-bay build behind: only the packs + hub exist after /mobfarm build
+        for (int x = -12; x <= 12; x++)
+            for (int z = -12; z <= 10; z++)
+                for (int y = -10; y <= 16; y++)
+                    air(w, cx + x, cy + y, cz + z);
+        return zf != null;
+    }
+
+    /** /mobfarm build <mob>: clear the old pack build, wait 5s, reload + apply the zip.
+     *  If no zip exists yet, it is generated first. Success is reported only after the
+     *  build function really ran (verified by signature blocks). */
     static void buildMob(MobFarm f, MobDef m, PlayerRef user) {
         if (f.center == null) { user.msg(ChatColor.RED + "Set center first."); return; }
         World w = f.center.getWorld();
         Location o = f.center.clone().add(m.ox, m.oy, m.oz);
-        boolean had = wasBuilt(f, m);
-        if (had) {
-            // 1) delete every block the old pack built (its clear function)
-            loadBayChunks(w, o.getBlockX(), o.getBlockY(), o.getBlockZ());
-            runConsole(f, "function mavomobfarm:" + m.id + "/clear");
-            user.msg(ChatColor.YELLOW + "Cleared " + m.id + " bay (old datapack). Waiting 5s, then reloading "
-                    + m.id + "-datapack.zip...");
-            Bukkit.getScheduler().runTaskLater(f, () -> {
-                applyBuild(f, m);
+        int cx = o.getBlockX(), cy = o.getBlockY(), cz = o.getBlockZ();
+        if (!wasBuilt(f, m)) {
+            if (!generatePack(f, m)) {
+                user.msg(ChatColor.RED + "FAILED to write " + m.id + "-datapack.zip (see server log).");
+                return;
+            }
+            File zf = packFile(w, m.id);
+            if (applyPack(f, m)) {
+                f.markBuilt();
+                user.msg(ChatColor.GREEN + "Built " + ChatColor.stripColor(m.display) + " bay from "
+                        + zf.getAbsolutePath() + ".");
+            } else {
+                user.msg(ChatColor.YELLOW + "Zip written: " + zf.getAbsolutePath()
+                        + " - the server only scans datapacks at STARTUP, so this one is not loaded yet."
+                        + " Restart once, then run /mobfarm build " + m.id + " to apply it.");
+            }
+            return;
+        }
+        // pack exists on disk: delete every block the old pack built (its clear function)
+        loadBayChunks(w, cx, cy, cz);
+        runConsole(f, "function mavomobfarm:" + m.id + "/clear");
+        user.msg(ChatColor.YELLOW + "Cleared " + m.id + " bay. Waiting 5s, then reloading "
+                + m.id + "-datapack.zip...");
+        Bukkit.getScheduler().runTaskLater(f, () -> {
+            if (applyPack(f, m)) {
+                f.markBuilt();
                 user.msg(ChatColor.GREEN + "Rebuilt " + ChatColor.stripColor(m.display) + " bay via "
                         + m.id + "-datapack.zip.");
-            }, 100L);
-        } else {
-            applyBuild(f, m);
-            user.msg(ChatColor.GREEN + "Built " + ChatColor.stripColor(m.display) + " bay + "
-                    + m.id + "-datapack.zip.");
-        }
+            } else {
+                user.msg(ChatColor.RED + "Apply FAILED for " + m.id + ": " + m.id + "-datapack.zip is not"
+                        + " loaded/enabled on this server (console shows 'Unknown data pack')."
+                        + " Restart once, then retry /mobfarm build " + m.id + ".");
+            }
+        }, 100L);
     }
 
+    /** /mobfarm <mob> save: snapshot the bay EXACTLY as it stands in the world - the
+     *  player's own edits included, spawner/hopper positions untouched - into its zip.
+     *  That zip is the backup/version: copy it to your PC, /mobfarm build <mob> loads it. */
+    static void saveBay(MobFarm f, MobDef m, PlayerRef user) {
+        if (f.center == null) { user.msg(ChatColor.RED + "Set center first."); return; }
+        World w = f.center.getWorld();
+        Location o = f.center.clone().add(m.ox, m.oy, m.oz);
+        int cx = o.getBlockX(), cy = o.getBlockY(), cz = o.getBlockZ();
+        // if this session never built the bay, refresh state from the existing zip first
+        if (m.cell == null && wasBuilt(f, m)) loadState(f, m, w, cx, cy, cz);
+        File zf = writePack(f, m, w, cx, cy, cz);
+        if (zf == null) {
+            user.msg(ChatColor.RED + "Save FAILED for " + m.id + " (see server log).");
+            return;
+        }
+        user.msg(ChatColor.GREEN + "Saved " + ChatColor.stripColor(m.display) + " bay -> "
+                + zf.getAbsolutePath());
+        user.msg(ChatColor.GRAY + "Copy that zip to your PC to keep this version. "
+                + "/mobfarm build " + m.id + " loads it back into the world.");
+    }
     /** Simple sender wrapper so BayGeometry can message players / console without a Bukkit dep. */
     interface PlayerRef {
         void msg(String s);
@@ -520,11 +694,9 @@ final class BayGeometry {
     private static void bZombie(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.MOSSY_COBBLESTONE;
         disc(w, cx, cy, cz, 3, -1, -1, Material.DEEPSLATE_TILES);
-        pit(f, w, cx, cy, cz, 3, 1, 1, Material.IRON_BARS, wallm, false, 0, 4, false);
+        pit(f, m, w, cx, cy, cz, 3, 1, 1, Material.IRON_BARS, wallm, false, 0, 4, false);
         ringC(w, cx, cy, cz, 3, 0, 1, wallm, -4, 1);
         ringC(w, cx, cy, cz, 3, 2, 3, Material.MOSS_BLOCK, -4, -1);
-        for (int y = 0; y <= 1; y++)
-            b(w, cx, cy + y, cz + 1, Material.IRON_BARS);
         for (int y = 0; y <= 3; y++) b(w, cx - 1, cy + y, cz - 3, Material.MOSSY_STONE_BRICKS);
         b(w, cx, cy + 3, cz - 2, Material.SPAWNER);
         w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.AIR, false);
@@ -535,7 +707,7 @@ final class BayGeometry {
     private static void bHusk(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.SANDSTONE;
         fill(w, cx, cy, cz, -3, 3, -1, -1, -3, 0, Material.SAND);
-        pit(f, w, cx, cy, cz, 3, 1, 1, Material.IRON_BARS, wallm, false, 0, 2, true);
+        pit(f, m, w, cx, cy, cz, 3, 1, 1, Material.IRON_BARS, wallm, false, 0, 2, true);
         // solid tiers around the 1-wide x 4-deep shaft (never inside the pit)
         for (int y = 0; y <= 1; y++)
             for (int x = -3; x <= 3; x++)
@@ -559,7 +731,7 @@ final class BayGeometry {
     private static void bDrowned(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.PRISMARINE_BRICKS;
         disc(w, cx, cy, cz, 4, -1, -1, Material.PRISMARINE);
-        pit(f, w, cx, cy, cz, 3, 1, 1, Material.GLASS, wallm, true, 2, 4, false);
+        pit(f, m, w, cx, cy, cz, 3, 1, 1, Material.GLASS, wallm, true, 2, 4, false);
         ring(w, cx, cy, cz, 2, 0, 4, wallm, -4, 0);
         for (int x = -2; x <= 2; x++) b(w, cx + x, cy + 4, cz - 4, wallm);
         for (int x = -2; x <= 2; x++) b(w, cx + x, cy + 5, cz - 4, Material.SEA_LANTERN);
@@ -575,7 +747,7 @@ final class BayGeometry {
     private static void bWitch(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.MOSSY_COBBLESTONE;
         disc(w, cx, cy, cz, 3, -1, -1, Material.MUD);
-        pit(f, w, cx, cy, cz, 3, 1, 1, Material.OAK_FENCE, wallm, false, 0, 3, false);
+        pit(f, m, w, cx, cy, cz, 3, 1, 1, Material.OAK_FENCE, wallm, false, 0, 3, false);
         disc(w, cx, cy, cz, 3, 0, 0, Material.PODZOL);
         for (int[] d : new int[][]{{-2, -3}, {2, -3}, {-2, 1}, {2, 1}})
             for (int y = 0; y <= 4; y++)
@@ -592,7 +764,7 @@ final class BayGeometry {
     private static void bSkeleton(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.SMOOTH_QUARTZ;
         disc(w, cx, cy, cz, 3, -1, -1, Material.STONE_BRICKS);
-        pit(f, w, cx, cy, cz, 4, 1, 1, Material.IRON_BARS, wallm, false, 0, 4, false);
+        pit(f, m, w, cx, cy, cz, 4, 1, 1, Material.IRON_BARS, wallm, false, 0, 4, false);
         ring(w, cx, cy, cz, 2, 0, 5, wallm, -5, 0);
         b(w, cx - 2, cy + 4, cz - 2, Material.GLASS);
         b(w, cx + 2, cy + 4, cz - 2, Material.GLASS);
@@ -607,7 +779,7 @@ final class BayGeometry {
     /** STRAY - ICE IGLOO: full packed-ice dome with a glass window. */
     private static void bStray(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         disc(w, cx, cy, cz, 4, -1, -1, Material.SNOW_BLOCK);
-        pit(f, w, cx, cy, cz, 3, 1, 2, Material.GLASS, Material.PACKED_ICE, false, 0, 3, false);
+        pit(f, m, w, cx, cy, cz, 3, 1, 2, Material.GLASS, Material.PACKED_ICE, false, 0, 3, false);
         for (int x = -4; x <= 4; x++)
             for (int z = -5; z <= 2; z++)
                 for (int y = 0; y <= 4; y++) {
@@ -628,7 +800,7 @@ final class BayGeometry {
     private static void bWitherSkeleton(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.NETHER_BRICKS;
         disc(w, cx, cy, cz, 3, -1, -1, Material.SOUL_SAND);
-        pit(f, w, cx, cy, cz, 4, 1, 0, Material.PURPLE_STAINED_GLASS_PANE, wallm, false, 0, 5, false);
+        pit(f, m, w, cx, cy, cz, 4, 1, 0, Material.PURPLE_STAINED_GLASS_PANE, wallm, false, 0, 5, false);
         ring(w, cx, cy, cz, 2, 0, 3, wallm, -5, 0);
         ring(w, cx, cy, cz, 1, 0, 5, wallm, -3, 0);
         b(w, cx, cy + 6, cz, Material.NETHER_BRICK_STAIRS);
@@ -644,7 +816,7 @@ final class BayGeometry {
     private static void bPillager(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.DARK_OAK_LOG;
         disc(w, cx, cy, cz, 3, -1, -1, Material.COARSE_DIRT);
-        pit(f, w, cx, cy, cz, 4, 1, 1, Material.DARK_OAK_FENCE, wallm, false, 0, 4, false);
+        pit(f, m, w, cx, cy, cz, 4, 1, 1, Material.DARK_OAK_FENCE, wallm, false, 0, 4, false);
         for (int[] d : new int[][]{{-2, -4}, {2, -4}, {-2, 0}, {2, 0}})
             for (int y = 0; y <= 5; y++)
                 b(w, cx + d[0], cy + y, cz + d[1], Material.DARK_OAK_LOG);
@@ -663,7 +835,7 @@ final class BayGeometry {
     private static void bSpider(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.OAK_LOG;
         disc(w, cx, cy, cz, 4, -1, -1, Material.STONE_BRICKS);
-        pit(f, w, cx, cy, cz, 3, 2, 3, Material.OAK_FENCE, wallm, false, 0, 5, false);
+        pit(f, m, w, cx, cy, cz, 3, 2, 3, Material.OAK_FENCE, wallm, false, 0, 5, false);
         for (int[] d : new int[][]{{-3, -3}, {3, -3}, {-3, 1}, {3, 1}})
             for (int y = 0; y <= 5; y++)
                 b(w, cx + d[0], cy + y, cz + d[1], Material.OAK_LOG);
@@ -687,7 +859,7 @@ final class BayGeometry {
     private static void bCaveSpider(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.DEEPSLATE_BRICKS;
         disc(w, cx, cy, cz, 3, -1, -1, Material.DEEPSLATE_TILES);
-        pit(f, w, cx, cy, cz, 5, 1, 0, Material.IRON_BARS, wallm, false, 0, 5, false);
+        pit(f, m, w, cx, cy, cz, 5, 1, 0, Material.IRON_BARS, wallm, false, 0, 5, false);
         for (int y = 2; y <= 5; y++)
             for (int z = Math.max(-3, -y); z <= 0; z++)
                 for (int x = -1; x <= 1; x++)
@@ -704,15 +876,13 @@ final class BayGeometry {
     private static void bCreeper(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.OBSIDIAN;
         disc(w, cx, cy, cz, 4, -1, -1, Material.DEEPSLATE_BRICKS);
-        pit(f, w, cx, cy, cz, 5, 1, 0, Material.OAK_TRAPDOOR, wallm, false, 0, 5, false);
+        pit(f, m, w, cx, cy, cz, 5, 1, 0, Material.OAK_TRAPDOOR, wallm, false, 0, 5, false);
         fill(w, cx, cy, cz, -3, -2, 0, 6, -7, 1, Material.OBSIDIAN);
         fill(w, cx, cy, cz, 2, 3, 0, 6, -7, 1, Material.OBSIDIAN);
         fill(w, cx, cy, cz, -3, 3, 0, 6, -8, -7, Material.OBSIDIAN);
         fill(w, cx, cy, cz, -3, 3, 6, 7, -7, 0, Material.OBSIDIAN);
-        for (int x = -2; x <= 2; x++) {
-            b(w, cx + x, cy + 1, cz + 1, Material.IRON_BARS);
-            b(w, cx + x, cy + 2, cz + 1, Material.IRON_BARS);
-        }
+        // blast-door bars ABOVE the kill slit (decor; the slit at y=1 stays open)
+        for (int x = -1; x <= 1; x++) b(w, cx + x, cy + 2, cz + 1, Material.IRON_BARS);
         for (int x = -2; x <= 2; x++) b(w, cx + x, cy + 5, cz - 2, Material.OBSIDIAN);
         b(w, cx, cy + 5, cz - 5, Material.DEEPSLATE_BRICK_SLAB);
         b(w, cx - 2, cy + 4, cz - 3, Material.DEEPSLATE_BRICK_SLAB);
@@ -724,7 +894,7 @@ final class BayGeometry {
     private static void bEnderman(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.OBSIDIAN;
         disc(w, cx, cy, cz, 3, -1, -1, Material.END_STONE);
-        pit(f, w, cx, cy, cz, 3, 1, 0, Material.PURPLE_STAINED_GLASS_PANE, wallm, false, 0, 5, false);
+        pit(f, m, w, cx, cy, cz, 3, 1, 0, Material.PURPLE_STAINED_GLASS_PANE, wallm, false, 0, 5, false);
         for (int y = 0; y <= 6; y++) {
             b(w, cx - 2, cy + y, cz - 1, Material.PURPUR_PILLAR);
             b(w, cx + 2, cy + y, cz - 1, Material.PURPUR_PILLAR);
@@ -743,7 +913,7 @@ final class BayGeometry {
     private static void bBlaze(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.NETHER_BRICKS;
         disc(w, cx, cy, cz, 4, -1, -1, Material.NETHERRACK);
-        pit(f, w, cx, cy, cz, 3, 1, 2, Material.IRON_BARS, wallm, false, 0, 2, true);
+        pit(f, m, w, cx, cy, cz, 3, 1, 2, Material.IRON_BARS, wallm, false, 0, 2, true);
         disc(w, cx, cy, cz, 4, 0, 0, Material.MAGMA_BLOCK);
         disc(w, cx, cy, cz, 2, 0, 0, Material.NETHERRACK);
         for (int[] d : new int[][]{{-3, -3}, {3, -3}, {-3, 1}, {3, 1}})
@@ -760,7 +930,7 @@ final class BayGeometry {
     private static void bSlime(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.MOSSY_COBBLESTONE;
         disc(w, cx, cy, cz, 4, -1, -1, Material.MUD);
-        pit(f, w, cx, cy, cz, 3, 1, 2, Material.GLASS, wallm, true, 1, 3, false);
+        pit(f, m, w, cx, cy, cz, 3, 1, 2, Material.GLASS, wallm, true, 1, 3, false);
         ringC(w, cx, cy, cz, 3, 0, 1, Material.MOSS_BLOCK, -4, 1);
         b(w, cx - 1, cy + 1, cz - 2, Material.LILY_PAD);
         b(w, cx + 1, cy + 1, cz - 3, Material.LILY_PAD);
@@ -774,7 +944,7 @@ final class BayGeometry {
     private static void bMagmaCube(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.POLISHED_BLACKSTONE_BRICKS;
         disc(w, cx, cy, cz, 4, -1, -1, Material.MAGMA_BLOCK);
-        pit(f, w, cx, cy, cz, 3, 1, 2, Material.IRON_BARS, wallm, false, 0, 3, true);
+        pit(f, m, w, cx, cy, cz, 3, 1, 2, Material.IRON_BARS, wallm, false, 0, 3, true);
         ringC(w, cx, cy, cz, 2, 0, 1, Material.POLISHED_BLACKSTONE, -4, 1);
         disc(w, cx, cy, cz, 3, 0, 0, Material.MAGMA_BLOCK);
         ringC(w, cx, cy, cz, 3, 0, 0, Material.GLOWSTONE, -4, -1);
@@ -787,7 +957,7 @@ final class BayGeometry {
     private static void bSilverfish(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.STONE_BRICKS;
         disc(w, cx, cy, cz, 4, -1, -1, Material.STONE);
-        pit(f, w, cx, cy, cz, 3, 1, 1, Material.IRON_BARS, wallm, false, 0, 3, false);
+        pit(f, m, w, cx, cy, cz, 3, 1, 1, Material.IRON_BARS, wallm, false, 0, 3, false);
         for (int y = 0; y <= 1; y++) {
             b(w, cx - 2, cy + y, cz - 2, Material.STONE_BRICKS);
             b(w, cx + 2, cy + y, cz - 2, Material.STONE_BRICKS);
@@ -807,7 +977,7 @@ final class BayGeometry {
     private static void bPhantom(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.DEEPSLATE_BRICKS;
         disc(w, cx, cy, cz, 4, -1, -1, Material.DEEPSLATE_TILES);
-        pit(f, w, cx, cy, cz, 3, 2, 3, Material.IRON_BARS, wallm, false, 0, 8, true);
+        pit(f, m, w, cx, cy, cz, 3, 2, 3, Material.IRON_BARS, wallm, false, 0, 8, true);
         ringC(w, cx, cy, cz, 4, 0, 8, wallm, -5, 0);
         ringC(w, cx, cy, cz, 4, 0, 2, wallm, 1, 1);
         b(w, cx - 4, cy + 4, cz - 2, Material.SEA_LANTERN);
@@ -823,7 +993,7 @@ final class BayGeometry {
     private static void bGuardian(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.PRISMARINE_BRICKS;
         disc(w, cx, cy, cz, 4, -1, -1, Material.PRISMARINE);
-        pit(f, w, cx, cy, cz, 3, 1, 1, Material.GLASS, wallm, true, 2, 4, false);
+        pit(f, m, w, cx, cy, cz, 3, 1, 1, Material.GLASS, wallm, true, 2, 4, false);
         for (int x = -4; x <= 4; x++)
             for (int z = -5; z <= 2; z++)
                 for (int y = 0; y <= 4; y++) {
@@ -847,7 +1017,7 @@ final class BayGeometry {
     private static void bSquid(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.PRISMARINE;
         disc(w, cx, cy, cz, 4, -1, -1, Material.PRISMARINE);
-        pit(f, w, cx, cy, cz, 3, 1, 1, Material.GLASS, wallm, true, 2, 4, false);
+        pit(f, m, w, cx, cy, cz, 3, 1, 1, Material.GLASS, wallm, true, 2, 4, false);
         ringC(w, cx, cy, cz, 3, 0, 4, Material.GLASS, -4, 1);
         for (int y = 0; y <= 4; y++) {
             b(w, cx - 3, cy + y, cz - 1, Material.PRISMARINE_BRICKS);
@@ -865,7 +1035,7 @@ final class BayGeometry {
     private static void bGlowSquid(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.DARK_PRISMARINE;
         disc(w, cx, cy, cz, 4, -1, -1, Material.DARK_PRISMARINE);
-        pit(f, w, cx, cy, cz, 3, 1, 1, Material.GLASS, wallm, true, 2, 4, false);
+        pit(f, m, w, cx, cy, cz, 3, 1, 1, Material.GLASS, wallm, true, 2, 4, false);
         ringC(w, cx, cy, cz, 3, 0, 4, Material.GLASS, -4, 1);
         for (int y = 0; y <= 4; y++) {
             b(w, cx - 3, cy + y, cz - 1, Material.DARK_PRISMARINE);
@@ -884,7 +1054,7 @@ final class BayGeometry {
     private static void bHoglin(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.RED_NETHER_BRICKS;
         disc(w, cx, cy, cz, 4, -1, -1, Material.NETHERRACK);
-        pit(f, w, cx, cy, cz, 4, 1, 2, Material.CRIMSON_FENCE, wallm, false, 0, 4, false);
+        pit(f, m, w, cx, cy, cz, 4, 1, 2, Material.CRIMSON_FENCE, wallm, false, 0, 4, false);
         fill(w, cx, cy, cz, -3, -2, 0, 4, -6, 1, wallm);
         fill(w, cx, cy, cz, 2, 3, 0, 4, -6, 1, wallm);
         fill(w, cx, cy, cz, -3, 3, 0, 4, -7, -6, wallm);
@@ -907,7 +1077,7 @@ final class BayGeometry {
     private static void bPiglin(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         Material wallm = Material.POLISHED_BLACKSTONE_BRICKS;
         disc(w, cx, cy, cz, 4, -1, -1, Material.BLACKSTONE);
-        pit(f, w, cx, cy, cz, 4, 1, 2, Material.IRON_BARS, wallm, false, 0, 4, false);
+        pit(f, m, w, cx, cy, cz, 4, 1, 2, Material.IRON_BARS, wallm, false, 0, 4, false);
         fill(w, cx, cy, cz, -3, -2, 0, 4, -6, 1, wallm);
         fill(w, cx, cy, cz, 2, 3, 0, 4, -6, 1, wallm);
         fill(w, cx, cy, cz, -3, 3, 0, 4, -7, -6, wallm);
@@ -931,7 +1101,7 @@ final class BayGeometry {
 
     /** COW - OPEN PASTURE: 5x5 meadow, 1-high oak fence, trough + tree shade. */
     private static void bCow(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 2, 1, Material.GRASS_BLOCK, Material.OAK_FENCE, 0, false);
+        pen(f, m, w, cx, cy, cz, 2, 1, Material.GRASS_BLOCK, Material.OAK_FENCE, 0, false);
         b(w, cx - 2, cy + 2, cz + 2, Material.WATER); // trough
         b(w, cx - 2, cy + 3, cz - 2, Material.OAK_LOG);
         b(w, cx - 3, cy + 4, cz - 3, Material.OAK_LEAVES);
@@ -943,7 +1113,7 @@ final class BayGeometry {
 
     /** PIG - MUD STY: 3x3 roofed hut with a slab ridge, mud floor patch. */
     private static void bPig(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 1, 2, Material.OAK_PLANKS, Material.OAK_FENCE, 4, false);
+        pen(f, m, w, cx, cy, cz, 1, 2, Material.OAK_PLANKS, Material.OAK_FENCE, 4, false);
         b(w, cx, cy + 2, cz, Material.MUD);
         b(w, cx, cy + 3, cz - 1, Material.OAK_FENCE);
         b(w, cx - 1, cy + 2, cz + 1, Material.OAK_TRAPDOOR);
@@ -953,7 +1123,7 @@ final class BayGeometry {
 
     /** CHICKEN - COOP: 3x3 raised coop, full roof + roosting bar + hay nest. */
     private static void bChicken(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 1, 2, Material.OAK_PLANKS, Material.OAK_FENCE, 1, false);
+        pen(f, m, w, cx, cy, cz, 1, 2, Material.OAK_PLANKS, Material.OAK_FENCE, 1, false);
         b(w, cx, cy + 5, cz, Material.OAK_FENCE);          // roost bar
         b(w, cx, cy + 3, cz, Material.HAY_BLOCK);
         b(w, cx, cy + 3, cz + 1, Material.HAY_BLOCK);
@@ -963,7 +1133,7 @@ final class BayGeometry {
 
     /** SHEEP - WOOL PEN: white wool walls (solid ring), 5x5, no roof. */
     private static void bSheep(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 2, 1, Material.GRASS_BLOCK, Material.WHITE_WOOL, 0, false);
+        pen(f, m, w, cx, cy, cz, 2, 1, Material.GRASS_BLOCK, Material.WHITE_WOOL, 0, false);
         b(w, cx - 1, cy + 3, cz, Material.PINK_WOOL);
         slab(w, cx, cy + 3, cz - 2, Material.WHITE_WOOL, false);
         finish(f, m, w, cx, cy, cz, 3.6, 4.2, cy - 1.4, cy + 4.0, 3.0);
@@ -971,7 +1141,7 @@ final class BayGeometry {
 
     /** RABBIT - WARREN: sunken burrow with a dirt mound + carrot garden. */
     private static void bRabbit(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 1, 2, Material.DIRT, Material.OAK_FENCE, 2, false);
+        pen(f, m, w, cx, cy, cz, 1, 2, Material.DIRT, Material.OAK_FENCE, 2, false);
         for (int x = -2; x <= 2; x++) {
             b(w, cx + x, cy + 4, cz - 2, x == 0 ? Material.DIRT_PATH : Material.DIRT);
         }
@@ -984,7 +1154,7 @@ final class BayGeometry {
 
     /** VILLAGER - VILLAGE: plaza with a well + two tiny oak houses. */
     private static void bVillager(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 2, 2, Material.GRASS_BLOCK, Material.STONE_BRICKS, 3, false);
+        pen(f, m, w, cx, cy, cz, 2, 2, Material.GRASS_BLOCK, Material.STONE_BRICKS, 3, false);
         fill(w, cx, cy, cz, -1, 1, 3, 3, -3, -3, Material.OAK_PLANKS);
         fill(w, cx, cy, cz, -1, 1, 4, 4, -3, -3, Material.OAK_SLAB);
         fill(w, cx, cy, cz, -2, -2, 3, 3, -1, 1, Material.OAK_PLANKS);
@@ -995,7 +1165,7 @@ final class BayGeometry {
 
     /** IRON GOLEM - GOLEM COURT: 2-high iron-block pillars, rose garden, 5x5. */
     private static void bIronGolem(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 2, 2, Material.POLISHED_ANDESITE, Material.IRON_BLOCK, 0, false);
+        pen(f, m, w, cx, cy, cz, 2, 2, Material.POLISHED_ANDESITE, Material.IRON_BLOCK, 0, false);
         for (int[] d : new int[][]{{-2, -2}, {2, -2}, {-2, 2}, {2, 2}})
             for (int y = 0; y < 2; y++)
                 b(w, cx + d[0], cy + 3 + y, cz + d[1], Material.IRON_BLOCK);
@@ -1007,7 +1177,7 @@ final class BayGeometry {
 
     /** BEE - APIARY: 3x3 hive garden, full roof, beehives + flowers. */
     private static void bBee(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 1, 2, Material.GRASS_BLOCK, Material.OAK_FENCE, 1, false);
+        pen(f, m, w, cx, cy, cz, 1, 2, Material.GRASS_BLOCK, Material.OAK_FENCE, 1, false);
         b(w, cx - 1, cy + 3, cz - 1, Material.BEEHIVE);
         b(w, cx + 1, cy + 3, cz - 1, Material.BEEHIVE);
         b(w, cx, cy + 3, cz - 1, Material.BEEHIVE);
@@ -1019,7 +1189,7 @@ final class BayGeometry {
 
     /** FOX - DEN: mossy berm + berry bushes, half roof. */
     private static void bFox(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 2, 2, Material.MOSS_BLOCK, Material.OAK_FENCE, 2, false);
+        pen(f, m, w, cx, cy, cz, 2, 2, Material.MOSS_BLOCK, Material.OAK_FENCE, 2, false);
         for (int x = -1; x <= 1; x++)
             b(w, cx + x, cy + 4, cz - 2, Material.MOSS_BLOCK);
         b(w, cx - 1, cy + 3, cz, Material.SWEET_BERRY_BUSH);
@@ -1030,7 +1200,7 @@ final class BayGeometry {
 
     /** GOAT - ICE PEAK: stepped packed-ice mountain, 3-high blue-ice fence. */
     private static void bGoat(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 2, 3, Material.SNOW_BLOCK, Material.BLUE_ICE, 0, false);
+        pen(f, m, w, cx, cy, cz, 2, 3, Material.SNOW_BLOCK, Material.BLUE_ICE, 0, false);
         for (int x = -2; x <= 2; x++)
             for (int z = -2; z <= 1; z++)
                 if (z <= -1) b(w, cx + x, cy + 4, cz + z, Material.PACKED_ICE);
@@ -1042,7 +1212,7 @@ final class BayGeometry {
 
     /** LLAMA - CARAVAN: two wool tents, carpets, open 5x5 pen. */
     private static void bLlama(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 2, 1, Material.COARSE_DIRT, Material.OAK_FENCE, 0, false);
+        pen(f, m, w, cx, cy, cz, 2, 1, Material.COARSE_DIRT, Material.OAK_FENCE, 0, false);
         for (int[] d : new int[][]{{-1, -2}, {1, -2}}) {
             for (int y = 0; y < 2; y++)
                 b(w, cx + d[0], cy + 3 + y, cz + d[1], Material.RED_WOOL);
@@ -1056,7 +1226,7 @@ final class BayGeometry {
 
     /** PANDA - BAMBOO GROVE: bamboo stalks + big leaf canopy, 5x5 pen. */
     private static void bPanda(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 2, 2, Material.GRASS_BLOCK, Material.OAK_FENCE, 0, false);
+        pen(f, m, w, cx, cy, cz, 2, 2, Material.GRASS_BLOCK, Material.OAK_FENCE, 0, false);
         for (int[] d : new int[][]{{-2, -1}, {-1, -2}, {1, 0}, {2, -2}}) {
             for (int y = 0; y < 3; y++)
                 b(w, cx + d[0], cy + 3 + y, cz + d[1], Material.BAMBOO);
@@ -1071,7 +1241,7 @@ final class BayGeometry {
 
     /** FROG - LILY POND: round moss pond with a fountain + lily pads. */
     private static void bFrog(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 2, 1, Material.MOSS_BLOCK, Material.OAK_FENCE, 0, true);
+        pen(f, m, w, cx, cy, cz, 2, 1, Material.MOSS_BLOCK, Material.OAK_FENCE, 0, true);
         b(w, cx, cy + 4, cz, Material.SEA_LANTERN);
         b(w, cx, cy + 3, cz + 1, Material.LILY_PAD);
         b(w, cx - 1, cy + 3, cz - 1, Material.LILY_PAD);
@@ -1083,7 +1253,7 @@ final class BayGeometry {
 
     /** SNIFFER - DIG SITE: dirt crater with torchflower garden + sand patches. */
     private static void bSniffer(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
-        pen(f, w, cx, cy, cz, 2, 1, Material.DIRT, Material.OAK_FENCE, 0, false);
+        pen(f, m, w, cx, cy, cz, 2, 1, Material.DIRT, Material.OAK_FENCE, 0, false);
         for (int[] d : new int[][]{{-2, -2}, {2, -2}, {-2, 2}, {2, 2}})
             b(w, cx + d[0], cy + 2, cz + d[1], Material.DIRT_PATH);
         b(w, cx, cy + 3, cz, Material.TORCHFLOWER);
