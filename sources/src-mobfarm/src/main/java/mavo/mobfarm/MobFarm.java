@@ -31,7 +31,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-/** MAVOMobFarm 2.7.2 - every mob has its own hand-built structure (crypt/pyramid/igloo/tower/cage/vault/obelisk/court/basin/caldera/tank/fortress/bastion + 14 unique pens), its own datapack, and its own /mobfarm build <mob>. Loot chest exposed on the trench floor; kill method + positions shared. */
+/** MAVOMobFarm 2.7.3 - every mob has its own hand-built structure (crypt/pyramid/igloo/tower/cage/vault/obelisk/court/basin/caldera/tank/fortress/bastion + 14 unique pens), its own datapack, and its own /mobfarm build <mob>. Loot chest exposed on the trench floor; kill method + positions shared. */
 public final class MobFarm extends JavaPlugin implements Listener, TabCompleter {
 
     /**
@@ -145,7 +145,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 for (UUID u : end) endSession(u, true);
             }
         }.runTaskTimer(this, 40L, 40L);
-        getLogger().info("MAVOMobFarm 2.7.2 enabled. mobs=" + mobs.size()
+        getLogger().info("MAVOMobFarm 2.7.3 enabled. mobs=" + mobs.size()
                 + " center=" + (center == null ? "?" : center.getBlockX() + "," + center.getBlockZ())
                 + " ai=" + mobAiEnabled());
     }
@@ -350,7 +350,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         }
         String a = args[0].toLowerCase(Locale.ROOT);
         if (a.equals("info")) {
-            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.7.2 " + ChatColor.GRAY + "entry "
+            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.7.3 " + ChatColor.GRAY + "entry "
                     + ChatColor.YELLOW + getConfig().getInt("entry-cost")
                     + ChatColor.GRAY + " · " + getConfig().getInt("session-minutes") + "m"
                     + ChatColor.GRAY + " · pick from " + ChatColor.GREEN + minPickCost()
@@ -847,7 +847,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         p.teleport(dest);
     }
 
-    // ---------------- build (2.7.2: packs + hub (unless saved); per-bay apply separate) ----------------
+    // ---------------- build (2.7.3: packs + hub (unless saved); per-bay apply separate) ----------------
     /** /mobfarm build (no arg): generate all 36 <id>-datapack.zip into world/datapacks/
      *  AND build the hub/HUD platform ONLY. No per-bay build is applied (the packs are
      *  picked up at the next server START, then /mobfarm build <mob> applies one bay). */

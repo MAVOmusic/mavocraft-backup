@@ -1,4 +1,4 @@
-# MAVOcraft — UPDATE GUIDE (2026-09-05: MobFarm 2.7.2 — protection, hub/path save, /mobfarm current)
+# MAVOcraft — UPDATE GUIDE (2026-09-05: MobFarm 2.7.3 — protection, hub/path save, /mobfarm current)
 
 Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
@@ -6,14 +6,14 @@ Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
 ## 2. DELETE this file from plugins/ (jar only)
 
-    MAVOMobFarm-2.7.1.jar        <- replace it with 2.7.2
+    MAVOMobFarm-2.7.2.jar        <- replace it with 2.7.3
     (2.6.x / older MobFarm jars if still there)
 
 AuctionHouse 1.0.3 stays as it is.
 
 ## 3. UPLOAD this jar into plugins/
 
-    MAVOMobFarm-2.7.2.jar    (whole-area protection r=50, /mobfarm savehub + buildhub,
+    MAVOMobFarm-2.7.3.jar    (whole-area protection r=50, /mobfarm savehub + buildhub,
                               /mobfarm current, packs-first per-mob flow as in 2.7.1)
 
 MAVOProfessions-3.14.2.jar stays too.
@@ -34,7 +34,7 @@ MAVOProfessions-3.14.2.jar stays too.
     /mobfarm build            (writes all 36 <mob>-datapack.zip; builds the hub platform ONLY
                                if no hub-datapack.zip exists - your saved hub/paths are never touched)
 
-Boot log must show "MAVOMobFarm 2.7.2 enabled".
+Boot log must show "MAVOMobFarm 2.7.3 enabled".
 
 ## 7. RESTART the server (once) - packs are scanned at STARTUP only
 

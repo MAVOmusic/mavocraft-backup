@@ -22,7 +22,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * MAVOMobFarm 2.7.2 - every one of the 36 mobs gets a HAND-BUILT layout with a different
+ * MAVOMobFarm 2.7.3 - every one of the 36 mobs gets a HAND-BUILT layout with a different
  * structure (sunken crypt, pyramid, igloo, tower, cage, vault, obelisk, courtyard, basin,
  * caldera, maze, court, dome, tank, fortress, bastion + 14 unique animal pens).
  *
@@ -491,17 +491,26 @@ final class BayGeometry {
                     int eq = line.indexOf('=');
                     if (eq < 0) continue;
                     String k = line.substring(0, eq);
-                    String[] v = line.substring(eq + 1).split(",");
-                    double[] d = new double[v.length];
-                    for (int i = 0; i < v.length; i++) d[i] = Double.parseDouble(v[i]);
-                    switch (k) {
-                        case "pit" -> m.pit = Boolean.parseBoolean(v[0]);
-                        case "stand" -> m.stand = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
-                        case "killpad" -> m.killPad = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
-                        case "stack" -> m.stackBlock = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
-                        case "loot" -> m.lootChest = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
-                        case "community" -> m.communityChest = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
-                        case "cell" -> m.cell = new double[]{cx + d[0], cx + d[1], cz + d[2], cz + d[3], cy + d[4], cy + d[5]};
+                    String val = line.substring(eq + 1);
+                    try {
+                        if (k.equals("pit")) { // boolean, NOT a number (2.7.2 bug: parsed as double)
+                            m.pit = Boolean.parseBoolean(val.trim());
+                            continue;
+                        }
+                        String[] v = val.split(",");
+                        double[] d = new double[v.length];
+                        for (int i = 0; i < v.length; i++) d[i] = Double.parseDouble(v[i]);
+                        switch (k) {
+                            case "stand" -> m.stand = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
+                            case "killpad" -> m.killPad = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
+                            case "stack" -> m.stackBlock = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
+                            case "loot" -> m.lootChest = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
+                            case "community" -> m.communityChest = new Location(w, cx + d[0], cy + d[1], cz + d[2]);
+                            case "cell" -> m.cell = new double[]{cx + d[0], cx + d[1], cz + d[2], cz + d[3], cy + d[4], cy + d[5]};
+                        }
+                    } catch (Throwable t) {
+                        f.getLogger().warning("MAVOMobFarm: loadState " + m.id + ": skipped bad line '"
+                                + line + "' (" + t.getMessage() + ")");
                     }
                 }
             }
@@ -635,7 +644,7 @@ final class BayGeometry {
                 + "/mobfarm build " + m.id + " loads it back into the world.");
     }
 
-    /* ------------------------------------------------ hub + footpath datapack (2.7.2) */
+    /* ------------------------------------------------ hub + footpath datapack (2.7.3) */
 
     static File hubPackFile(World w) {
         return new File(packDir(w), "hub-datapack.zip");
