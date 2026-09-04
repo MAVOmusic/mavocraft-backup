@@ -31,7 +31,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-/** MAVOMobFarm 2.6.5 — every bay individually designed; bulletproof block placement (item materials can never crash a rebuild); safe containment; no mob damage. */
+/** MAVOMobFarm 2.6.6 — real kill-cell barriers (fixed front wall wipe that let mobs walk out), per-animal pen shapes/roofs, per-bay sign facing, safe containment. */
 public final class MobFarm extends JavaPlugin implements Listener, TabCompleter {
 
     /**
@@ -142,7 +142,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 for (UUID u : end) endSession(u, true);
             }
         }.runTaskTimer(this, 40L, 40L);
-        getLogger().info("MAVOMobFarm 2.6.5 enabled. mobs=" + mobs.size()
+        getLogger().info("MAVOMobFarm 2.6.6 enabled. mobs=" + mobs.size()
                 + " center=" + (center == null ? "?" : center.getBlockX() + "," + center.getBlockZ())
                 + " ai=" + mobAiEnabled());
     }
@@ -339,7 +339,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         }
         String a = args[0].toLowerCase(Locale.ROOT);
         if (a.equals("info")) {
-            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.6.5 " + ChatColor.GRAY + "entry "
+            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.6.6 " + ChatColor.GRAY + "entry "
                     + ChatColor.YELLOW + getConfig().getInt("entry-cost")
                     + ChatColor.GRAY + " · " + getConfig().getInt("session-minutes") + "m"
                     + ChatColor.GRAY + " · pick from " + ChatColor.GREEN + minPickCost()
@@ -914,7 +914,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
      * - slit (z=+1, y=cy+1) per style; water fills the pit for aquatic bays.
      */
     private void killCell(World w, int cx, int cy, int cz, Material wall, String slit, boolean openTop,
-                          int depth, int top, int water, int halfW) {
+                          int depth, int top, int water, int halfW, int slitW) {
         // hopper pit floor: outer columns feed the centre chain, centre chains SOUTH into the chest
         for (int x = -halfW; x <= halfW; x++)
             for (int z = -depth; z <= -1; z++)
@@ -933,23 +933,34 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             for (int x = -halfW; x <= halfW; x++)
                 w.getBlockAt(cx + x, cy + y, cz - depth - 1).setType(wall, false);
         }
-        // front wall z=+1: slab slit (y=cy..cy+2) - the trench floor below stays open to the chest
+        // trench floor BELOW the front wall (y=cy-1, z=+1..+3) - never touch y>=cy at z=+1
+        for (int x = -3; x <= 3; x++)
+            for (int z = 1; z <= 3; z++)
+                w.getBlockAt(cx + x, cy - 1, cz + z).setType(Material.POLISHED_DEEPSLATE, false);
+        // FRONT WALL z=+1 (2.6.6: placed AFTER floors, never overwritten):
+        // bottom slab + slit + top slab = 1-high melee window; slitW=3 wide or centered 1-wide
         for (int x = -halfW; x <= halfW; x++) {
-            setSlab(w, cx + x, cy, cz + 1, wall, false);
-            setSlab(w, cx + x, cy + 2, cz + 1, wall, false);
-            switch (slit) {
-                case "bars" -> w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.IRON_BARS, false);
-                case "trapdoor" -> setTrapdoor(w, cx + x, cy + 1, cz + 1, BlockFace.SOUTH);
-                case "fence" -> w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.OAK_FENCE, false);
-                case "pane" -> w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.PURPLE_STAINED_GLASS_PANE, false);
-                case "glass" -> w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.LIGHT_BLUE_STAINED_GLASS_PANE, false);
-                case "open" -> setAir(w, cx + x, cy + 1, cz + 1);
-                default -> { }
+            boolean slitHere = slitW >= 3 || x == 0;
+            if (slitHere) {
+                setSlab(w, cx + x, cy, cz + 1, wall, false);
+                switch (slit) {
+                    case "bars" -> w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.IRON_BARS, false);
+                    case "trapdoor" -> setTrapdoor(w, cx + x, cy + 1, cz + 1, BlockFace.SOUTH);
+                    case "fence" -> w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.OAK_FENCE, false);
+                    case "pane" -> w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.PURPLE_STAINED_GLASS_PANE, false);
+                    case "glass" -> w.getBlockAt(cx + x, cy + 1, cz + 1).setType(Material.LIGHT_BLUE_STAINED_GLASS_PANE, false);
+                    case "open" -> setAir(w, cx + x, cy + 1, cz + 1);
+                    default -> { }
+                }
+                setSlab(w, cx + x, cy + 2, cz + 1, wall, false);
+            } else {
+                for (int y = cy; y <= cy + 2; y++)
+                    w.getBlockAt(cx + x, y, cz + 1).setType(wall, false);
             }
             for (int y = 3; y <= top; y++)
                 w.getBlockAt(cx + x, cy + y, cz + 1).setType(wall, false);
         }
-        // water level for aquatic bays (mobs bob at slit height)
+        // water level for aquatic bays
         if (water > 0)
             for (int x = -halfW; x <= halfW; x++)
                 for (int z = -depth; z <= -1; z++)
@@ -960,10 +971,9 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             for (int x = -halfW - 1; x <= halfW + 1; x++)
                 for (int z = -depth - 1; z <= 0; z++)
                     w.getBlockAt(cx + x, cy + top, cz + z).setType(wall, false);
-        // trench (z=+1..+3) + walkway (z=+4..+6) - chest lid is flush with the trench floor
+        // trench air (z=+2..+3 ONLY - z=+1 keeps its front wall + slit!)
         for (int x = -3; x <= 3; x++) {
-            for (int z = 1; z <= 3; z++) {
-                w.getBlockAt(cx + x, cy - 1, cz + z).setType(Material.POLISHED_DEEPSLATE, false);
+            for (int z = 2; z <= 3; z++) {
                 setAir(w, cx + x, cy, cz + z);
                 setAir(w, cx + x, cy + 1, cz + z);
                 setAir(w, cx + x, cy + 2, cz + z);
@@ -996,7 +1006,12 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     /** One spec-driven hostile cell: pick depth/height/slit/ceiling/water per mob. */
     private void buildSpecCell(MobDef m, World w, int cx, int cy, int cz,
                                int depth, int top, String slit, boolean openTop, int water, int halfW) {
-        killCell(w, cx, cy, cz, themeWall(m), slit, openTop, depth, top, water, halfW);
+        int slitW = switch (slit) {
+            case "pane", "glass" -> 1;   // aqua/cell windows are narrow
+            case "trapdoor" -> 1;        // bunker peep window
+            default -> 3;
+        };
+        killCell(w, cx, cy, cz, themeWall(m), slit, openTop, depth, top, water, halfW, slitW);
         decorBay(m, w, cx, cy, cz, depth);
         // aquatic mobs bob in the water; the rest stand on the hopper floor
         double py = water > 0 ? cy + 0.4 : cy - 0.9;
@@ -1035,7 +1050,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
 
     /** Creeper - deep blast vault, trapdoor hatches. */
     private void buildBunkerBay(MobDef m, World w, int cx, int cy, int cz) {
-        killCell(w, cx, cy, cz, Material.OBSIDIAN, "trapdoor", false, 5, 5, 0, 1);
+        killCell(w, cx, cy, cz, Material.OBSIDIAN, "trapdoor", false, 5, 5, 0, 1, 1);
         fillBox(w, cx, cy, cz, -3, -3, -1, 4, -7, 1, Material.DEEPSLATE_BRICKS);
         fillBox(w, cx, cy, cz, 3, 3, -1, 4, -7, 1, Material.DEEPSLATE_BRICKS);
         fillBox(w, cx, cy, cz, -3, 3, -1, 4, -7, -7, Material.DEEPSLATE_BRICKS);
@@ -1046,7 +1061,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
 
     /** Enderman - tall obsidian totem hall with a purple-glass window. */
     private void buildTotemBay(MobDef m, World w, int cx, int cy, int cz) {
-        killCell(w, cx, cy, cz, Material.OBSIDIAN, "pane", false, 3, 5, 0, 1);
+        killCell(w, cx, cy, cz, Material.OBSIDIAN, "pane", false, 3, 5, 0, 1, 1);
         fillBox(w, cx, cy, cz, -2, -2, -1, 5, -4, 1, Material.PURPUR_PILLAR);
         fillBox(w, cx, cy, cz, 2, 2, -1, 5, -4, 1, Material.PURPUR_PILLAR);
         w.getBlockAt(cx, cy + 1, cz - 4).setType(Material.ENDER_CHEST, false);
@@ -1058,7 +1073,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
 
     /** Blaze - open-sky nether forge, magma floor, bar window. */
     private void buildForgeBay(MobDef m, World w, int cx, int cy, int cz) {
-        killCell(w, cx, cy, cz, Material.NETHER_BRICKS, "bars", true, 3, 3, 0, 1);
+        killCell(w, cx, cy, cz, Material.NETHER_BRICKS, "bars", true, 3, 3, 0, 1, 3);
         fillBox(w, cx, cy, cz, -1, 1, 2, 2, -4, -4, Material.MAGMA_BLOCK);
         for (int x = -1; x <= 1; x++)
             w.getBlockAt(cx + x, cy + 1, cz - 4).setType(Material.NETHER_WART_BLOCK, false);
@@ -1080,7 +1095,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     /** Phantom - tall open sky court (AI off - stays low, no dives). */
     private void buildArenaBay(MobDef m, World w, int cx, int cy, int cz) {
         Material wall = Material.DEEPSLATE_BRICKS;
-        killCell(w, cx, cy, cz, wall, "slab", true, 3, 5, 0, 1);
+        killCell(w, cx, cy, cz, wall, "slab", true, 3, 5, 0, 1, 3);
         for (int y = 4; y <= 8; y++) {
             for (int z = -6; z <= 2; z++) {
                 w.getBlockAt(cx - 3, cy + y, cz + z).setType(wall, false);
@@ -1105,7 +1120,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
 
     /** Hoglin/Piglin - brutal pens, each with its own fortress look. */
     private void buildBrutalBay(MobDef m, World w, int cx, int cy, int cz) {
-        killCell(w, cx, cy, cz, Material.BLACKSTONE, "bars", false, 4, 4, 0, 1);
+        killCell(w, cx, cy, cz, Material.BLACKSTONE, "bars", false, 4, 4, 0, 1, 3);
         fillBox(w, cx, cy, cz, -3, 3, 3, 5, -6, 1, Material.POLISHED_BLACKSTONE_BRICKS);
         w.getBlockAt(cx, cy + 1, cz - 4).setType(Material.GOLD_BLOCK, false);
         w.getBlockAt(cx, cy + 3, cz - 2).setType(Material.SOUL_LANTERN, false);
@@ -1115,31 +1130,62 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     }
 
     /** Animals - a unique pasture/coop per mob, all feeding the ONE barn chest below. */
+    /** Per-animal pen shape: size, height, fence material, roof pattern (2.6.6 - silhouettes differ). */
+    private record PenSpec(int half, int h, Material fence, String roof, boolean waterPit) {
+        static PenSpec of(EntityType t) {
+            return switch (t) {
+                case COW -> new PenSpec(4, 1, Material.OAK_FENCE, "none", false);
+                case PIG -> new PenSpec(3, 1, Material.OAK_FENCE, "none", false);
+                case CHICKEN -> new PenSpec(3, 2, Material.OAK_FENCE, "full", false);
+                case SHEEP -> new PenSpec(4, 1, Material.OAK_FENCE, "none", false);
+                case RABBIT -> new PenSpec(3, 2, Material.OAK_FENCE, "half", false);
+                case VILLAGER -> new PenSpec(4, 2, Material.STONE_BRICKS, "corners", false);
+                case IRON_GOLEM -> new PenSpec(4, 2, Material.IRON_BLOCK, "corners", false);
+                case BEE -> new PenSpec(3, 2, Material.OAK_FENCE, "full", false);
+                case FOX -> new PenSpec(4, 2, Material.OAK_FENCE, "half", false);
+                case GOAT -> new PenSpec(4, 3, Material.PACKED_ICE, "none", false);
+                case LLAMA -> new PenSpec(4, 1, Material.OAK_FENCE, "none", false);
+                case PANDA -> new PenSpec(4, 2, Material.OAK_FENCE, "half", false);
+                case FROG -> new PenSpec(3, 1, Material.OAK_FENCE, "none", true);
+                case SNIFFER -> new PenSpec(4, 1, Material.OAK_FENCE, "none", false);
+                default -> new PenSpec(4, 1, Material.OAK_FENCE, "none", false);
+            };
+        }
+    }
+
     private void buildBarnBay(MobDef m, World w, int cx, int cy, int cz) {
         Material wall = themeWall(m);
         Material floor = themeFloor(m);
-        boolean roof = m.entity == EntityType.CHICKEN || m.entity == EntityType.BEE;
-        int half = (m.entity == EntityType.CHICKEN || m.entity == EntityType.RABBIT) ? 3 : 4;
-        boolean water = m.entity == EntityType.FROG;
-        int fenceH = (m.entity == EntityType.GOAT || m.entity == EntityType.IRON_GOLEM) ? 3 : 2;
+        PenSpec ps = PenSpec.of(m.entity);
+        int half = ps.half();
+        int penFloorY = cy + 2;   // animals walk on the grate
+        int edgeTop = penFloorY + 1 + ps.h(); // fence top row
         for (int x = -half; x <= half; x++)
             for (int z = -half; z <= half; z++) {
                 w.getBlockAt(cx + x, cy - 1, cz + z).setType(floor, false);
                 setAir(w, cx + x, cy, cz + z);
                 setAir(w, cx + x, cy + 1, cz + z);
                 boolean open = Math.abs(x) <= half - 1 && Math.abs(z) <= half - 1;
-                if (water && open) w.getBlockAt(cx + x, cy + 2, cz + z).setType(Material.WATER, false);
-                else if (open) w.getBlockAt(cx + x, cy + 2, cz + z).setType(Material.IRON_BARS, false);
-                else w.getBlockAt(cx + x, cy + 2, cz + z).setType(floor, false);
+                if (ps.waterPit() && open)
+                    w.getBlockAt(cx + x, penFloorY, cz + z).setType(Material.WATER, false);
+                else if (open)
+                    w.getBlockAt(cx + x, penFloorY, cz + z).setType(Material.IRON_BARS, false);
+                else
+                    w.getBlockAt(cx + x, penFloorY, cz + z).setType(floor, false);
                 boolean edge = Math.abs(x) == half || Math.abs(z) == half;
+                boolean corner = Math.abs(x) == half && Math.abs(z) == half;
                 if (edge) {
-                    for (int y = 0; y < fenceH; y++)
-                        w.getBlockAt(cx + x, cy + 3 + y, cz + z).setType(Material.OAK_FENCE, false);
-                    if (roof) w.getBlockAt(cx + x, cy + 5, cz + z).setType(wall, false);
+                    for (int y = 0; y < ps.h(); y++)
+                        w.getBlockAt(cx + x, penFloorY + 1 + y, cz + z).setType(ps.fence(), false);
+                    if ("full".equals(ps.roof()) || ("corners".equals(ps.roof()) && corner))
+                        w.getBlockAt(cx + x, edgeTop, cz + z).setType(wall, false);
                 } else {
-                    setAir(w, cx + x, cy + 3, cz + z);
-                    setAir(w, cx + x, cy + 4, cz + z);
-                    if (roof) w.getBlockAt(cx + x, cy + 5, cz + z).setType(wall, false);
+                    setAir(w, cx + x, penFloorY + 1, cz + z);
+                    setAir(w, cx + x, penFloorY + 2, cz + z);
+                    boolean back = z <= -1;
+                    if ("full".equals(ps.roof())) w.getBlockAt(cx + x, edgeTop, cz + z).setType(wall, false);
+                    else if ("half".equals(ps.roof()) && back)
+                        w.getBlockAt(cx + x, edgeTop, cz + z).setType(wall, false);
                 }
             }
         // hopper field under the grate feeding the ONE double chest
@@ -1153,7 +1199,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             setAir(w, cx + x, cy + 2, cz + 3);
         decorPasture(m, w, cx, cy, cz, half);
         setPos(m, w, cx + 0.5, cy + 0.1, cz + 1.5, "stand");
-        setPos(m, w, cx + 0.5, cy + 3.2, cz + 1.5, "pad");
+        setPos(m, w, cx + 0.5, cy + penFloorY + 0.2, cz + 1.5, "pad");
         setPos(m, w, cx + 0.5, cy + 1, cz + 3.5, "loot");
     }
 
@@ -1462,20 +1508,25 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         m.communityChest = new Location(w, cx - 4, cy, cz + 6);
         Block baySign = w.getBlockAt(cx - 4, cy + 1, cz + 6);
         baySign.setType(Material.OAK_SIGN, false);
+        faceSign(baySign, BlockFace.NORTH);
         writeSign(baySign, ChatColor.GOLD + "COMMUNITY", ChatColor.stripColor(m.display),
                 ChatColor.WHITE + "Donate loot", ChatColor.GRAY + "→ stack");
         // name plate + hit pad marker
         Block name = w.getBlockAt(cx, cy + 1, cz + 7);
         name.setType(Material.OAK_SIGN, false);
+        faceSign(name, BlockFace.NORTH);
         writeSign(name, ChatColor.GOLD + "ZONE", ChatColor.stripColor(m.display),
                 ChatColor.GRAY + m.style + "/" + m.theme, ChatColor.AQUA + "HIT ▶");
         Block hitpad = w.getBlockAt(cx, cy, cz + 4);
         hitpad.setType(Material.LIME_WOOL, false);
-        writeSign(w.getBlockAt(cx, cy + 1, cz + 4), ChatColor.GREEN + "HIT", ChatColor.WHITE + "HERE",
+        Block hitSgn = w.getBlockAt(cx, cy + 1, cz + 4);
+        faceSign(hitSgn, BlockFace.NORTH);
+        writeSign(hitSgn, ChatColor.GREEN + "HIT", ChatColor.WHITE + "HERE",
                 ChatColor.GRAY + "stand ↓", ChatColor.YELLOW + "/mobfarm pick");
         // loot chest marker above chest row
         Block lootSign = w.getBlockAt(cx, cy + 1, cz + 2);
         lootSign.setType(Material.OAK_SIGN, false);
+        faceSign(lootSign, BlockFace.SOUTH);
         writeSign(lootSign, ChatColor.GOLD + "LOOT", ChatColor.WHITE + "↓ chest",
                 ChatColor.GRAY + "hopper fed", ChatColor.YELLOW + "collect ↓");
         // ladder back to path
@@ -1543,6 +1594,16 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             ((org.bukkit.block.data.Directional) d).setFacing(facing);
             try { ((org.bukkit.block.data.Bisected) d).setHalf(org.bukkit.block.data.Bisected.Half.BOTTOM); } catch (Throwable ignored) {}
             try { ((org.bukkit.block.data.Openable) d).setOpen(false); } catch (Throwable ignored) {}
+            b.setBlockData(d, false);
+        } catch (Throwable ignored) {}
+    }
+
+    /** Rotate a sign block so its writing faces `facing` (works on standing + wall signs). */
+    private static void faceSign(Block b, BlockFace facing) {
+        try {
+            org.bukkit.block.data.BlockData d = b.getBlockData();
+            if (d instanceof org.bukkit.block.data.Rotatable r) r.setRotation(facing);
+            else if (d instanceof org.bukkit.block.data.Directional dir) dir.setFacing(facing);
             b.setBlockData(d, false);
         } catch (Throwable ignored) {}
     }
@@ -1728,7 +1789,9 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     private double[] cellBox(MobDef m, Location pad) {
         double hx, hz, minY, maxY;
         if ("barn".equals(m.style) || "pen".equals(m.style)) {
-            hx = 5.6; hz = 6.0; minY = pad.getY() - 3.4; maxY = pad.getY() + 2.2;
+            PenSpec ps = PenSpec.of(m.entity);
+            hx = ps.half() + 1.6; hz = ps.half() + 2.6;
+            minY = pad.getY() - 3.4; maxY = pad.getY() + 1.2 + ps.h();
         } else if ("arena".equals(m.style)) {
             hx = 3.9; hz = 6.6; minY = pad.getY() - 1.8; maxY = pad.getY() + 9.5;
         } else {

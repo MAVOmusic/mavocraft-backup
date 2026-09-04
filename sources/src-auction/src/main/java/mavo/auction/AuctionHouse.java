@@ -56,7 +56,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * MAVOAuctionHouse 1.0.2 - community auction house.
+ * MAVOAuctionHouse 1.0.3 - community auction house.
  *
  * - fancy bedrock-box auction house with keeper villagers (same GUI)
  * - /ah /auctionhouse /auction + /inbox
@@ -110,7 +110,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         getServer().getPluginManager().registerEvents(this, this);
         respawnKeepers();
         startExpiryTask();
-        getLogger().info("MAVOAuctionHouse 1.0.2 enabled. shopSell=" + shopSell.size()
+        getLogger().info("MAVOAuctionHouse 1.0.3 enabled. shopSell=" + shopSell.size()
                 + " listings=" + listings.size() + " region=" + (regionCenter != null));
     }
 
@@ -577,9 +577,13 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         if (l == null || regionCenter == null) return false;
         if (!l.getWorld().equals(regionCenter.getWorld())) return false;
         int x = l.getBlockX(), y = l.getBlockY(), z = l.getBlockZ();
-        return Math.abs(x - regionCenter.getBlockX()) <= regionHalf
-                && Math.abs(z - regionCenter.getBlockZ()) <= regionHalf
-                && y >= regionCenter.getBlockY() - 1 && y <= regionCenter.getBlockY() + regionHalf + 2;
+        int ax = Math.abs(x - regionCenter.getBlockX());
+        int az = Math.abs(z - regionCenter.getBlockZ());
+        if (ax <= regionHalf && az <= regionHalf
+                && y >= regionCenter.getBlockY() - 1 && y <= regionCenter.getBlockY() + regionHalf + 2) return true;
+        // terrace zone (south of the box, includes the parapet + step)
+        return ax <= 3 && az >= regionHalf + 1 && az <= regionHalf + 4
+                && y >= regionCenter.getBlockY() && y <= regionCenter.getBlockY() + 3;
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
@@ -632,21 +636,29 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
     private void respawnKeepers() {
         if (regionCenter == null) return;
         World w = regionCenter.getWorld();
-        // clear ANY tagged keeper near the house (including sunk ones from 1.0.0)
-        for (Entity en : new ArrayList<>(w.getEntities()))
-            if (en instanceof Villager v && v.getPersistentDataContainer().has(keeperKey, PersistentDataType.STRING)
-                    && inAH(en.getLocation())) en.remove();
         ConfigurationSection ks = data.getConfigurationSection("keepers");
         if (ks == null) return;
         int floorY = regionCenter.getBlockY() + 1; // villager feet on top of the floor block
+        int removed = 0;
         for (String k : ks.getKeys(false)) {
             ConfigurationSection e = ks.getConfigurationSection(k);
             if (e == null) continue;
             int y = e.getInt("y", floorY);
             if (y <= regionCenter.getBlockY()) y = floorY; // fix 1.0.0 sunk keeper positions
-            spawnKeeper(k, new Location(w, e.getInt("x"), y, e.getInt("z")),
-                    e.getString("name", "&6Auction Keeper"), e.getString("profession", "LIBRARIAN"));
+            Location loc = new Location(w, e.getInt("x"), y, e.getInt("z"));
+            // 1.0.1 bug created duplicates: the chunk was unloaded at boot so old keepers were missed.
+            // Load the chunk, remove EVERY tagged villager within 4 blocks, then spawn fresh.
+            try { loc.getChunk().load(); } catch (Throwable ignored) {}
+            for (Entity en : new ArrayList<>(w.getNearbyEntities(loc.clone().add(0.5, 1, 0.5), 4, 4, 4))) {
+                if (en instanceof Villager v && v.getPersistentDataContainer().has(keeperKey, PersistentDataType.STRING)) {
+                    en.remove();
+                    removed++;
+                }
+            }
+            spawnKeeper(k, loc, e.getString("name", "&6Auction Keeper"), e.getString("profession", "LIBRARIAN"));
         }
+        if (removed > 0)
+            getLogger().info("AuctionHouse: removed " + removed + " duplicate/stuck keeper(s), respawned clean.");
     }
 
     private void spawnKeeper(String key, Location loc, String name, String prof) {
@@ -755,6 +767,24 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
             de.set("name", c.getString("name", "&6Auction Keeper"));
             de.set("profession", c.getString("profession", "LIBRARIAN"));
         }
+        // entrance terrace + parapets: nobody can fall off the floating box
+        for (int x = -2; x <= 2; x++)
+            for (int z = h + 1; z <= h + 3; z++)
+                w.getBlockAt(cx + x, cy, cz + z).setType(Material.POLISHED_BLACKSTONE_BRICKS, false);
+        // side parapets (west/east) + gold posts with lanterns
+        for (int x = -2; x <= 2; x += 4) {
+            for (int z = h + 1; z <= h + 3; z++) {
+                for (int y = 0; y < 2; y++)
+                    w.getBlockAt(cx + x, cy + 1 + y, cz + z).setType(Material.OBSIDIAN, false);
+            }
+            w.getBlockAt(cx + x, cy + 3, cz + h + 2).setType(Material.SEA_LANTERN, false);
+        }
+        // far parapet (south edge of the terrace) + step
+        for (int x = -2; x <= 2; x++)
+            for (int y = 0; y < 2; y++)
+                w.getBlockAt(cx + x, cy + 1 + y, cz + h + 3).setType(Material.OBSIDIAN, false);
+        for (int x = -1; x <= 1; x++)
+            w.getBlockAt(cx + x, cy, cz + h + 4).setType(Material.BLACKSTONE, false);
         saveData();
         msg(admin, "&aAuction house built at " + cx + " " + cy + " " + cz
                 + " (bedrock box, " + (2 * h + 1) + " wide) with keepers " + (data.getConfigurationSection("keepers") != null

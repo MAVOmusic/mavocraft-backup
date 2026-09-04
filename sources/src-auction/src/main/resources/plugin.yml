@@ -1,6 +1,6 @@
 name: MAVOAuctionHouse
 main: mavo.auction.AuctionHouse
-version: 1.0.2
+version: 1.0.3
 api-version: '1.21'
 authors: [MAVO]
 description: Community auction house with keeper villagers, inbox, slot unlocks and shop-price anti-exploit floors.
