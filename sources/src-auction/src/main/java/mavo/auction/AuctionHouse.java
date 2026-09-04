@@ -637,7 +637,11 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         v.setSilent(true);
         v.setPersistent(true);
         v.setCollidable(false);
-        try { v.setProfession(Villager.Profession.valueOf(prof.trim().toUpperCase(Locale.ROOT))); } catch (Throwable ignored) {}
+        try {
+            String want = prof.trim().toUpperCase(Locale.ROOT);
+            for (Villager.Profession pv : Villager.Profession.values())
+                if (pv.name().equals(want)) { v.setProfession(pv); break; }
+        } catch (Throwable ignored) {}
         v.getPersistentDataContainer().set(keeperKey, PersistentDataType.STRING, key);
     }
 
