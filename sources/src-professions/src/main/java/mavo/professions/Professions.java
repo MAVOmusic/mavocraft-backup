@@ -562,7 +562,7 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
                 && e.getClickedBlock().getRelative(0, 1, 0).getType() != Material.WATER) return;
         // wait a tick so the farmland actually exists, then credit a little
         getServer().getScheduler().runTask(this, () -> {
-            if (e.getClickedBlock().isBlockLoaded()
+            if (e.getClickedBlock().getChunk().isLoaded()
                     && e.getClickedBlock().getType() == Material.FARMLAND)
                 addXp(pl, "farmer", 0.5);
         });
