@@ -243,7 +243,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
             if (!f.getName().toLowerCase(Locale.ROOT).endsWith(".yml")) continue;
             try {
                 YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
-                walk(y.getRoot(), "");
+                walk(y.getValues(false), "");
             } catch (Throwable ignored) {}
         }
     }

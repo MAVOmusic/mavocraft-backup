@@ -1326,11 +1326,11 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         Block b = w.getBlockAt(x, y, z);
         b.setType(Material.OAK_TRAPDOOR, false);
         try {
-            org.bukkit.block.data.type.Trapdoor t = (org.bukkit.block.data.type.Trapdoor) b.getBlockData();
-            t.setFacing(facing);
-            t.setHalf(org.bukkit.block.data.type.Trapdoor.Half.BOTTOM);
-            t.setOpen(false);
-            b.setBlockData(t, false);
+            org.bukkit.block.data.BlockData d = b.getBlockData();
+            ((org.bukkit.block.data.Directional) d).setFacing(facing);
+            try { ((org.bukkit.block.data.Bisected) d).setHalf(org.bukkit.block.data.Bisected.Half.BOTTOM); } catch (Throwable ignored) {}
+            try { ((org.bukkit.block.data.Openable) d).setOpen(false); } catch (Throwable ignored) {}
+            b.setBlockData(d, false);
         } catch (Throwable ignored) {}
     }
 
