@@ -99,7 +99,7 @@ public final class Casino extends JavaPlugin implements Listener {
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp != null) econ = rsp.getProvider();
         getServer().getPluginManager().registerEvents(this, this);
-        getLogger().info("MAVOCasino 1.2.3 enabled - the house always wins (about 95% of the time).");
+        getLogger().info("MAVOCasino 1.2.4 enabled - the house always wins (about 95% of the time).");
     }
 
     @Override

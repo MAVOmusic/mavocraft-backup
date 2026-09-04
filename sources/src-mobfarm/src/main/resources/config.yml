@@ -1,4 +1,4 @@
-# MAVOMobFarm 2.6 — unique per-mob bays @ -15000 (each mob gets its own kill cell)
+# MAVOMobFarm 2.6.1 — unique per-mob bays @ -15000 (each mob gets its own kill cell)
 entry-cost: 10000
 entry-cancel-seconds: 10
 session-minutes: 15
@@ -17,7 +17,8 @@ session-hud-title: "&6MobFarm &7| &e{mm}:{ss} &7left &8| &f{mob} &8| &ex{stack}"
 # Protection ONLY this far around the farm AABB (caves outside = normal)
 protect-radius: 50
 
-# Pricing
+# Pricing — the table below is documentation; 2.6.1+ EMBEDS the same prices in code
+# (config may override, but missing values can never fall back to the old flat P/16 = 625).
 # pick (unlock a mob zone) = that mob's REAL shop spawner buy price / 16
 #   (zombie 1,200,000 → 75,000); each ADDITIONAL pick in the same session DOUBLES
 #   (75,000 → 150,000 → 300,000 …). Prices below mirror EconomyShopGUI shop/Mobs/spawners.yml.

@@ -31,8 +31,35 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-/** MAVOMobFarm 2.5.0 — unique per-mob bays + real hopper→chest plumbing, paid pick, r=50 protect, blacklist. */
+/** MAVOMobFarm 2.6.1 — unique per-mob bays + real hopper→chest plumbing, paid pick, r=50 protect, blacklist. */
 public final class MobFarm extends JavaPlugin implements Listener, TabCompleter {
+
+    /**
+     * REAL EconomyShopGUI spawner buy prices (shops/Mobs/spawners.yml) — authoritative.
+     * config.yml shop-buy only OVERRIDES; if it is missing/stale the table below is used,
+     * so pick prices can never silently fall back to the old flat P/16 (625).
+     */
+    private static final Map<String, Long> SHOP_BUY = new LinkedHashMap<>();
+    static {
+        SHOP_BUY.put("ZOMBIE", 1200000L); SHOP_BUY.put("HUSK", 1250000L);
+        SHOP_BUY.put("SKELETON", 1250000L); SHOP_BUY.put("STRAY", 1250000L);
+        SHOP_BUY.put("SPIDER", 450000L); SHOP_BUY.put("CAVE_SPIDER", 500000L);
+        SHOP_BUY.put("CREEPER", 1500000L); SHOP_BUY.put("ENDERMAN", 1750000L);
+        SHOP_BUY.put("BLAZE", 1250000L); SHOP_BUY.put("MAGMA_CUBE", 5000000L);
+        SHOP_BUY.put("SLIME", 5500000L); SHOP_BUY.put("WITHER_SKELETON", 2500000L);
+        SHOP_BUY.put("DROWNED", 1200000L); SHOP_BUY.put("GUARDIAN", 2500000L);
+        SHOP_BUY.put("WITCH", 5000000L); SHOP_BUY.put("PILLAGER", 1750000L);
+        SHOP_BUY.put("HOGLIN", 1200000L); SHOP_BUY.put("PIGLIN", 1200000L);
+        SHOP_BUY.put("SILVERFISH", 500000L); SHOP_BUY.put("PHANTOM", 2500000L);
+        SHOP_BUY.put("COW", 1000000L); SHOP_BUY.put("PIG", 1000000L);
+        SHOP_BUY.put("CHICKEN", 150000L); SHOP_BUY.put("SHEEP", 450000L);
+        SHOP_BUY.put("RABBIT", 450000L); SHOP_BUY.put("VILLAGER", 1000000L);
+        SHOP_BUY.put("IRON_GOLEM", 10000000L); SHOP_BUY.put("SQUID", 1000000L);
+        SHOP_BUY.put("GLOW_SQUID", 1000000L); SHOP_BUY.put("BEE", 150000L);
+        SHOP_BUY.put("FOX", 250000L); SHOP_BUY.put("GOAT", 1200000L);
+        SHOP_BUY.put("LLAMA", 450000L); SHOP_BUY.put("PANDA", 500000L);
+        SHOP_BUY.put("FROG", 3950000L); SHOP_BUY.put("SNIFFER", 450000L);
+    }
 
     private Economy econ;
     private File dataFile;
@@ -81,11 +108,25 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         boolean migrated = false;
         if (getConfig().getInt("entry-cost", -1) == 5000) { getConfig().set("entry-cost", 10000); migrated = true; }
         if (getConfig().getInt("session-minutes", -1) == 30) { getConfig().set("session-minutes", 15); migrated = true; }
-        getConfig().options().copyDefaults(true); // adds shop-buy map + extend-* keys if missing
+        getConfig().options().copyDefaults(true); // adds extend-* keys if missing
+        // 2.6.1: write the REAL spawner prices into config if it is missing or stale
+        // (older builds fell back to flat 10,000/16 = 625 when shop-buy was absent).
+        java.util.Set<String> have = getConfig().getConfigurationSection("shop-buy") == null
+                ? new java.util.HashSet<>()
+                : getConfig().getConfigurationSection("shop-buy").getKeys(false);
+        int written = 0;
+        for (var e : SHOP_BUY.entrySet()) {
+            if (getConfig().getLong("shop-buy." + e.getKey(), -1L) <= 0) {
+                getConfig().set("shop-buy." + e.getKey(), e.getValue());
+                written++;
+            }
+        }
+        if (written > 0) migrated = true;
         saveConfig();
-        if (migrated) getLogger().info("Migrated MobFarm economy -> 10k entry / 15 min / shop-priced picks.");
-        if (!getConfig().contains("shop-buy.ZOMBIE"))
-            getLogger().warning("shop-buy map missing - picks fall back to normal-spawner-price/" + getConfig().getInt("unlock-divisor", 16));
+        if (migrated) getLogger().info("Migrated MobFarm economy -> 10k entry / 15 min / real shop-priced picks.");
+        if (written > 0) getLogger().info("MobFarm shop prices: wrote " + written + " real spawner price(s) into config.yml.");
+        getLogger().info("MobFarm shop prices embedded: " + SHOP_BUY.size() + " mobs (zombie pick "
+                + (SHOP_BUY.get("ZOMBIE") / Math.max(1, getConfig().getInt("unlock-divisor", 16))) + ").");
         dataFile = new File(getDataFolder(), "data.yml");
         data = YamlConfiguration.loadConfiguration(dataFile);
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
@@ -101,7 +142,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 for (UUID u : end) endSession(u, true);
             }
         }.runTaskTimer(this, 40L, 40L);
-        getLogger().info("MAVOMobFarm 2.6.0 enabled. mobs=" + mobs.size()
+        getLogger().info("MAVOMobFarm 2.6.1 enabled. mobs=" + mobs.size()
                 + " center=" + (center == null ? "?" : center.getBlockX() + "," + center.getBlockZ())
                 + " ai=" + mobAiEnabled());
     }
@@ -185,8 +226,11 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     private long normalPrice() { return getConfig().getLong("normal-spawner-price", 10_000L); }
     /** Real shop spawner buy price for a mob (mirrors EconomyShopGUI shops/Mobs/spawners.yml). */
     private long shopBuy(MobDef m) {
-        long v = getConfig().getLong("shop-buy." + m.entity.name().toUpperCase(Locale.ROOT), -1L);
-        return v > 0 ? v : Math.max(1L, normalPrice());
+        String k = m.entity.name().toUpperCase(Locale.ROOT);
+        long v = getConfig().getLong("shop-buy." + k, -1L);
+        if (v > 0) return v;                       // config override (kept in sync)
+        Long emb = SHOP_BUY.get(k);                // authoritative embedded price
+        return emb != null ? emb : Math.max(1L, normalPrice());
     }
     /** Base pick price = that mob's shop spawner buy price / 16 (zombie 1.2M -> 75,000). */
     private long basePickCost(MobDef m) {
@@ -295,7 +339,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         }
         String a = args[0].toLowerCase(Locale.ROOT);
         if (a.equals("info")) {
-            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.6.0 " + ChatColor.GRAY + "entry "
+            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.6.1 " + ChatColor.GRAY + "entry "
                     + ChatColor.YELLOW + getConfig().getInt("entry-cost")
                     + ChatColor.GRAY + " · " + getConfig().getInt("session-minutes") + "m"
                     + ChatColor.GRAY + " · pick from " + ChatColor.GREEN + minPickCost()

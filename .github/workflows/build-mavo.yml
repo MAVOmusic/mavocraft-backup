@@ -87,6 +87,14 @@ jobs:
           rm -f MAVOMobFarm-2.[0-4].*.jar jars/MAVOMobFarm-2.[0-4].*.jar
           ls -la MAVO*.jar | tail -40
 
+      - name: Verify MAVOPortalRoom class (javap + prices)
+        run: |
+          set -euo pipefail
+          javap -v -classpath MAVOPortalRoom-1.2.0.jar mavo.portalroom.PortalRoom > /dev/null
+          unzip -p MAVOPortalRoom-1.2.0.jar mavo/portalroom/PortalRoom.class | strings | grep -q "|500000|"
+          unzip -p MAVOPortalRoom-1.2.0.jar mavo/portalroom/PortalRoom.class | strings | grep -q "|5000000|"
+          echo "MAVOPortalRoom class OK (javap + prices)"
+
       - name: Commit rebuilt jars
         run: |
           git config user.name "mavocraft-ci"
