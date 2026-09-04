@@ -1,4 +1,4 @@
-# MAVOMobFarm 2.6.1 — unique per-mob bays @ -15000 (each mob gets its own kill cell)
+# MAVOMobFarm 2.6.2 — unique per-mob bays @ -15000 (each mob gets its own kill cell)
 entry-cost: 10000
 entry-cancel-seconds: 10
 session-minutes: 15

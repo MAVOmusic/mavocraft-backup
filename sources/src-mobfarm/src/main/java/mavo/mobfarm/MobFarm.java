@@ -31,7 +31,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-/** MAVOMobFarm 2.6.1 — unique per-mob bays + real hopper→chest plumbing, paid pick, r=50 protect, blacklist. */
+/** MAVOMobFarm 2.6.2 — unique per-mob bays + real hopper→chest plumbing, paid pick, r=50 protect, blacklist. */
 public final class MobFarm extends JavaPlugin implements Listener, TabCompleter {
 
     /**
@@ -142,7 +142,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 for (UUID u : end) endSession(u, true);
             }
         }.runTaskTimer(this, 40L, 40L);
-        getLogger().info("MAVOMobFarm 2.6.1 enabled. mobs=" + mobs.size()
+        getLogger().info("MAVOMobFarm 2.6.2 enabled. mobs=" + mobs.size()
                 + " center=" + (center == null ? "?" : center.getBlockX() + "," + center.getBlockZ())
                 + " ai=" + mobAiEnabled());
     }
@@ -339,7 +339,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         }
         String a = args[0].toLowerCase(Locale.ROOT);
         if (a.equals("info")) {
-            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.6.1 " + ChatColor.GRAY + "entry "
+            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.6.2 " + ChatColor.GRAY + "entry "
                     + ChatColor.YELLOW + getConfig().getInt("entry-cost")
                     + ChatColor.GRAY + " · " + getConfig().getInt("session-minutes") + "m"
                     + ChatColor.GRAY + " · pick from " + ChatColor.GREEN + minPickCost()
@@ -1256,8 +1256,9 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 cs.update(true, false);
             } catch (Throwable ignored) {}
         }
-        // community chest at walkway entry (reachable)
-        placeDoubleChest(w, cx - 4, cy, cz + 6, BlockFace.SOUTH);
+        // community chest at walkway entry (reachable) - faces NORTH so it opens
+        // towards the walkway the player stands on (was SOUTH = opened into the wall)
+        placeDoubleChest(w, cx - 4, cy, cz + 6, BlockFace.NORTH);
         m.communityChest = new Location(w, cx - 4, cy, cz + 6);
         Block baySign = w.getBlockAt(cx - 4, cy + 1, cz + 6);
         baySign.setType(Material.OAK_SIGN, false);
@@ -1286,6 +1287,14 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         if (m.lootChest == null) m.lootChest = new Location(w, cx + 0.5, cy - 1, cz + 0.5);
     }
 
+    /**
+     * Places a proper DOUBLE chest pair along +X.
+     * Bukkit LEFT/RIGHT are relative to the chest itself (opposite to the player's view):
+     *   facing NORTH -> west block (x) is LEFT, east block (x+1) is RIGHT
+     *   facing SOUTH -> east block (x+1) is LEFT, west block (x) is RIGHT
+     * Old 2.6.x hardcoded x=LEFT/x+1=RIGHT for every facing, which made SOUTH pairs
+     * (bay community chests + loot rows) render as TWO SINGLE chests.
+     */
     private void placeDoubleChest(World w, int x, int y, int z, BlockFace facing) {
         Block b1 = w.getBlockAt(x, y, z);
         Block b2 = w.getBlockAt(x + 1, y, z);
@@ -1295,9 +1304,26 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             org.bukkit.block.data.type.Chest c1 = (org.bukkit.block.data.type.Chest) b1.getBlockData();
             org.bukkit.block.data.type.Chest c2 = (org.bukkit.block.data.type.Chest) b2.getBlockData();
             c1.setFacing(facing); c2.setFacing(facing);
-            c1.setType(org.bukkit.block.data.type.Chest.Type.LEFT);
-            c2.setType(org.bukkit.block.data.type.Chest.Type.RIGHT);
-            b1.setBlockData(c1, false); b2.setBlockData(c2, false);
+            c1.setType(org.bukkit.block.data.type.Chest.Type.SINGLE);
+            c2.setType(org.bukkit.block.data.type.Chest.Type.SINGLE);
+            // physics ON: vanilla re-evaluates adjacent chests and forms the pair itself
+            b1.setBlockData(c1, true);
+            b2.setBlockData(c2, true);
+            // fallback: explicitly set correct halves (covers servers that skip re-pairing)
+            org.bukkit.block.data.type.Chest t1 = (org.bukkit.block.data.type.Chest) b1.getBlockData();
+            org.bukkit.block.data.type.Chest t2 = (org.bukkit.block.data.type.Chest) b2.getBlockData();
+            if (t1.getType() == org.bukkit.block.data.type.Chest.Type.SINGLE
+                    || t2.getType() == org.bukkit.block.data.type.Chest.Type.SINGLE) {
+                if (facing == BlockFace.NORTH) {
+                    t1.setType(org.bukkit.block.data.type.Chest.Type.LEFT);
+                    t2.setType(org.bukkit.block.data.type.Chest.Type.RIGHT);
+                } else {
+                    t1.setType(org.bukkit.block.data.type.Chest.Type.RIGHT);
+                    t2.setType(org.bukkit.block.data.type.Chest.Type.LEFT);
+                }
+                b1.setBlockData(t1, true);
+                b2.setBlockData(t2, true);
+            }
         } catch (Throwable ignored) {}
     }
 
@@ -1961,26 +1987,39 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         if (pe != null && pe.task != null) pe.task.cancel();
     }
 
+    /** True when the closed inventory belongs to the hub or a bay community chest. */
+    private boolean isCommunityLocation(Location il) {
+        if (il == null || center == null || il.getWorld() != center.getWorld()) return false;
+        if (Math.abs(il.getBlockX() - center.getBlockX()) <= 1
+                && il.getBlockY() == center.getBlockY()
+                && Math.abs(il.getBlockZ() - (center.getBlockZ() + 4)) <= 1) return true;
+        for (MobDef m : mobs.values()) {
+            if (m.communityChest == null) continue;
+            if (il.getBlockY() != m.communityChest.getBlockY()) continue;
+            if (Math.abs(il.getBlockZ() - m.communityChest.getBlockZ()) > 1) continue;
+            if (Math.abs(il.getBlockX() - m.communityChest.getBlockX()) <= 1) return true;
+        }
+        return false;
+    }
+
     @EventHandler
     public void onCommunityClose(InventoryCloseEvent e) {
         if (!(e.getPlayer() instanceof Player p) || center == null) return;
         Inventory top = e.getInventory();
-        Location il;
-        try { il = top.getLocation(); } catch (Throwable t) { return; }
-        if (il == null || il.getWorld() != center.getWorld()) return;
         boolean isCommunity = false;
-        if (Math.abs(il.getBlockX() - center.getBlockX()) <= 1
-                && il.getBlockY() == center.getBlockY()
-                && Math.abs(il.getBlockZ() - (center.getBlockZ() + 4)) <= 1) isCommunity = true;
+        Location il = null;
+        try { il = top.getLocation(); } catch (Throwable t) { il = null; }
+        if (isCommunityLocation(il)) isCommunity = true;
         if (!isCommunity) {
-            for (MobDef m : mobs.values()) {
-                if (m.communityChest == null) continue;
-                if (il.getBlockY() != m.communityChest.getBlockY()) continue;
-                if (Math.abs(il.getBlockZ() - m.communityChest.getBlockZ()) > 0) continue;
-                if (Math.abs(il.getBlockX() - m.communityChest.getBlockX()) <= 1) {
-                    isCommunity = true; break;
+            // double chests: getLocation() is unreliable, resolve from both halves
+            try {
+                if (top.getHolder() instanceof org.bukkit.block.DoubleChest dc) {
+                    if (dc.getLeftSide() != null && isCommunityLocation(dc.getLeftSide().getLocation()))
+                        isCommunity = true;
+                    if (!isCommunity && dc.getRightSide() != null && isCommunityLocation(dc.getRightSide().getLocation()))
+                        isCommunity = true;
                 }
-            }
+            } catch (Throwable t) { /* fall through */ }
         }
         if (!isCommunity) return;
         long value = 0;
