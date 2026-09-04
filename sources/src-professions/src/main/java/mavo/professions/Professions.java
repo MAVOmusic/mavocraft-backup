@@ -535,13 +535,37 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         pdc.set(placedKey, PersistentDataType.LONG_ARRAY, out);
     }
 
-    // never allow placing a bound tool as a block (gambler sticks are bamboo/rods etc!)
+    // never allow placing a bound BLOCK item as a block (gambler sticks are bamboo/rods etc!).
+    // Tool USES that change blocks (tilling dirt -> farmland, shovel paths, axe stripping) are
+    // NOT placements - a bound hoe must keep tilling next to water (3.14.2 bugfix).
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlaceBound(BlockPlaceEvent e) {
-        if (isLocked(e.getItemInHand())) {
-            e.setCancelled(true);
-            e.getPlayer().sendMessage(ChatColor.RED + "That's a bound profession item - you can't place it!");
-        }
+        if (!isLocked(e.getItemInHand())) return;
+        Material hand = e.getItemInHand().getType();
+        if (!hand.isBlock()) return; // tools/items can never be "placed" - the event is a use
+        e.setCancelled(true);
+        e.getPlayer().sendMessage(ChatColor.RED + "That's a bound profession item - you can't place it!");
+    }
+
+    // tilling soil with a bound farmer hoe counts toward the Farmer profession
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onTill(org.bukkit.event.player.PlayerInteractEvent e) {
+        if (e.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return;
+        if (e.getClickedBlock() == null) return;
+        Player pl = e.getPlayer();
+        Material bm = e.getClickedBlock().getType();
+        boolean soil = bm == Material.DIRT || bm == Material.GRASS_BLOCK
+                || bm == Material.COARSE_DIRT || bm == Material.ROOTED_DIRT || bm == Material.PODZOL;
+        if (!soil) return;
+        if (!isBoundAny(pl.getInventory().getItemInMainHand(), "farmer", pl.getUniqueId())) return;
+        if (e.getClickedBlock().getRelative(0, 1, 0).getType() != Material.AIR
+                && e.getClickedBlock().getRelative(0, 1, 0).getType() != Material.WATER) return;
+        // wait a tick so the farmland actually exists, then credit a little
+        getServer().getScheduler().runTask(this, () -> {
+            if (e.getClickedBlock().isBlockLoaded()
+                    && e.getClickedBlock().getType() == Material.FARMLAND)
+                addXp(pl, "farmer", 0.5);
+        });
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

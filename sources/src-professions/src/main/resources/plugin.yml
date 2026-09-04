@@ -1,5 +1,5 @@
 name: MAVOProfessions
-version: 3.14.1
+version: 3.14.2
 main: mavo.professions.Professions
 api-version: '1.13'
 description: Grind professions with tiered tool rewards (MAVOcraft)

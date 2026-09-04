@@ -1,0 +1,19 @@
+name: MAVOAuctionHouse
+main: mavo.auction.AuctionHouse
+version: 1.0.0
+api-version: '1.21'
+authors: [MAVO]
+description: Community auction house with keeper villagers, inbox, slot unlocks and shop-price anti-exploit floors.
+commands:
+  ah:
+    description: Open the auction house / manage your listings.
+    aliases: [auctionhouse, auction]
+    usage: |
+      /ah - open the auction house
+      /ah add hand <amount> <price> <duration>
+      /ah add <material> <amount> <price> <duration>
+      /ah inbox | slots | cancel <id> | help
+  inbox:
+    description: Open your auction inbox.
+    aliases: [ahinbox]
+    usage: /inbox

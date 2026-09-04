@@ -1,0 +1,56 @@
+# MAVOAuctionHouse 1.0.0
+# /ah setcenter -> /ah build once the centre is right.
+
+center:
+  world: world
+  x: 0
+  y: 64
+  z: 0
+
+# half-size of the protected bedrock box (box = 2*half+1 wide)
+half: 7
+
+# minimum posting price = shop sell price * this factor (anti shop-flip exploit).
+# Netherite Ingot shop sell 756 -> minimum posting 832 coins.
+min-price-factor: 1.10
+
+# hard cap for one listing
+max-price: 1000000000
+
+# optional overrides if the EconomyShopGUI scan cannot find a price:
+#min-sell-prices:
+#  NETHERITE_INGOT: 756
+#  DIAMOND: 100
+
+# auction keeper villagers (all open the same auction house GUI)
+keepers:
+  adam:
+    name: "&6Auction Keeper &eAdam"
+    profession: LIBRARIAN
+    x: -4
+    y: 0
+    z: -3
+  bella:
+    name: "&6Auction Keeper &dBella"
+    profession: CARTOGRAPHER
+    x: 4
+    y: 0
+    z: -3
+  cato:
+    name: "&6Auction Keeper &cCato"
+    profession: WEAPONSMITH
+    x: -4
+    y: 0
+    z: 2
+  dora:
+    name: "&6Auction Keeper &aDora"
+    profession: TOOLSMITH
+    x: 4
+    y: 0
+    z: 2
+  edwin:
+    name: "&6Auction Keeper &9Edwin"
+    profession: ARMORER
+    x: 0
+    y: 0
+    z: -4
