@@ -1,5 +1,7 @@
 # uploads/ — user screenshots & issue tracking
 
+STANDING RULE (user, 2026-09-05): NEVER open/present any file in the Arena file viewer - it froze the user's browser and nearly broke their OBS stream. Deliverables go to GitHub only (push + tell the user the path). No present_file calls for this repo, ever.
+
 Drop user screenshots here (e.g. `01-whatsnew-overflow.png`). Each issue + image + status is tracked below so any chat can catch up.
 
 | # | Screenshot (uploads/) | Issue | Status |
