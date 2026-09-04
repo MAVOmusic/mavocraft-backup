@@ -2011,13 +2011,23 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         try { il = top.getLocation(); } catch (Throwable t) { il = null; }
         if (isCommunityLocation(il)) isCommunity = true;
         if (!isCommunity) {
-            // double chests: getLocation() is unreliable, resolve from both halves
+            // double chests: Inventory.getLocation() is unreliable, so resolve the
+            // closed inventory from the DoubleChest holder + each half in turn
             try {
                 if (top.getHolder() instanceof org.bukkit.block.DoubleChest dc) {
-                    if (dc.getLeftSide() != null && isCommunityLocation(dc.getLeftSide().getLocation()))
-                        isCommunity = true;
-                    if (!isCommunity && dc.getRightSide() != null && isCommunityLocation(dc.getRightSide().getLocation()))
-                        isCommunity = true;
+                    try { if (isCommunityLocation(dc.getLocation())) isCommunity = true; } catch (Throwable t) {}
+                    if (!isCommunity) {
+                        org.bukkit.inventory.InventoryHolder[] sides =
+                                { dc.getLeftSide(), dc.getRightSide() };
+                        for (org.bukkit.inventory.InventoryHolder h : sides) {
+                            if (h == null) continue;
+                            try {
+                                if (isCommunityLocation(h.getInventory().getLocation())) {
+                                    isCommunity = true; break;
+                                }
+                            } catch (Throwable t) {}
+                        }
+                    }
                 }
             } catch (Throwable t) { /* fall through */ }
         }
