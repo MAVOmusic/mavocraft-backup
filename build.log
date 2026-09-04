@@ -1,4 +1,4 @@
-## build log Fri Sep  4 16:29:17 UTC 2026
+## build log Fri Sep  4 17:50:03 UTC 2026
 == sources/src-achievements ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -26,14 +26,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.099 s
-[INFO] Finished at: 2026-09-04T16:29:19Z
+[INFO] Total time:  1.070 s
+[INFO] Finished at: 2026-09-04T17:50:05Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-auction ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------------------< mavo:mavo-auction >--------------------------
-[INFO] Building mavo-auction 1.0.0
+[INFO] Building mavo-auction 1.0.1
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -41,24 +41,29 @@
 [INFO] Copying 2 resources from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-auction ---
-[INFO] Nothing to compile - all classes are up to date.
-[INFO] 
-[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-auction ---
-[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-auction/src/test/resources
-[INFO] 
-[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-auction ---
-[INFO] No sources to compile
-[INFO] 
-[INFO] --- surefire:3.5.4:test (default-test) @ mavo-auction ---
-[INFO] Tests are skipped.
-[INFO] 
-[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-auction ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1 source file with javac [debug release 25] to target/classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-auction/src/main/java/mavo/auction/AuctionHouse.java:[263,39] illegal escape character
+[INFO] 1 error
+[INFO] -------------------------------------------------------------
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
+[INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.118 s
-[INFO] Finished at: 2026-09-04T16:29:21Z
+[INFO] Total time:  1.241 s
+[INFO] Finished at: 2026-09-04T17:50:07Z
 [INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (default-compile) on project mavo-auction: Compilation failure
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-auction/src/main/java/mavo/auction/AuctionHouse.java:[263,39] illegal escape character
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
 == sources/src-casino ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -86,8 +91,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.099 s
-[INFO] Finished at: 2026-09-04T16:29:24Z
+[INFO] Total time:  1.056 s
+[INFO] Finished at: 2026-09-04T17:50:10Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-curator ==
 [INFO] Scanning for projects...
@@ -116,8 +121,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.053 s
-[INFO] Finished at: 2026-09-04T16:29:26Z
+[INFO] Total time:  1.078 s
+[INFO] Finished at: 2026-09-04T17:50:12Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-deathchest ==
 [INFO] Scanning for projects...
@@ -146,8 +151,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.122 s
-[INFO] Finished at: 2026-09-04T16:29:28Z
+[INFO] Total time:  1.090 s
+[INFO] Finished at: 2026-09-04T17:50:14Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-events ==
 [INFO] Scanning for projects...
@@ -176,8 +181,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.090 s
-[INFO] Finished at: 2026-09-04T16:29:30Z
+[INFO] Total time:  1.109 s
+[INFO] Finished at: 2026-09-04T17:50:16Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-guide ==
 [INFO] Scanning for projects...
@@ -206,8 +211,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.113 s
-[INFO] Finished at: 2026-09-04T16:29:33Z
+[INFO] Total time:  1.080 s
+[INFO] Finished at: 2026-09-04T17:50:19Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-lucky ==
 [INFO] Scanning for projects...
@@ -236,14 +241,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.066 s
-[INFO] Finished at: 2026-09-04T16:29:35Z
+[INFO] Total time:  1.035 s
+[INFO] Finished at: 2026-09-04T17:50:21Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-mobfarm ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------------------< mavo:mavo-mobfarm >--------------------------
-[INFO] Building mavo-mobfarm 2.6.3
+[INFO] Building mavo-mobfarm 2.6.4
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -266,8 +271,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.068 s
-[INFO] Finished at: 2026-09-04T16:29:37Z
+[INFO] Total time:  1.080 s
+[INFO] Finished at: 2026-09-04T17:50:23Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-professions ==
 [INFO] Scanning for projects...
@@ -281,35 +286,24 @@
 [INFO] Copying 2 resources from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-professions ---
-[INFO] Recompiling the module because of changed source code.
-[INFO] Compiling 1 source file with javac [debug release 25] to target/classes
-[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-professions/src/main/java/mavo/professions/Professions.java: /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-professions/src/main/java/mavo/professions/Professions.java uses or overrides a deprecated API.
-[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-professions/src/main/java/mavo/professions/Professions.java: Recompile with -Xlint:deprecation for details.
-[INFO] -------------------------------------------------------------
-[ERROR] COMPILATION ERROR : 
-[INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-professions/src/main/java/mavo/professions/Professions.java:[565,36] cannot find symbol
-  symbol:   method isBlockLoaded()
-  location: interface org.bukkit.block.Block
-[INFO] 1 error
-[INFO] -------------------------------------------------------------
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-professions ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-professions/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-professions ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-professions ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-professions ---
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
+[INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.989 s
-[INFO] Finished at: 2026-09-04T16:29:40Z
+[INFO] Total time:  1.122 s
+[INFO] Finished at: 2026-09-04T17:50:26Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (default-compile) on project mavo-professions: Compilation failure
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-professions/src/main/java/mavo/professions/Professions.java:[565,36] cannot find symbol
-[ERROR]   symbol:   method isBlockLoaded()
-[ERROR]   location: interface org.bukkit.block.Block
-[ERROR] -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
 == sources/src-shopnpc ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -337,8 +331,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.079 s
-[INFO] Finished at: 2026-09-04T16:29:43Z
+[INFO] Total time:  1.071 s
+[INFO] Finished at: 2026-09-04T17:50:28Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wanderer ==
 [INFO] Scanning for projects...
@@ -367,8 +361,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.069 s
-[INFO] Finished at: 2026-09-04T16:29:45Z
+[INFO] Total time:  1.052 s
+[INFO] Finished at: 2026-09-04T17:50:30Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wild ==
 [INFO] Scanning for projects...
@@ -397,6 +391,6 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.005 s
-[INFO] Finished at: 2026-09-04T16:29:47Z
+[INFO] Total time:  1.056 s
+[INFO] Finished at: 2026-09-04T17:50:32Z
 [INFO] ------------------------------------------------------------------------
