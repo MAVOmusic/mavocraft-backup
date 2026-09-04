@@ -1,5 +1,6 @@
 package mavo.mobfarm;
 
+import mavo.mobfarm.MobFarm.MobDef;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
