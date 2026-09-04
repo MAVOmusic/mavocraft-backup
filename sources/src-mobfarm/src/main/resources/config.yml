@@ -1,4 +1,4 @@
-# MAVOMobFarm 2.7.1 - every mob gets a different hand-built structure + its own datapack; /mobfarm build <mob> rebuilds one bay
+# MAVOMobFarm 2.7.2 - every mob gets a different hand-built structure + its own datapack; /mobfarm build <mob> rebuilds one bay
 entry-cost: 10000
 entry-cancel-seconds: 10
 session-minutes: 15

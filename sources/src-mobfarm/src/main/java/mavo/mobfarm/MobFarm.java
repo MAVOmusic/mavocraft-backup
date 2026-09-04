@@ -31,7 +31,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-/** MAVOMobFarm 2.7.1 — every mob has its own hand-built structure (crypt/pyramid/igloo/tower/cage/vault/obelisk/court/basin/caldera/tank/fortress/bastion + 14 unique pens), its own datapack, and its own /mobfarm build <mob>. Loot chest exposed on the trench floor; kill method + positions shared. */
+/** MAVOMobFarm 2.7.2 - every mob has its own hand-built structure (crypt/pyramid/igloo/tower/cage/vault/obelisk/court/basin/caldera/tank/fortress/bastion + 14 unique pens), its own datapack, and its own /mobfarm build <mob>. Loot chest exposed on the trench floor; kill method + positions shared. */
 public final class MobFarm extends JavaPlugin implements Listener, TabCompleter {
 
     /**
@@ -71,7 +71,8 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     private NamespacedKey holoKey, farmMobKey, stackHoloKey, lastHitKey;
     private long communityCoins, communityTarget;
     private int communityStack;
-    private int minX, minY, minZ, maxX, maxY, maxZ; // farm AABB (built bays)
+    private int minX, minY, minZ, maxX, maxY, maxZ; // farm AABB (hub + bays)
+    private boolean aabbReady = false;
 
     static final class MobDef {
         String id, display, wing, style, theme; EntityType entity; Material icon;
@@ -144,7 +145,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 for (UUID u : end) endSession(u, true);
             }
         }.runTaskTimer(this, 40L, 40L);
-        getLogger().info("MAVOMobFarm 2.7.1 enabled. mobs=" + mobs.size()
+        getLogger().info("MAVOMobFarm 2.7.2 enabled. mobs=" + mobs.size()
                 + " center=" + (center == null ? "?" : center.getBlockX() + "," + center.getBlockZ())
                 + " ai=" + mobAiEnabled());
     }
@@ -185,9 +186,17 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         communityStack = data.getInt("community.stack", getConfig().getInt("community.stack-start", 2));
         if (communityStack < 1) communityStack = getConfig().getInt("community.stack-start", 2);
         loadBlacklist();
-        if (data.getBoolean("built", false) && center != null) {
+        if (center != null) {
             recomputeAABB();
-            for (MobDef m : mobs.values()) computeGeom(m);
+            World cw = center.getWorld();
+            for (MobDef m : mobs.values()) {
+                computeGeom(m); // default positions
+                // saved pack wins: restores the real trench stand / pit / containment box
+                if (cw != null && BayGeometry.wasBuilt(this, m)) {
+                    Location o = origin(m);
+                    BayGeometry.loadState(this, m, cw, o.getBlockX(), o.getBlockY(), o.getBlockZ());
+                }
+            }
         }
     }
 
@@ -311,14 +320,14 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             minY = Math.min(minY, o.getBlockY() - 10); maxY = Math.max(maxY, o.getBlockY() + 12);
             minZ = Math.min(minZ, o.getBlockZ() - 14); maxZ = Math.max(maxZ, o.getBlockZ() + 16);
         }
+        aabbReady = true;
     }
 
+    /** Whole farm area (hub + every bay + the paths between) ± protect-radius; ALWAYS
+     *  enforced once the center is set - it no longer depends on the "built" flag. */
     private boolean inFarmProtect(Location l) {
         if (center == null || l.getWorld() != center.getWorld()) return false;
-        if (!data.getBoolean("built", false)) {
-            // only hub ball until built
-            return l.distanceSquared(center) <= (double) protectRadius() * protectRadius();
-        }
+        if (!aabbReady) recomputeAABB();
         int r = protectRadius();
         int x = l.getBlockX(), y = l.getBlockY(), z = l.getBlockZ();
         return x >= minX - r && x <= maxX + r && y >= minY - r && y <= maxY + r && z >= minZ - r && z <= maxZ + r;
@@ -334,14 +343,14 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(ChatColor.GOLD + "/mobfarm enter|leave|hub|status|buy|extend|pick|prices|info"
+            sender.sendMessage(ChatColor.GOLD + "/mobfarm enter|current|leave|hub|status|buy|extend|pick|prices|info"
                     + (sender.hasPermission("mavomobfarm.admin")
-                    ? "|tp|setcenter|build|rebuild|clear|clearhere|purge|reload|resholo" : ""));
+                    ? "|tp|setcenter|build|rebuild|savehub|buildhub|clear|clearhere|purge|reload|resholo" : ""));
             return true;
         }
         String a = args[0].toLowerCase(Locale.ROOT);
         if (a.equals("info")) {
-            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.7.1 " + ChatColor.GRAY + "entry "
+            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.7.2 " + ChatColor.GRAY + "entry "
                     + ChatColor.YELLOW + getConfig().getInt("entry-cost")
                     + ChatColor.GRAY + " · " + getConfig().getInt("session-minutes") + "m"
                     + ChatColor.GRAY + " · pick from " + ChatColor.GREEN + minPickCost()
@@ -443,6 +452,47 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             case "resholo" -> {
                 if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
                 spawnHubHolo(); refreshBayHolos(); p.sendMessage(ChatColor.GREEN + "Holo ok.");
+            }
+            case "savehub" -> {
+                if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
+                if (center == null) { p.sendMessage(ChatColor.RED + "Set center first."); return true; }
+                World w = center.getWorld();
+                recomputeAABB();
+                List<int[]> bays = new ArrayList<>();
+                for (MobDef m : mobs.values()) {
+                    Location o = origin(m);
+                    bays.add(new int[]{o.getBlockX() - 12, o.getBlockX() + 12,
+                            o.getBlockZ() - 12, o.getBlockZ() + 10});
+                }
+                if (BayGeometry.writeHubPack(this, w, minX, maxX, minZ, maxZ, minY, maxY, bays)) {
+                    p.sendMessage(ChatColor.GREEN + "Saved hub + footpaths -> "
+                            + BayGeometry.hubPackFile(w).getAbsolutePath());
+                    p.sendMessage(ChatColor.GRAY + "The 36 bay boxes are NOT included (each bay has"
+                            + " its own zip). Copy the hub zip to your PC like the bay zips.");
+                } else {
+                    p.sendMessage(ChatColor.RED + "Hub save FAILED (see server log).");
+                }
+            }
+            case "buildhub" -> {
+                if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
+                BayGeometry.buildHub(this, p::sendMessage);
+            }
+            case "current" -> {
+                Session s = sessions.get(p.getUniqueId());
+                if (s == null || s.endsAtMs < System.currentTimeMillis()) {
+                    p.sendMessage(ChatColor.RED + "No active session. /mobfarm enter first."); return true;
+                }
+                MobDef mc = mobs.get(s.mobId);
+                if (mc == null || !s.unlocked) {
+                    p.sendMessage(ChatColor.RED + "No paid zone yet. /mobfarm pick to unlock a mob zone.");
+                    return true;
+                }
+                if (mc.stand == null) computeGeom(mc);
+                Location dest = mc.stand.clone();
+                dest.setYaw(180f); dest.setPitch(15f);
+                p.teleport(dest);
+                p.sendMessage(ChatColor.GREEN + "Back in your " + ChatColor.stripColor(mc.display)
+                        + " zone.");
             }
             case "enter" -> beginEnter(p);
             case "leave" -> leaveFarm(p);
@@ -797,7 +847,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         p.teleport(dest);
     }
 
-    // ---------------- build (2.7.1: packs + hub only; per-bay apply is separate) ----------------
+    // ---------------- build (2.7.2: packs + hub (unless saved); per-bay apply separate) ----------------
     /** /mobfarm build (no arg): generate all 36 <id>-datapack.zip into world/datapacks/
      *  AND build the hub/HUD platform ONLY. No per-bay build is applied (the packs are
      *  picked up at the next server START, then /mobfarm build <mob> applies one bay). */
@@ -805,35 +855,39 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         if (center == null) { admin.sendMessage(ChatColor.RED + "Set center first."); return; }
         stopAllFarmActivity("build");
         World w = center.getWorld();
-        // hub platform
         int hx = center.getBlockX(), hy = center.getBlockY(), hz = center.getBlockZ();
-        for (int x = -12; x <= 12; x++)
-            for (int z = -12; z <= 12; z++) {
-                Material fl = ((x + z) & 1) == 0 ? Material.SEA_LANTERN : Material.POLISHED_DEEPSLATE;
-                w.getBlockAt(hx + x, hy - 1, hz + z).setType(fl, false);
-                for (int y = 0; y <= 4; y++) setAir(w, hx + x, hy + y, hz + z);
+        // when a saved hub+footpath zip exists, NEVER touch the hub/paths in the world
+        // (they are your work; /mobfarm buildhub restores them from the zip after a restart)
+        boolean hasHub = BayGeometry.hasHubPack(w);
+        if (!hasHub) {
+            // hub platform (bare, first time - save your work with /mobfarm savehub)
+            for (int x = -12; x <= 12; x++)
+                for (int z = -12; z <= 12; z++) {
+                    Material fl = ((x + z) & 1) == 0 ? Material.SEA_LANTERN : Material.POLISHED_DEEPSLATE;
+                    w.getBlockAt(hx + x, hy - 1, hz + z).setType(fl, false);
+                    for (int y = 0; y <= 4; y++) setAir(w, hx + x, hy + y, hz + z);
+                }
+            // hub beacon pillars
+            for (int[] d : new int[][]{{-10, -10}, {-10, 10}, {10, -10}, {10, 10}}) {
+                for (int y = 0; y <= 6; y++)
+                    w.getBlockAt(hx + d[0], hy + y, hz + d[1]).setType(Material.CRYING_OBSIDIAN, false);
+                w.getBlockAt(hx + d[0], hy + 7, hz + d[1]).setType(Material.SEA_LANTERN, false);
             }
-        // hub beacon pillars
-        for (int[] d : new int[][]{{-10, -10}, {-10, 10}, {10, -10}, {10, 10}}) {
-            for (int y = 0; y <= 6; y++)
-                w.getBlockAt(hx + d[0], hy + y, hz + d[1]).setType(Material.CRYING_OBSIDIAN, false);
-            w.getBlockAt(hx + d[0], hy + 7, hz + d[1]).setType(Material.SEA_LANTERN, false);
+            // hub community chest (also re-applied by /mobfarm buildhub after a hub restore)
+            patchHub(w, hx, hy, hz);
+            // wing signs
+            Block hs = w.getBlockAt(hx - 6, hy + 1, hz);
+            hs.setType(Material.OAK_SIGN, false);
+            writeSign(hs, ChatColor.RED + "HOSTILE", ChatColor.WHITE + "WING ← WEST",
+                    ChatColor.GRAY + "/mobfarm pick", ChatColor.DARK_GRAY + "pay unlock");
+            Block as = w.getBlockAt(hx + 6, hy + 1, hz);
+            as.setType(Material.OAK_SIGN, false);
+            writeSign(as, ChatColor.GREEN + "ANIMAL", ChatColor.WHITE + "WING → EAST",
+                    ChatColor.GRAY + "/mobfarm pick", ChatColor.DARK_GRAY + "pay unlock");
+        } else {
+            admin.sendMessage(ChatColor.YELLOW + "hub-datapack.zip found - hub + footpaths left"
+                    + " untouched (restore: /mobfarm buildhub after the restart).");
         }
-        // community chest hub
-        placeDoubleChest(w, hx, hy, hz + 4, BlockFace.NORTH);
-        Block sign = w.getBlockAt(hx, hy + 1, hz + 4);
-        sign.setType(Material.OAK_SIGN, false);
-        writeSign(sign, ChatColor.GOLD + "COMMUNITY", ChatColor.YELLOW + "FARM CHEST",
-                ChatColor.WHITE + "Donate loot", ChatColor.GRAY + "→ stack goal");
-        // wing signs
-        Block hs = w.getBlockAt(hx - 6, hy + 1, hz);
-        hs.setType(Material.OAK_SIGN, false);
-        writeSign(hs, ChatColor.RED + "HOSTILE", ChatColor.WHITE + "WING ← WEST",
-                ChatColor.GRAY + "/mobfarm pick", ChatColor.DARK_GRAY + "pay unlock");
-        Block as = w.getBlockAt(hx + 6, hy + 1, hz);
-        as.setType(Material.OAK_SIGN, false);
-        writeSign(as, ChatColor.GREEN + "ANIMAL", ChatColor.WHITE + "WING → EAST",
-                ChatColor.GRAY + "/mobfarm pick", ChatColor.DARK_GRAY + "pay unlock");
 
         // generate every mob's datapack from its pristine Java layout (bays cleared again;
         // only the packs + hub remain - /mobfarm build <mob> applies packs from here on)
@@ -866,6 +920,26 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     }
 
     void markBuilt() { data.set("built", true); saveData(); }
+
+    /** Loads every chunk in the farm AABB (datapack functions fail silently in
+     *  unloaded chunks - the /mobfarm buildhub setblock lines need them all loaded). */
+    void loadFarmChunks(World w) {
+        if (center == null || w == null) return;
+        if (!aabbReady) recomputeAABB();
+        for (int x = minX; x <= maxX; x += 16)
+            for (int z = minZ; z <= maxZ; z += 16) {
+                try { w.getChunkAt(x >> 4, z >> 4).load(); } catch (Throwable ignored) {}
+            }
+    }
+
+    /** Re-pairs the hub double chest + sign (setblock cannot carry chest pairing/sign text). */
+    void patchHub(World w, int hx, int hy, int hz) {
+        placeDoubleChest(w, hx, hy, hz + 4, BlockFace.NORTH);
+        Block sign = w.getBlockAt(hx, hy + 1, hz + 4);
+        if (sign.getType() != Material.OAK_SIGN) sign.setType(Material.OAK_SIGN, false);
+        writeSign(sign, ChatColor.GOLD + "COMMUNITY", ChatColor.YELLOW + "FARM CHEST",
+                ChatColor.WHITE + "Donate loot", ChatColor.GRAY + "→ stack goal");
+    }
 
     /** 2.7.0: every mob has its own hand-built layout (BayGeometry). */
     private void buildBay(MobDef m) {
@@ -1744,9 +1818,10 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            List<String> base = new ArrayList<>(List.of("enter", "leave", "hub", "status", "buy", "extend", "pick", "prices", "info"));
+            List<String> base = new ArrayList<>(List.of("enter", "current", "leave", "hub", "status", "buy", "extend", "pick", "prices", "info"));
             if (sender.hasPermission("mavomobfarm.admin"))
-                base.addAll(List.of("tp", "setcenter", "build", "rebuild", "clear", "clearhere", "purge", "reload", "resholo"));
+                base.addAll(List.of("tp", "setcenter", "build", "rebuild", "savehub", "buildhub",
+                        "clear", "clearhere", "purge", "reload", "resholo"));
             String pfx = args[0].toLowerCase(Locale.ROOT);
             base.removeIf(s -> !s.startsWith(pfx));
             // /mobfarm <mob> save: offer mob ids too

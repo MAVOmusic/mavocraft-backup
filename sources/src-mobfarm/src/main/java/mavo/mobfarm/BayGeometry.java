@@ -22,7 +22,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * MAVOMobFarm 2.7.0 - every one of the 36 mobs gets a HAND-BUILT layout with a different
+ * MAVOMobFarm 2.7.2 - every one of the 36 mobs gets a HAND-BUILT layout with a different
  * structure (sunken crypt, pyramid, igloo, tower, cage, vault, obelisk, courtyard, basin,
  * caldera, maze, court, dome, tank, fortress, bastion + 14 unique animal pens).
  *
@@ -479,7 +479,7 @@ final class BayGeometry {
     }
 
     /** Restores m.pit/stand/killPad/cell/... from the pack's state.txt (relative -> absolute). */
-    private static boolean loadState(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
+    static boolean loadState(MobFarm f, MobDef m, World w, int cx, int cy, int cz) {
         File zf = packFile(w, m.id);
         try (java.util.zip.ZipFile z = new java.util.zip.ZipFile(zf)) {
             java.util.zip.ZipEntry e = z.getEntry("state.txt");
@@ -634,6 +634,106 @@ final class BayGeometry {
         user.msg(ChatColor.GRAY + "Copy that zip to your PC to keep this version. "
                 + "/mobfarm build " + m.id + " loads it back into the world.");
     }
+
+    /* ------------------------------------------------ hub + footpath datapack (2.7.2) */
+
+    static File hubPackFile(World w) {
+        return new File(packDir(w), "hub-datapack.zip");
+    }
+
+    static boolean hasHubPack(World w) {
+        File f = hubPackFile(w);
+        return f.isFile() && f.length() > 0;
+    }
+
+    /** True when (x,z) falls inside any bay's clear box (those blocks belong to the
+     *  per-mob zips; the hub pack must never duplicate or clear them). */
+    private static boolean inBayBox(List<int[]> bays, int x, int z) {
+        for (int[] b : bays)
+            if (x >= b[0] && x <= b[1] && z >= b[2] && z <= b[3]) return true;
+        return false;
+    }
+
+    /** /mobfarm savehub: snapshots the ENTIRE farm footprint (hub platform + every
+     *  footpath you built) MINUS the 36 bay boxes into world/datapacks/hub-datapack.zip.
+     *  build.mcfunction = setblock lines ONLY (no clear - it must never wipe a bay). */
+    static boolean writeHubPack(MobFarm f, World w, int minX, int maxX, int minZ, int maxZ,
+                                int minY, int maxY, List<int[]> bays) {
+        try {
+            for (int x = minX; x <= maxX; x += 16)
+                for (int z = minZ; z <= maxZ; z += 16) {
+                    try { w.getChunkAt(x >> 4, z >> 4).load(); } catch (Throwable ignored) {}
+                }
+            List<String> out = new ArrayList<>();
+            for (int x = minX; x <= maxX; x++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    if (inBayBox(bays, x, z)) continue;
+                    for (int y = minY; y <= maxY; y++) {
+                        Block bl = w.getBlockAt(x, y, z);
+                        Material t = bl.getType();
+                        if (t == Material.AIR || t == Material.CAVE_AIR || t == Material.VOID_AIR) continue;
+                        out.add("setblock " + bl.getX() + " " + bl.getY() + " " + bl.getZ()
+                                + " " + bl.getBlockData().getAsString());
+                    }
+                }
+            }
+            File zf = hubPackFile(w);
+            File tmp = new File(zf.getParentFile(), zf.getName() + ".tmp");
+            try (ZipOutputStream zo = new ZipOutputStream(new FileOutputStream(tmp))) {
+                zo.putNextEntry(new ZipEntry("pack.mcmeta"));
+                zo.write(("{\"pack\":{\"pack_format\":81,\"description\":\"MAVOMobFarm hub + footpaths\"}}")
+                        .getBytes(StandardCharsets.UTF_8));
+                zo.closeEntry();
+                zo.putNextEntry(new ZipEntry("data/mavomobfarm/function/hub/build.mcfunction"));
+                for (String line : out) {
+                    zo.write(line.getBytes(StandardCharsets.UTF_8));
+                    zo.write('\n');
+                }
+                zo.closeEntry();
+            }
+            if (zf.exists() && !zf.delete())
+                throw new java.io.IOException("cannot replace " + zf.getAbsolutePath());
+            if (!tmp.renameTo(zf))
+                throw new java.io.IOException("cannot rename to " + zf.getAbsolutePath());
+            if (!zf.isFile() || zf.length() == 0)
+                throw new java.io.IOException("hub zip missing/empty after write");
+            f.getLogger().info("MAVOMobFarm: wrote " + zf.getAbsolutePath() + " (" + out.size() + " blocks)");
+            return true;
+        } catch (Throwable t) {
+            f.getLogger().warning("MAVOMobFarm: writeHubPack FAILED: " + t);
+            return false;
+        }
+    }
+
+    /** /mobfarm buildhub: applies the saved hub+paths zip (needs a restart after savehub
+     *  so the pack is discovered), re-pairs the hub chest/sign, and verifies. */
+    static void buildHub(MobFarm f, PlayerRef user) {
+        if (f.center == null) { user.msg(ChatColor.RED + "Set center first."); return; }
+        World w = f.center.getWorld();
+        if (!hasHubPack(w)) {
+            user.msg(ChatColor.RED + "No hub-datapack.zip yet. /mobfarm savehub writes it first.");
+            return;
+        }
+        int hx = f.center.getBlockX(), hy = f.center.getBlockY(), hz = f.center.getBlockZ();
+        runConsole(f, "datapack disable \"file/hub-datapack\"");
+        runConsole(f, "datapack enable \"file/hub-datapack\"");
+        // the hub function covers the WHOLE farm footprint: load every chunk in the AABB
+        f.loadFarmChunks(w);
+        runConsole(f, "function mavomobfarm:hub/build");
+        f.patchHub(w, hx, hy, hz);
+        boolean ok = w.getBlockAt(hx, hy, hz + 4).getType() == Material.CHEST
+                && w.getBlockAt(hx + 1, hy, hz + 4).getType() == Material.CHEST
+                && w.getBlockAt(hx, hy - 1, hz).getType() == Material.SEA_LANTERN;
+        if (ok) {
+            f.markBuilt();
+            user.msg(ChatColor.GREEN + "Hub + footpaths restored from "
+                    + hubPackFile(w).getAbsolutePath());
+        } else {
+            user.msg(ChatColor.RED + "Apply FAILED: hub-datapack.zip is not loaded on this server"
+                    + " (restart once, then run /mobfarm buildhub again).");
+        }
+    }
+
     /** Simple sender wrapper so BayGeometry can message players / console without a Bukkit dep. */
     interface PlayerRef {
         void msg(String s);
