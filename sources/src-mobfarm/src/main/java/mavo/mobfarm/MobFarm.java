@@ -533,6 +533,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
                 setZonesDisabled(p, args.length > 1 ? args[1] : null, false);
             }
+            case "order" -> showBuildOrder(p);
             default -> p.sendMessage(ChatColor.RED + "Unknown. /mobfarm");
         }
         return true;
@@ -578,6 +579,40 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         admin.sendMessage((dis ? ChatColor.RED + "" + ChatColor.BOLD + "Disabled " : ChatColor.GREEN + "" + ChatColor.BOLD + "Enabled ")
                 + ChatColor.YELLOW + n + ChatColor.GRAY + " zone(s) - "
                 + (dis ? "hidden from /mobfarm pick until /mobfarm enable <mob>." : "icon is back in /mobfarm pick."));
+    }
+
+    /** 2.7.7: /mobfarm order - the bay build sequence (row by row, along the line)
+     *  with per-bay built/disabled status. Same order as CW2 in the Discord pack. */
+    private void showBuildOrder(Player p) {
+        List<MobDef> host = new ArrayList<>(), anim = new ArrayList<>();
+        for (MobDef m : mobs.values()) (m.wing.equalsIgnoreCase("hostile") ? host : anim).add(m);
+        // layout order: rows nearest the hub first (z asc), then along the line (x asc)
+        host.sort((a, b) -> a.oz != b.oz ? a.oz - b.oz : a.ox - b.ox);
+        anim.sort((a, b) -> a.oz != b.oz ? a.oz - b.oz : a.ox - b.ox);
+        p.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "=== MobFarm build order ===");
+        p.sendMessage(ChatColor.GRAY + "Rows go outward from the hub; build a full row, then the next.");
+        printOrder(p, "HOSTILE (west)", host);
+        printOrder(p, "ANIMALS (east)", anim);
+        p.sendMessage(ChatColor.GRAY + "[built] bay pack exists · [disabled] hidden from /mobfarm pick -"
+                + " enable with /mobfarm enable <mob> when built.");
+    }
+
+    private void printOrder(Player p, String title, List<MobDef> list) {
+        p.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + title + ":");
+        int row = 0, prevZ = Integer.MIN_VALUE;
+        for (MobDef m : list) {
+            if (m.oz != prevZ) { row++; prevZ = m.oz; p.sendMessage(ChatColor.DARK_GRAY + "  Row " + row + " (z " + m.oz + "):"); }
+            String st = disableStatus(m);
+            p.sendMessage(ChatColor.GRAY + "    " + ChatColor.WHITE + m.id
+                    + ChatColor.GRAY + " (" + m.ox + "," + m.oz + ") " + st);
+        }
+    }
+
+    private String disableStatus(MobDef m) {
+        boolean dis = disabled.contains(m.id);
+        boolean built = m.built;
+        return (built ? ChatColor.GREEN + "[built]" : ChatColor.YELLOW + "[not built]")
+                + (dis ? ChatColor.RED + " [DISABLED]" : "");
     }
 
     private MobDef findMob(String id) {

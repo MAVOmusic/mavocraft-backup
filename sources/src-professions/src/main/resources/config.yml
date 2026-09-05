@@ -234,8 +234,8 @@ professions:
     display: "&6♠ Gambler"
     action: "bets placed at Louie's"
     icon: GOLD_NUGGET
-    xp-base: 5
-    xp-growth: 1.008
+    xp-base: 30
+    xp-growth: 1.012
     max-level: 1000
     coin-bonus: 0.0
     enchant-pool: [unbreaking]

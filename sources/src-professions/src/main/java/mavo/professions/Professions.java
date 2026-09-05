@@ -234,9 +234,24 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             changed = true;
             getLogger().info("3.15.3: added the sleep section to plugins/MAVOProfessions/config.yml.");
         }
+        // 3.15.4: Gambler rebalance - sleep was handing out +1/+2 EXP per rest and the
+        // old curve (xp-base 5, growth 1.008) meant 5 nights = a free Gambler level.
+        // Bump the curve on disk so it takes real betting to level (early game 6x harder).
+        double gBase = disk.getDouble("professions.gambler.xp-base", 0);
+        double gGrow = disk.getDouble("professions.gambler.xp-growth", 0);
+        if (gBase > 0 && gBase < 30) {
+            disk.set("professions.gambler.xp-base", 30);
+            changed = true;
+            getLogger().info("3.15.4: Gambler rebalanced - xp-base " + gBase + " -> 30 (was too easy from sleep rests).");
+        }
+        if (gGrow > 0 && gGrow < 1.012) {
+            disk.set("professions.gambler.xp-growth", 1.012);
+            changed = true;
+            getLogger().info("3.15.4: Gambler rebalanced - xp-growth " + gGrow + " -> 1.012.");
+        }
         if (changed) {
             try { disk.save(new File(getDataFolder(), "config.yml")); }
-            catch (Exception ex) { getLogger().severe("3.15.3: could not save config.yml: " + ex.getMessage()); }
+            catch (Exception ex) { getLogger().severe("3.15.4: could not save config.yml: " + ex.getMessage()); }
         }
         reloadConfig();
     }
@@ -777,6 +792,8 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         lore.add(ChatColor.GRAY + "Place it - that bed becomes YOUR Sleeper bed.");
         lore.add(ChatColor.GRAY + "Right-click it at night to rest: no respawn point,");
         lore.add(ChatColor.GRAY + "no home - sleep only (+2 rested in SURVIVAL).");
+        lore.add(ChatColor.RED + "NOT sellable / cannot be auctioned. Breaking the bed");
+        lore.add(ChatColor.RED + "drops it back as this bound bed - place it to re-bind.");
         lore.add(ChatColor.YELLOW + "Lost it? Click Sleeper in /profession for a new one.");
         meta.setLore(lore);
         meta.getPersistentDataContainer().set(lockKey, PersistentDataType.BYTE, (byte) 1);
@@ -1601,6 +1618,11 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         return false;
     }
 
+    /** 3.15.4: a broken bound Sleeper bed must NEVER drop as a normal (sellable) bed
+     *  - that let players farm infinite 56-coin beds via /profession replacements.
+     *  Suppress the vanilla drop and drop the BOUND bed item instead (keeps owner PDC,
+     *  cannot be auctioned - AH blocks proflock - and cannot be re-issued for free
+     *  while the player still holds one). Placing it again re-binds the new location. */
     @EventHandler
     public void onBreakBoundBed(BlockBreakEvent e) {
         UUID u = e.getPlayer().getUniqueId();
@@ -1608,10 +1630,50 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         if (bound == null) return;
         for (Block part : bedParts(e.getBlock()))
             if (part.getLocation().equals(bound)) {
+                e.setDropItems(false);
+                ItemStack bed = buildSleeperBed(e.getPlayer());
+                e.getBlock().getWorld().dropItemNaturally(e.getBlock().getLocation().add(0.5, 0.5, 0.5), bed);
                 clearBoundBed(u);
-                e.getPlayer().sendMessage(C + "7Your Sleeper bed was broken - click " + C + "eSleeper"
-                        + C + "7 in " + C + "e/profession" + C + "7 for a new bound bed (or " + C + "e/sleeper bind" + C + "7 another bed).");
+                e.getPlayer().sendMessage(C + "7Your Sleeper bed broke - it dropped as your " + C + "d" + C + "lSleeper Bed"
+                        + C + "7 (bound, not sellable). Pick it up and place it again, or click "
+                        + C + "eSleeper" + C + "7 in " + C + "e/profession" + C + "7 if you lost it.");
             }
+    }
+
+    /** 3.15.4: explosions must not shred the bound bed into a normal bed either. */
+    @EventHandler
+    public void onExplodeBoundBed(org.bukkit.event.block.BlockExplodeEvent e) {
+        protectBoundBedsFromExplosion(e.blockList());
+    }
+
+    @EventHandler
+    public void onExplodeBoundBedEntity(org.bukkit.event.entity.EntityExplodeEvent e) {
+        protectBoundBedsFromExplosion(e.blockList());
+    }
+
+    private void protectBoundBedsFromExplosion(List<Block> blocks) {
+        // remove any player's bound bed from the explosion list = the bed survives intact
+        blocks.removeIf(b -> {
+            if (!b.getType().name().contains("BED")) return false;
+            Location loc = b.getLocation();
+            for (UUID u : boundBedOwners()) {
+                Location bound = boundBed(u);
+                if (bound != null && (bound.equals(loc) || bedParts(b).stream().anyMatch(p -> p.getLocation().equals(bound))))
+                    return true;
+            }
+            return false;
+        });
+    }
+
+    /** cheap owner scan: every UUID that currently has a bound bed recorded
+     *  (bed.<uuid>.world in data.yml - set by setBoundBed). */
+    private java.util.Set<UUID> boundBedOwners() {
+        java.util.Set<UUID> out = new java.util.HashSet<>();
+        ConfigurationSection bs = data.getConfigurationSection("bed");
+        if (bs == null) return out;
+        for (String uid : bs.getKeys(false))
+            try { out.add(UUID.fromString(uid)); } catch (Exception ignored) {}
+        return out;
     }
 
     // ---------- tavern rest ----------

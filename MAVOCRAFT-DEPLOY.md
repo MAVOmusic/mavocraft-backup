@@ -1,4 +1,4 @@
-# MAVOcraft — UPDATE GUIDE (2026-09-05: MobFarm 2.7.6 zone enable/disable + Events 1.2.1 siege night window + Professions 3.15.3 Sleeper fix — MobFarm 2.7.5/DeathChest 1.2.0/Guide 2.8.3 stay)
+# MAVOcraft — UPDATE GUIDE (2026-09-05: MobFarm 2.7.7 build order + Professions 3.15.4 Gambler rebalance + Sleeper bed anti-exploit — 2.7.6/1.2.1/3.15.3 also in this batch if not deployed yet)
 
 Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
@@ -17,9 +17,9 @@ Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
 ## 2. DELETE these files from plugins/ (jars only)
 
-    MAVOMobFarm-2.7.5.jar         <- replace with 2.7.6 (2.7.4 too if still there)
-    MAVOEvents-1.2.0.jar          <- replace with 1.2.1
-    MAVOProfessions-3.15.2.jar    <- replace with 3.15.3 (3.15.1/3.15.0 too if still there)
+    MAVOMobFarm-2.7.6.jar         <- replace with 2.7.7 (2.7.5/2.7.4 too if still there)
+    MAVOEvents-1.2.0.jar          <- replace with 1.2.1 (if not yet)
+    MAVOProfessions-3.15.3.jar    <- replace with 3.15.4 (3.15.2/3.15.1/3.15.0 too if still there)
     MAVODeathChest-1.1.1.jar      <- replace with 1.2.0
     MAVOGuide-2.8.2.jar           <- already replaced with 2.8.3 (keep 2.8.3)
     (2.6.x / older MobFarm jars if still there)
@@ -28,21 +28,22 @@ AuctionHouse 1.0.3 / Mobile plug-ins unchanged.
 
 ## 3. UPLOAD these jars into plugins/
 
-    MAVOMobFarm-2.7.6.jar       (2.7.5 + zone disable/enable: /mobfarm disable <mob|all> hides a
-                                  zone from /mobfarm pick until /mobfarm enable <mob>; pick auto-opens
-                                  on /mobfarm enter; clicking your ACTIVE zone = free return (no rebuy))
+    MAVOMobFarm-2.7.7.jar       (2.7.6 + /mobfarm order - prints the bay build sequence row by row
+                                  with built/disabled status for each; all 2.7.6 zone features inside)
     MAVOEvents-1.2.1.jar        (Zombie Siege = night only: never starts before 18:30, auto-ends at
                                   sunrise 06:00; /event start zombiesiege blocked in daytime)
-    MAVOProfessions-3.15.3.jar  (Sleeper fix: migration now reads the raw config file - the jar defaults
-                                  were hiding the missing sleeper section, that is why it stayed at 9;
-                                  /sleeper debug prints what is on disk vs loaded)
+    MAVOProfessions-3.15.4.jar  (Gambler rebalanced: xp-base 5->30 + growth 1.008->1.012 (sleep rests
+                                  no longer = free Gambler levels); Sleeper bed NEVER drops as a normal
+                                  sellable bed - breaking it drops the BOUND bed, explosions preserve it)
     MAVODeathChest-1.2.0.jar    (keep - already uploaded)
     MAVOGuide-2.8.3.jar         (keep - already uploaded)
 
 ## 4. KEEP all configs / data
 
-- plugins/MAVOProfessions/config.yml + data.yml: KEEP (3.15.3 now reads the RAW file so it
-  REALLY adds/repairs the sleeper section; your 9 professions + levels are untouched).
+- plugins/MAVOProfessions/config.yml + data.yml: KEEP (jar rewrites the gambler curve + sleep keys
+  itself; professions + levels untouched).
+- plugins/EconomyShopGUI - find the RED_BED sell price and set it to 1 (defence in depth for the
+  Sleeper bed; it is in one of the shops/*.yml files with a `sell:` key - same files the AH scans).
 - plugins/MAVOEvents/config.yml: KEEP (siege window is built-in, no config keys needed).
 - plugins/MAVODeathChest/config.yml + data.yml: KEEP (costs are migrated to level-scaled
   1000/10 bases automatically; your graves are untouched).
