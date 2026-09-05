@@ -550,7 +550,7 @@ public final class ChestShops extends JavaPlugin implements Listener {
         if (survival) {
             int tax = Math.max(0, Math.min(100, getConfig().getInt("tax-percent", 0)));
             long pay = tax > 0 ? (long) Math.floor(cost * (100 - tax) / 100.0) : cost;
-            econ.depositPlayer(sh.owner, pay);
+            econ.depositPlayer(Bukkit.getOfflinePlayer(sh.owner), pay);
         }
         p.sendMessage(G + "Bought " + Y + amount + "x " + AQ + nice(sh.item) + G + " for "
                 + Y + fmt(cost) + "c" + G + " from " + AQ + sh.id + G + " (" + ownerName(sh.owner) + ").");
