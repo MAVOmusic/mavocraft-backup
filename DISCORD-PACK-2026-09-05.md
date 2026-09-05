@@ -490,7 +490,46 @@ TAB shows: rank | name | Lv + % | coords | day | deaths.
 
 ---
 
-## 4. 10 RECOMMENDED NEW FEATURES — paste into `🛠┃current-work`
+## 4. CURRENT WORK — paste into `🛠┃current-work`
+
+```
+■ CURRENT WORK 1 — GAMBLER + SLEEPER BED EXPLOIT (IN PROGRESS)
+Problem:
+- Sleep gives +1/+2 profession points to EVERY active profession,
+  including Gambler. Gambler needs only 5 XP per level (xp-base 5,
+  growth 1.008) = 5 nights of sleep = free Gambler level. Way too easy.
+- Sleeper bed exploit: place bound bed -> break it -> it drops as a
+  NORMAL bed (sellable, ~56 coins). /profession gives another bound bed,
+  place, break, sell... infinite coins.
+Fix (in the build):
+- Gambler rebalanced: xp-base 5 -> 30, xp-growth 1.008 -> 1.012
+  (sleep still gives points, but 30 nights = L2 - betting is the real path)
+- Sleeper bed NEVER drops as a normal bed again: breaking it drops the
+  BOUND bed item (pick it up, place again = rebinds).
+- Bound beds are explosion-proof (TNT can't dupe them either).
+- Bed shop sell price: RED_BED set to 1 in the EconomyShopGUI sell config
+  (defence in depth - we'll give the exact file).
+```
+
+```
+■ CURRENT WORK 2 — MOB FARM BUILD ORDER (READY)
+Build in this exact order - bays are 30 blocks apart along the line.
+Same row = connect them, then move to the next row.
+HOSTILE WING (west, x -80 -> -200, rows z -40 -> -160):
+  Row 1 (z -40):   zombie -> husk -> skeleton -> stray -> hoglin
+  Row 2 (z -80):   spider -> cave_spider -> creeper -> enderman -> piglin
+  Row 3 (z -120):  blaze -> magma_cube -> slime -> wither_skeleton -> silverfish
+  Row 4 (z -160):  drowned -> guardian -> witch -> pillager -> phantom
+ANIMAL WING (east, x +80 -> +170, rows z -40 -> -160):
+  Row 1 (z -40):   cow -> pig -> chicken -> sheep
+  Row 2 (z -80):   rabbit -> villager -> iron_golem -> squid
+  Row 3 (z -120):  glow_squid -> bee -> fox -> goat
+  Row 4 (z -160):  llama -> panda -> frog -> sniffer
+New command: /mobfarm order - prints this list live with each bay's
+built/disabled status, so you always know what's next.
+```
+
+■ CURRENT WORK 3 — THE 10 IDEAS (all approved, queued in this order)
 
 ```
 1. PLAYER WARPS (/warp)
@@ -502,87 +541,7 @@ Players buy a warp slot and share their base.
 Why: wild spawns + 5-400k range means bases are far apart; warps = community.
 ```
 
-```
-2. CHEST SHOPS AT SPAWN MARKET
-Player-run shops, not just the admin shop.
-- /shop create price per stack + count; sign or chest GUI
-- Economy shop sells real prices; chest shops = player economy
-- Rent a market stall (coins/LC), 15x15 district
-Why: villager-first economy + auction house exist; chest shops complete the loop.
-```
-
-```
-3. WEEKLY BOSS RAID
-One scheduled boss every weekend, server-wide.
-- /boss - next raid time + join queue
-- Spawns at a random arena zone, scaled HP per participants
-- Loot: coins, LC, gear crates, trophy item
-Why: events are timer-based mini bonuses; a big co-op set-piece is missing.
-```
-
-```
-4. CUSTOM CRATES + KEYS
-Reward chests from events/goals/quests.
-- /crate <name> - vanity pools (common/rare/mythic)
-- Keys from: daily quests, casino, community goal tiers, boss
-- Crates can hold coins, LC, gear, vanities, pet skins
-Why: gives quests/goals/events a physical payout + a coin sink.
-```
-
-```
-5. DOUBLE XP WEEKENDS (SCHEDULED)
-Schedule XP/coin multipliers server-side.
-- /xpboost - next boosted time (config: Fri 18:00 - Sun 18:00)
-- Applies to professions, achievements, quests
-- TAB/bossbar shows remaining time
-Why: keeps grind fresh, rewards weekend players, easy config.
-```
-
-```
-6. AUCTION QUICK-BUY + BID TIMERS
-Auction House QoL.
-- Buy Now price + auto-extend on last-second bids
-- Snipe protection + minimum raise %, delivery by mail
-- Weekly featured auction (admin puts up a prize) - big community moment
-Why: AH exists; timers make it a real marketplace + social event.
-```
-
-```
-7. PET ABILITIES (PET 2.0)
-Pets become optional helpers, not just cosmetics.
-- Passive only, tiny: Pet carries 1 stack (1 slot), Pet picks up XP orbs
-- Pet levels with you; no combat/damage
-- Abilities toggleable; one active pet
-Why: pets = coin sink already; abilities make them worth having.
-```
-
-```
-8. FISHING TOURNAMENT
-Weekly leaderboard event.
-- /fishcomp - leaderboard + when it ends
-- Counts fish caught (any rod), pays top 3 + participation coin
-- Auto-runs weekends, randomized 2h window
-Why: fishing exists only as profession/event bonus; a competitive mode is cheap to add.
-```
-
-```
-9. MAIL SYSTEM
-Items/coins between players without being online.
-- /mail send <player> [coins] [item]
-- /mail - read + claim; delivery box, 7-day expiry
-Why: AH + trades need an item handoff; mail solves it and helps the community chest.
-```
-
-```
-10. SEASONAL / THEMED EVENTS CALENDAR
-Rotating content so the server never feels static.
-- Halloween: pumpkin siege, candy drops
-- Christmas: gift hunt, snowball arena
-- Anniversary: double everything + cosmetics
-- Config-driven: each season = event set + shop stock + lobbies
-Why: real-server stickiness; reuses existing event/goal/crate systems.
-```
-
+---
 ---
 
 *Generated 2026-09-05 from the live repo (MAVOcraft 26.2, 39 MAVO/Bukkit plugins).*
