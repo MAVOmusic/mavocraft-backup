@@ -1,0 +1,16 @@
+name: MAVOChestShops
+version: 1.0.0
+main: mavo.chestshop.ChestShops
+api-version: '1.13'
+description: "Player-run chest shops - set a chest, price it, the server buys it (MAVOcraft)"
+author: MAVO
+softdepend: [Vault]
+commands:
+  cshop:
+    description: "Chest shops: create/rent/price/remove/list/info"
+    usage: /cshop <create <price>|rent <price>|price <coins>|remove|list|info>
+    aliases: [market, cshops]
+permissions:
+  mavochestshop.admin:
+    description: Admin chest-shop management (tp/delete/reload)
+    default: op

@@ -1,0 +1,27 @@
+# MAVOChestShops - player-run chest shops
+# How it works:
+#   1. Put the item(s) you want to sell in a chest.
+#   2. /cshop create <price>   (looking at the chest, within 5 blocks)
+#   3. Everyone right-clicks the chest -> buy GUI. Left = buy 1, shift = buy 64.
+#   4. You refill the chest (sneak + right-click = your storage), /cshop price to change.
+
+max-shops-per-player: 3      # shops per player
+tax-percent: 0               # seller commission (0 = off). 5 = seller keeps 95%
+
+# Market district: when require-market is true, shops may ONLY be created inside
+# these regions (build the market, add its box here - matches the spawn market idea).
+require-market: false
+market-regions:
+  # - world: world
+  #   minX: -2600  maxX: -2500
+  #   minY: 198    maxY: 210
+  #   minZ: -1720  maxZ: -1620
+
+# Rentable market stalls (empty = feature off).
+# A stall chest = one chest position. /cshop rent <item-price> at the chest pays
+# the one-time stall price and auto-creates the shop there.
+stalls:
+  # - id: market-1
+  #   world: world
+  #   chest: [ -2550, 200, -1690 ]
+  #   price: 50000

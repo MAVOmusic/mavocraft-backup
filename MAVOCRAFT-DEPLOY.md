@@ -15,7 +15,7 @@ Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
 ## 1. STOP the server (full stop, no /reload)
 
-## 2. DELETE these files from plugins/ (jars only) - DELETE NOTHING FOR MAVOWarps (new)
+## 2. DELETE these files from plugins/ (jars only) - DELETE NOTHING FOR MAVOWarps / MAVOChestShops (both new)
 
     MAVOMobFarm-2.7.6.jar         <- replace with 2.7.7 (2.7.5/2.7.4 too if still there)
     MAVOEvents-1.2.0.jar          <- replace with 1.2.1 (if not yet)
@@ -39,6 +39,9 @@ AuctionHouse 1.0.3 / Mobile plug-ins unchanged.
     MAVOGuide-2.8.3.jar         (keep - already uploaded)
     MAVOWarps-1.0.0.jar         (NEW - public player warps: /warp create = 25k coins, /warps list,
                                   /warp <name> teleports with 3s safety; 50k/100k for 2nd/3rd slot)
+    MAVOChestShops-1.0.0.jar    (NEW - player chest shops: items in chest -> /cshop create <price>,
+                                  right-click to buy (1 or 64), sneak+click = owner storage;
+                                  /cshop price|remove|list|info; optional market regions + /cshop rent)
 
 ## 4. KEEP all configs / data
 
