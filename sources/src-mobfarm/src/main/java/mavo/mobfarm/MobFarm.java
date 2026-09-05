@@ -480,6 +480,8 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                             + BayGeometry.hubPackFile(w).getAbsolutePath());
                     p.sendMessage(ChatColor.GRAY + "The 36 bay boxes are NOT included (each bay has"
                             + " its own zip). Copy the hub zip to your PC like the bay zips.");
+                    p.sendMessage(ChatColor.GRAY + "/mobfarm buildhub applies it directly now -"
+                            + " no server restart needed.");
                 } else {
                     p.sendMessage(ChatColor.RED + "Hub save FAILED (see server log).");
                 }

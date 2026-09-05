@@ -22,7 +22,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * MAVOMobFarm 2.7.4 - every one of the 36 mobs gets a HAND-BUILT layout with a different
+ * MAVOMobFarm 2.7.5 - every one of the 36 mobs gets a HAND-BUILT layout with a different
  * structure (sunken crypt, pyramid, igloo, tower, cage, vault, obelisk, courtyard, basin,
  * caldera, maze, court, dome, tank, fortress, bastion + 14 unique animal pens).
  *
@@ -388,9 +388,58 @@ final class BayGeometry {
         return new File(packDir(w), id + "-datapack.zip");
     }
 
-    private static void runConsole(MobFarm f, String cmd) {
-        try { f.getServer().dispatchCommand(f.getServer().getConsoleSender(), cmd); }
-        catch (Throwable ignored) {}
+    /**
+     * Applies a setblock-only pack function DIRECTLY in Java (no live datapack
+     * registration needed). Pack files placed while the server is running are only
+     * scanned at STARTUP, so the old datapack-command path could fail with
+     * "Unknown data pack" even though the zip sits in the datapacks folder - exactly
+     * what happened to /mobfarm buildhub on Paper 26.2. Both the hub zip and every
+     * bay zip carry pure "setblock x y z <state>" lines, so applying them here is
+     * byte-identical to running the function. Returns blocks applied, or -1 on error.
+     */
+    private static int applyPackFunction(MobFarm f, World w, File zf, String entry) {
+        if (zf == null || !zf.isFile()) return -1;
+        try (java.util.zip.ZipFile z = new java.util.zip.ZipFile(zf)) {
+            ZipEntry e = z.getEntry(entry);
+            if (e == null) {
+                f.getLogger().warning("MAVOMobFarm: " + zf.getName() + " has no " + entry);
+                return -1;
+            }
+            int applied = 0;
+            try (BufferedReader r = new BufferedReader(new java.io.InputStreamReader(
+                    z.getInputStream(e), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = r.readLine()) != null) {
+                    line = line.trim();
+                    if (line.isEmpty() || line.startsWith("#")) continue;
+                    String[] p = line.split(" ");
+                    if (p.length < 5 || !"setblock".equals(p[0])) continue;
+                    int x, y, zz;
+                    try {
+                        x = Integer.parseInt(p[1]); y = Integer.parseInt(p[2]); zz = Integer.parseInt(p[3]);
+                    } catch (NumberFormatException ignore) { continue; }
+                    StringBuilder state = new StringBuilder(p[4]);
+                    for (int i = 5; i < p.length; i++) state.append(' ').append(p[i]);
+                    try {
+                        w.getBlockAt(x, y, zz).setBlockData(
+                                Bukkit.createBlockData(state.toString()), false);
+                        applied++;
+                    } catch (Exception ignore) { }
+                }
+            }
+            return applied;
+        } catch (Throwable t) {
+            f.getLogger().warning("MAVOMobFarm: apply " + entry + " FAILED: " + t);
+            return -1;
+        }
+    }
+
+    /** Same fill the pack's clear function does (bay box -> air), via Java. */
+    private static void clearBayBox(World w, int cx, int cy, int cz) {
+        for (int x = -12; x <= 12; x++)
+            for (int z = -12; z <= 10; z++)
+                for (int y = -10; y <= 16; y++)
+                    air(w, cx + x, cy + y, cz + z);
     }
 
     private static void loadBayChunks(World w, int cx, int cy, int cz) {
@@ -538,9 +587,10 @@ final class BayGeometry {
                 && w.getBlockAt(cx - 1, cy + 1, cz + 3).getType() == Material.CHEST;
     }
 
-    /** Replaces the bay in the world by the pack's build function + patch, then VERIFIES.
+    /** Replaces the bay in the world by the pack's build lines + patch, then VERIFIES.
      *  Geometry state (pit/cell/stand...) is restored from the pack's state.txt; the
-     *  FINAL blocks are whatever the pack's build function sets (user saves win). */
+     *  FINAL blocks are whatever the pack's build lines set (user saves win). The
+     *  build lines are applied in Java - no live datapack registration required. */
     private static boolean applyPack(MobFarm f, MobDef m) {
         if (f.center == null) return false;
         World w = f.center.getWorld();
@@ -548,13 +598,14 @@ final class BayGeometry {
         int cx = o.getBlockX(), cy = o.getBlockY(), cz = o.getBlockZ();
         if (!loadState(f, m, w, cx, cy, cz)) {
             // pre-2.7.1 pack without state.txt: derive state via one Java build (result is
-            // still fully overwritten by the pack function below; leaves state correct)
+            // still fully overwritten by the pack build lines below; leaves state correct)
             build(f, m);
         }
-        runConsole(f, "datapack disable \"file/" + m.id + "-datapack\"");
-        runConsole(f, "datapack enable \"file/" + m.id + "-datapack\"");
+        clearBayBox(w, cx, cy, cz);
         loadBayChunks(w, cx, cy, cz);
-        runConsole(f, "function mavomobfarm:" + m.id + "/build");
+        int applied = applyPackFunction(f, w, packFile(w, m.id),
+                "data/mavomobfarm/function/" + m.id + "/build.mcfunction");
+        if (applied < 0) return false;
         patch(f, m, w, cx, cy, cz);
         return verifyBuilt(w, cx, cy, cz, m);
     }
@@ -599,28 +650,23 @@ final class BayGeometry {
                 user.msg(ChatColor.GREEN + "Built " + ChatColor.stripColor(m.display) + " bay from "
                         + zf.getAbsolutePath() + ".");
             } else {
-                user.msg(ChatColor.YELLOW + "Zip written: " + zf.getAbsolutePath()
-                        + " - the server only scans datapacks at STARTUP, so this one is not loaded yet."
-                        + " Restart once, then run /mobfarm build " + m.id + " to apply it.");
+                user.msg(ChatColor.RED + "Zip written: " + zf.getAbsolutePath()
+                        + " but applying it FAILED (pack read/verify error - see server log).");
             }
             return;
         }
-        // pack exists on disk: delete every block the old pack built (its clear function)
-        loadBayChunks(w, cx, cy, cz);
-        runConsole(f, "function mavomobfarm:" + m.id + "/clear");
-        user.msg(ChatColor.YELLOW + "Cleared " + m.id + " bay. Waiting 5s, then reloading "
+        // pack exists on disk: rebuild from the zip directly (Java apply - no datapack
+        // reload, no restart, old build is cleared inside applyPack)
+        user.msg(ChatColor.YELLOW + "Clearing " + m.id + " bay and applying "
                 + m.id + "-datapack.zip...");
-        Bukkit.getScheduler().runTaskLater(f, () -> {
-            if (applyPack(f, m)) {
-                f.markBuilt();
-                user.msg(ChatColor.GREEN + "Rebuilt " + ChatColor.stripColor(m.display) + " bay via "
-                        + m.id + "-datapack.zip.");
-            } else {
-                user.msg(ChatColor.RED + "Apply FAILED for " + m.id + ": " + m.id + "-datapack.zip is not"
-                        + " loaded/enabled on this server (console shows 'Unknown data pack')."
-                        + " Restart once, then retry /mobfarm build " + m.id + ".");
-            }
-        }, 100L);
+        if (applyPack(f, m)) {
+            f.markBuilt();
+            user.msg(ChatColor.GREEN + "Rebuilt " + ChatColor.stripColor(m.display) + " bay via "
+                    + m.id + "-datapack.zip.");
+        } else {
+            user.msg(ChatColor.RED + "Apply FAILED for " + m.id + " - pack read/verify error "
+                    + "(see server log).");
+        }
     }
 
     /** /mobfarm <mob> save: snapshot the bay EXACTLY as it stands in the world - the
@@ -644,7 +690,7 @@ final class BayGeometry {
                 + "/mobfarm build " + m.id + " loads it back into the world.");
     }
 
-    /* ------------------------------------------------ hub + footpath datapack (2.7.4) */
+    /* ------------------------------------------------ hub + footpath datapack (2.7.5) */
 
     static File hubPackFile(World w) {
         return new File(packDir(w), "hub-datapack.zip");
@@ -714,8 +760,10 @@ final class BayGeometry {
         }
     }
 
-    /** /mobfarm buildhub: applies the saved hub+paths zip (needs a restart after savehub
-     *  so the pack is discovered), re-pairs the hub chest/sign, and verifies. */
+    /** /mobfarm buildhub: applies the saved hub+paths zip DIRECTLY in Java (no live
+     *  datapack registration, no restart needed after savehub - the server only scans
+     *  the datapacks folder at STARTUP, which is why the old function path failed with
+     *  "Unknown data pack 'file/hub-datapack'"), re-pairs the hub chest/sign, verifies. */
     static void buildHub(MobFarm f, PlayerRef user) {
         if (f.center == null) { user.msg(ChatColor.RED + "Set center first."); return; }
         World w = f.center.getWorld();
@@ -724,11 +772,15 @@ final class BayGeometry {
             return;
         }
         int hx = f.center.getBlockX(), hy = f.center.getBlockY(), hz = f.center.getBlockZ();
-        runConsole(f, "datapack disable \"file/hub-datapack\"");
-        runConsole(f, "datapack enable \"file/hub-datapack\"");
-        // the hub function covers the WHOLE farm footprint: load every chunk in the AABB
+        // the hub pack covers the WHOLE farm footprint: load every chunk in the AABB
         f.loadFarmChunks(w);
-        runConsole(f, "function mavomobfarm:hub/build");
+        int applied = applyPackFunction(f, w, hubPackFile(w),
+                "data/mavomobfarm/function/hub/build.mcfunction");
+        if (applied < 0) {
+            user.msg(ChatColor.RED + "Apply FAILED: hub-datapack.zip could not be read "
+                    + "(see server log).");
+            return;
+        }
         f.patchHub(w, hx, hy, hz);
         boolean ok = w.getBlockAt(hx, hy, hz + 4).getType() == Material.CHEST
                 && w.getBlockAt(hx + 1, hy, hz + 4).getType() == Material.CHEST
@@ -736,10 +788,10 @@ final class BayGeometry {
         if (ok) {
             f.markBuilt();
             user.msg(ChatColor.GREEN + "Hub + footpaths restored from "
-                    + hubPackFile(w).getAbsolutePath());
+                    + hubPackFile(w).getAbsolutePath() + " (" + applied + " blocks).");
         } else {
-            user.msg(ChatColor.RED + "Apply FAILED: hub-datapack.zip is not loaded on this server"
-                    + " (restart once, then run /mobfarm buildhub again).");
+            user.msg(ChatColor.RED + "Apply FAILED: hub verify failed - signature blocks missing "
+                    + "(restore the hub pack from an older save or re-run /mobfarm savehub).");
         }
     }
 

@@ -1,11 +1,14 @@
-# MAVOcraft — UPDATE GUIDE (2026-09-05: SLEEP PACK — Professions 3.15.0 / DeathChest 1.2.0 / Guide 2.8.1)
+# MAVOcraft — UPDATE GUIDE (2026-09-05: MobFarm 2.7.5 hub fix + SLEEP PACK — Professions 3.15.0 / DeathChest 1.2.0 / Guide 2.8.1)
 
 Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
 ## 0. READ THIS FIRST (mobfarm saves + sleep pack setup)
 
-- MobFarm 2.7.4 stays as-is. The MobFarm jar NEVER contains your footpath: `/mobfarm savehub`
-  MUST have been run before any `/mobfarm purge`/`clear`, and hub + bay zips copied to your PC.
+- MobFarm 2.7.5 fixes buildhub/"Unknown data pack": the hub + bay zips are now applied
+  DIRECTLY in Java, so `/mobfarm buildhub` and `/mobfarm build <mob>` work right after
+  savehub with NO server restart. The MobFarm jar NEVER contains your footpath:
+  `/mobfarm savehub` MUST have been run before any `/mobfarm purge`/`clear`, and hub +
+  bay zips copied to your PC.
 - The Sleep pack adds the 10th profession (Sleeper), the 18:30 night vote and level-scaled
   grave costs. It needs ONE admin setup command after boot (`/sleeper tavernset`) and the
   LuckPerms group `sleeper` (only if you want the L100 rank group; command below).
@@ -14,20 +17,21 @@ Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
 ## 2. DELETE these files from plugins/ (jars only)
 
+    MAVOMobFarm-2.7.4.jar         <- replace with 2.7.5
     MAVOProfessions-3.14.2.jar    <- replace with 3.15.0
     MAVODeathChest-1.1.1.jar      <- replace with 1.2.0
     MAVOGuide-2.8.0.jar           <- replace with 2.8.1
-    MAVOMobFarm-2.7.3.jar         <- replace with 2.7.4 (if not already done)
     (2.6.x / older MobFarm jars if still there)
 
 AuctionHouse 1.0.3 / Mobile plug-ins unchanged.
 
 ## 3. UPLOAD these jars into plugins/
 
+    MAVOMobFarm-2.7.5.jar       (buildhub/build <mob> apply zips directly - no restart,
+                                  no "Unknown data pack"; keeps saved zips, protects farm +50)
     MAVOProfessions-3.15.0.jar  (Sleeper profession + night vote + bound bed + rest bonuses)
     MAVODeathChest-1.2.0.jar    (/grave costs scale with Player Level: 1000/10 at Lv1, x2 per level)
     MAVOGuide-2.8.1.jar         (professions/tavern/deathchest pages updated, new Sleep page)
-    MAVOMobFarm-2.7.4.jar       (if not already done - keeps saved zips, protects farm +50)
 
 ## 4. KEEP all configs / data
 
@@ -69,13 +73,13 @@ Check the file panel: world/datapacks/ must show hub-datapack.zip + zombie-datap
 
 ## 7. Optional: full reset, ONLY after step 6 (zips are safe on disk + your PC)
 
-    /restart                            <- restart so the hub zip is discovered
     /mobfarm purge
     /mobfarm clear                      <- wipes hub + paths + bays in the WORLD
     /mobfarm setcenter                  (x2 - once per range, as before)
-    /restart
-    /mobfarm buildhub                   <- restores hub + walls + footpaths from the zip
-    /mobfarm build zombie               <- restores the zombie bay from its zip
+    /mobfarm buildhub                   <- restores hub + walls + footpaths DIRECTLY from the
+                                           zip (no restart needed - applied in Java, no
+                                           "Unknown data pack" possible)
+    /mobfarm build zombie               <- restores the zombie bay from its zip (same, no restart)
     /mobfarm build husk                 <- then each other bay you have completed
 
 Do NOT run /mobfarm build (no arg) here: it only writes MISSING packs (existing ones are
@@ -93,7 +97,8 @@ the pristine plugin layouts again: /mobfarm build force (this OVERWRITES saved b
     /mobfarm savehub            <- re-save hub+paths (bay boxes excluded). It covers the whole
                                    farm area + 50 blocks around, so paths past the farm edge
                                    are captured too. Copy the printed path to your PC.
-    /mobfarm buildhub           <- restore hub+paths from the zip (after a restart any time)
+    /mobfarm buildhub           <- restore hub+paths from the zip - applies it directly now
+                                   (no server restart needed, works right after savehub)
 
 ## 10. Go back to your mob zone
 
