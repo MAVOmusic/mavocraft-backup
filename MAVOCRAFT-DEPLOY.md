@@ -1,4 +1,4 @@
-# MAVOcraft — UPDATE GUIDE (2026-09-05: MobFarm 2.7.5 hub fix + SLEEP PACK — Professions 3.15.0 / DeathChest 1.2.0 / Guide 2.8.1)
+# MAVOcraft — UPDATE GUIDE (2026-09-05: MobFarm 2.7.5 hub fix + SLEEP PACK — Professions 3.15.1 / DeathChest 1.2.0 / Guide 2.8.2)
 
 Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
@@ -18,9 +18,9 @@ Plain steps. Only replace/delete files named here. Never delete plugin folders.
 ## 2. DELETE these files from plugins/ (jars only)
 
     MAVOMobFarm-2.7.4.jar         <- replace with 2.7.5
-    MAVOProfessions-3.14.2.jar    <- replace with 3.15.0
+    MAVOProfessions-3.15.0.jar    <- replace with 3.15.1
     MAVODeathChest-1.1.1.jar      <- replace with 1.2.0
-    MAVOGuide-2.8.0.jar           <- replace with 2.8.1
+    MAVOGuide-2.8.1.jar           <- replace with 2.8.2
     (2.6.x / older MobFarm jars if still there)
 
 AuctionHouse 1.0.3 / Mobile plug-ins unchanged.
@@ -29,9 +29,10 @@ AuctionHouse 1.0.3 / Mobile plug-ins unchanged.
 
     MAVOMobFarm-2.7.5.jar       (buildhub/build <mob> apply zips directly - no restart,
                                   no "Unknown data pack"; keeps saved zips, protects farm +50)
-    MAVOProfessions-3.15.0.jar  (Sleeper profession + night vote + bound bed + rest bonuses)
+    MAVOProfessions-3.15.1.jar  (Sleeper profession + bound Sleeper Bed + night vote + rest bonuses;
+                                  adds Sleeper to an existing config automatically)
     MAVODeathChest-1.2.0.jar    (/grave costs scale with Player Level: 1000/10 at Lv1, x2 per level)
-    MAVOGuide-2.8.1.jar         (professions/tavern/deathchest pages updated, new Sleep page)
+    MAVOGuide-2.8.2.jar         (professions/tavern/deathchest pages updated, new Sleep page)
 
 ## 4. KEEP all configs / data
 
@@ -44,7 +45,7 @@ AuctionHouse 1.0.3 / Mobile plug-ins unchanged.
 
 ## 5. START the server
 
-Boot log: "MAVOProfessions v3.15 enabled: 10 professions..." and NO warnings.
+Boot log: "MAVOProfessions v3.15.1 enabled: 10 professions..." and NO warnings.
 Your world still contains the hub, footpath and zombie bay exactly as they are.
 
 ## 5b. SLEEP PACK - one-time admin setup
@@ -55,9 +56,11 @@ Your world still contains the hub, footpath and zombie bay exactly as they are.
                                  (per-profession config commands run at L100 automatically;
                                  default "lp user %player% parent add sleeper")
 
-Then a quick test at night (or /time set night 18000 on a test account):
+Then a quick test at night (or /time set night 18000 on a test account, SURVIVAL mode so XP counts):
+- /profession -> 10 icons including Sleeper. Start it: you get the BOUND SLEEPER BED.
+- Place the bed, right-click it at night -> +1 Sleeper XP, +2 profession points (no respawn/home).
+- Tavern bed right-click (100 coins) at night -> "+1 profession point to N active profession(s)".
 - 5+ players online at 18:30 -> "Sleep time!" broadcast; type `!sleep yes` / `!sleep no`.
-- /sleeper bind whilst looking at a bed -> right-click it (sleep only, no respawn/home).
 - /grave -> costs should show 1000 coins / 10 LC at Player Level 1.
 
 ## 6. SAVE YOUR WORK FIRST (most important step)

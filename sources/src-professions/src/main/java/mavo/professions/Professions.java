@@ -144,6 +144,7 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             try { luckyGive = lc.getClass().getMethod("giveCoins", Player.class, int.class); }
             catch (Exception ex) { getLogger().warning("MAVOLuckyCoins API not found: " + ex.getMessage()); }
         }
+        migrateCfg();
         loadCfg();
         getServer().getPluginManager().registerEvents(this, this);
         if (getCommand("profession") != null) getCommand("profession").setTabCompleter(this);
@@ -161,7 +162,8 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             new ProfExpansion(this).register();
             getLogger().info("PlaceholderAPI expansion registered (%mavoprof_...%).");
         }
-        getLogger().info("MAVOProfessions v3.15 enabled: " + profs.size() + " professions"
+        getLogger().info("MAVOProfessions v" + getDescription().getVersion() + " enabled: "
+                + profs.size() + " professions"
                 + (tavernBed != null ? ", tavern rest hooked at " + tavernBed.getWorld().getName()
                 + " " + tavernBed.getBlockX() + " " + tavernBed.getBlockY() + " " + tavernBed.getBlockZ() : ""));
     }
@@ -175,6 +177,46 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
 
     private Enchantment ench(String key) {
         return Registry.ENCHANTMENT.get(NamespacedKey.minecraft(key.toLowerCase(Locale.ROOT)));
+    }
+
+    /** 3.15.1: an existing 3.14.x config.yml has no Sleeper profession and no sleep
+     *  section (saveDefaultConfig never overwrites an existing file) - write them so
+     *  the 10th profession + vote actually load on the user's live server. */
+    private void migrateCfg() {
+        boolean changed = false;
+        ConfigurationSection profSection = getConfig().getConfigurationSection("professions");
+        if (profSection == null || !profSection.contains("sleeper")) {
+            getConfig().set("professions.sleeper.display", "&d😴 Sleeper");
+            getConfig().set("professions.sleeper.action", "nights rested");
+            getConfig().set("professions.sleeper.icon", "RED_BED");
+            getConfig().set("professions.sleeper.no-tool", true);
+            getConfig().set("professions.sleeper.sleeper", true);
+            getConfig().set("professions.sleeper.xp-per-level", 50);
+            getConfig().set("professions.sleeper.xp-base", 1);
+            getConfig().set("professions.sleeper.xp-growth", 1.0);
+            getConfig().set("professions.sleeper.max-level", 100);
+            getConfig().set("professions.sleeper.coin-bonus", 0.0);
+            getConfig().set("professions.sleeper.enchant-pool", new ArrayList<>());
+            getConfig().set("professions.sleeper.rank-commands.100",
+                    Arrays.asList("lp user %player% parent add sleeper"));
+            changed = true;
+            getLogger().info("3.15.1: added the Sleeper profession to plugins/MAVOProfessions/config.yml.");
+        }
+        ConfigurationSection sleepSec = getConfig().getConfigurationSection("sleep");
+        if (sleepSec == null || !sleepSec.contains("vote-open-tick")) {
+            if (!getConfig().contains("sleep.vote-open-tick")) getConfig().set("sleep.vote-open-tick", 12500);
+            if (!getConfig().contains("sleep.vote-close-tick")) getConfig().set("sleep.vote-close-tick", 13500);
+            if (!getConfig().contains("sleep.vote-min-online")) getConfig().set("sleep.vote-min-online", 5);
+            if (!getConfig().contains("sleep.vote-turnout")) getConfig().set("sleep.vote-turnout", 0.75);
+            if (!getConfig().contains("sleep.skip-to-tick")) getConfig().set("sleep.skip-to-tick", 6000);
+            if (!getConfig().contains("sleep.world")) getConfig().set("sleep.world", "world");
+            if (!getConfig().contains("sleep.tavern-bed")) getConfig().set("sleep.tavern-bed", "");
+            if (!getConfig().contains("sleep.tavern-rest-sleeper-xp")) getConfig().set("sleep.tavern-rest-sleeper-xp", true);
+            if (!getConfig().contains("sleep.rest-bonus-includes-sleeper")) getConfig().set("sleep.rest-bonus-includes-sleeper", false);
+            changed = true;
+            getLogger().info("3.15.1: added the sleep section to plugins/MAVOProfessions/config.yml.");
+        }
+        if (changed) saveConfig();
     }
 
     private void loadCfg() {
@@ -622,6 +664,8 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlaceBound(BlockPlaceEvent e) {
         if (!isLocked(e.getItemInHand())) return;
+        // the Sleeper's bound bed MUST be placeable - placing it binds the bed
+        if (isSleeperBedItem(e.getItemInHand())) return;
         Material hand = e.getItemInHand().getType();
         if (!hand.isBlock()) return; // tools/items can never be "placed" - the event is a use
         e.setCancelled(true);
@@ -651,9 +695,53 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent e) {
+        // Sleeper's bound bed: placing it BINDS that bed as the player's Sleeper bed.
+        if (isSleeperBedItem(e.getItemInHand())) {
+            Player pl = e.getPlayer();
+            Block b = e.getBlockPlaced();
+            setBoundBed(pl.getUniqueId(), b.getLocation());
+            pl.sendMessage(ChatColor.DARK_AQUA + "Sleeper Bed bound at " + ChatColor.AQUA
+                    + b.getX() + " " + b.getY() + " " + b.getZ() + ChatColor.GRAY
+                    + " - right-click it at night to rest (no respawn/home).");
+            pl.playSound(pl.getLocation(), Sound.BLOCK_ANVIL_USE, 1f, 1.2f);
+            return;
+        }
         Material pm = e.getBlockPlaced().getType();
         if (Tag.SAPLINGS.isTagged(pm) || CROPS.contains(pm)) return;
         markPlaced(e.getBlockPlaced());
+    }
+
+    // ---------- bound Sleeper bed item ----------
+    private boolean isSleeperBedItem(ItemStack it) {
+        if (it == null || !it.hasItemMeta()) return false;
+        var pdc = it.getItemMeta().getPersistentDataContainer();
+        return pdc.has(lockKey, PersistentDataType.BYTE)
+                && "sleeper:main".equals(pdc.get(toolKey, PersistentDataType.STRING));
+    }
+
+    private boolean hasSleeperBed(Player pl) {
+        for (int i = 0; i < pl.getInventory().getSize(); i++)
+            if (isSleeperBedItem(pl.getInventory().getItem(i))) return true;
+        return false;
+    }
+
+    private ItemStack buildSleeperBed(Player pl) {
+        ItemStack it = new ItemStack(Material.RED_BED);
+        ItemMeta meta = it.getItemMeta();
+        meta.setDisplayName(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "Sleeper Bed");
+        List<String> lore = new ArrayList<>();
+        lore.add(ChatColor.DARK_GRAY + "MAVOcraft Profession Item");
+        lore.add(ChatColor.GRAY + "Bound to " + ChatColor.AQUA + pl.getName());
+        lore.add(ChatColor.GRAY + "Place it - that bed becomes YOUR Sleeper bed.");
+        lore.add(ChatColor.GRAY + "Right-click it at night to rest: no respawn point,");
+        lore.add(ChatColor.GRAY + "no home - sleep only (+2 rested in SURVIVAL).");
+        lore.add(ChatColor.YELLOW + "Lost it? Click Sleeper in /profession for a new one.");
+        meta.setLore(lore);
+        meta.getPersistentDataContainer().set(lockKey, PersistentDataType.BYTE, (byte) 1);
+        meta.getPersistentDataContainer().set(toolKey, PersistentDataType.STRING, "sleeper:main");
+        meta.getPersistentDataContainer().set(ownerKey, PersistentDataType.STRING, pl.getUniqueId().toString());
+        it.setItemMeta(meta);
+        return it;
     }
 
     // growth creates NEW natural blocks - clear any stale marks at those positions
@@ -866,8 +954,16 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
                 lore.add(ChatColor.GRAY + "Not started yet. XP from: " + ChatColor.WHITE + p.action);
                 lore.add("");
                 if (p.noTool) {
-                    lore.add(ChatColor.GRAY + "No tools - earn XP by sleeping in a bed at night.");
-                    lore.add(ChatColor.GRAY + "Vote skips do NOT count as a successful sleep.");
+                    if (p.sleeper) {
+                        lore.add(ChatColor.GRAY + "Free bound item: " + ChatColor.WHITE + "Sleeper Bed (RED_BED).");
+                        lore.add(ChatColor.GRAY + "Place it - that bed becomes YOURS. Right-click it at night");
+                        lore.add(ChatColor.GRAY + "to rest: no respawn point, no home - sleep only (+2 rested).");
+                        lore.add(ChatColor.GRAY + "Vote skips do NOT count as a successful sleep.");
+                        lore.add(ChatColor.GRAY + "Lost it? Click Sleeper again for a replacement.");
+                    } else {
+                        lore.add(ChatColor.GRAY + "No tools - earn XP by sleeping in a bed at night.");
+                        lore.add(ChatColor.GRAY + "Vote skips do NOT count as a successful sleep.");
+                    }
                     if (p.sleeper) {
                         lore.add("");
                         lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "THE ROAD AHEAD");
@@ -1010,7 +1106,7 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         Prof p = profs.get(profId);
         if (p == null) return;
 
-        // -------- start profession: hand out all bound starter tools --------
+        // -------- start profession: hand out all bound starter tools / the Sleeper bed --------
         if (!started(u, profId)) {
             if (!p.noTool) {
                 int free = 0;
@@ -1025,13 +1121,25 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
                     pl.getInventory().addItem(buildTool(pl, p, b, 0, base));
                     saveEnchState(u, profId, b.id, base);
                 }
+            } else if (p.sleeper) {
+                if (pl.getInventory().firstEmpty() == -1) {
+                    pl.sendMessage(ChatColor.RED + "Free up 1 inventory slot for your bound Sleeper Bed!");
+                    pl.playSound(pl.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+                    return;
+                }
+                pl.getInventory().addItem(buildSleeperBed(pl));
             }
             set(u, profId, "started", true);
             set(u, profId, "level", 1);
             set(u, profId, "xp", 0);
             set(u, profId, "pending", false);
             pl.playSound(pl.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
-            if (p.noTool) {
+            if (p.noTool && p.sleeper) {
+                pl.sendMessage(p.display + ChatColor.GREEN + " started! " + ChatColor.GRAY
+                        + "You got your bound Sleeper Bed - place it, then right-click it at night."
+                        + " Vote skips don't count.");
+                applySleeperHealth(pl);
+            } else if (p.noTool) {
                 pl.sendMessage(p.display + ChatColor.GREEN + " started! " + ChatColor.GRAY
                         + "Sleep in a bed at night to earn XP - vote skips don't count.");
                 applySleeperHealth(pl);
@@ -1043,20 +1151,33 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             return;
         }
 
-        // -------- lost tool replacement --------
+        // -------- lost tool / bed replacement --------
         if (!pendingClaim(u, profId)) {
             boolean gave = false;
-            for (Branch b : p.branches.values()) {
-                if (findBoundSlot(pl, profId, b.id) != -1) continue;
-                if (pl.getInventory().firstEmpty() == -1) {
-                    pl.sendMessage(ChatColor.RED + "Free up an inventory slot first!");
-                    return;
+            if (p.noTool && p.sleeper) {
+                if (!hasSleeperBed(pl)) {
+                    if (pl.getInventory().firstEmpty() == -1) {
+                        pl.sendMessage(ChatColor.RED + "Free up an inventory slot first!");
+                        return;
+                    }
+                    pl.getInventory().addItem(buildSleeperBed(pl));
+                    gave = true;
                 }
-                pl.getInventory().addItem(buildTool(pl, p, b, level(u, profId), enchState(u, profId, b.id)));
-                gave = true;
+            } else {
+                for (Branch b : p.branches.values()) {
+                    if (findBoundSlot(pl, profId, b.id) != -1) continue;
+                    if (pl.getInventory().firstEmpty() == -1) {
+                        pl.sendMessage(ChatColor.RED + "Free up an inventory slot first!");
+                        return;
+                    }
+                    pl.getInventory().addItem(buildTool(pl, p, b, level(u, profId), enchState(u, profId, b.id)));
+                    gave = true;
+                }
             }
             if (gave) {
-                pl.sendMessage(p.display + ChatColor.YELLOW + " tool(s) replaced. Don't lose them!");
+                pl.sendMessage(p.display + ChatColor.YELLOW
+                        + (p.noTool && p.sleeper ? " Sleeper Bed replaced. Place it to bind it!"
+                        : " tool(s) replaced. Don't lose them!"));
                 pl.playSound(pl.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 0.8f);
                 openMenu(pl);
             }
@@ -1256,8 +1377,13 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
                 sleepXp(pl, xpDays);
                 if (isOwnBoundBed(pl, e.getValue().getBlock())) {
                     // bound-bed rest: +2 profession points to the other active professions
-                    restBonus(pl, 2);
-                    pl.sendMessage(C + "d" + "Sleeper bed rest: " + C + "a+2 profession points " + C + "7(rested).");
+                    int n = restBonus(pl, 2);
+                    if (pl.getGameMode() == org.bukkit.GameMode.SURVIVAL)
+                        pl.sendMessage(C + "d" + "Sleeper bed rest: " + C + "a+2 profession points "
+                                + C + "7to " + C + "a" + n + C + "7 active profession(s).");
+                    else
+                        pl.sendMessage(C + "d" + "Sleeper bed rest counted" + C + "7 - points only count in "
+                                + C + "aSURVIVAL" + C + "7.");
                 }
             }
         }
@@ -1279,6 +1405,7 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
     /** one successful sleep counts toward the Sleeper profession (once per day). */
     private void sleepXp(Player pl, long day) {
         UUID u = pl.getUniqueId();
+        if (pl.getGameMode() != org.bukkit.GameMode.SURVIVAL) return; // creative never counts
         if (lastSleepXpDay.getOrDefault(u, -1L) == day) return;
         Prof sp = sleeperProf();
         if (sp == null || !started(u, SLEEPER)) return;
@@ -1287,22 +1414,33 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         pl.playSound(pl.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 0.6f);
     }
 
-    /** tavern rest or bound-bed rest: +points XP to every OTHER active profession. */
-    private void restBonus(Player pl, int points) {
+    /** tavern rest or bound-bed rest: +points XP to every OTHER active profession.
+     *  Returns how many professions actually received XP (0 in creative). */
+    private int restBonus(Player pl, int points) {
+        if (pl.getGameMode() != org.bukkit.GameMode.SURVIVAL) return 0; // creative never counts
+        int n = 0;
         for (Map.Entry<String, Prof> e : profs.entrySet()) {
             Prof other = e.getValue();
             if (other.noTool && !restBonusIncludesSleeper) continue; // Sleeper has its own sleep XP
             if (!started(pl.getUniqueId(), other.id) || level(pl.getUniqueId(), other.id) >= other.maxLevel) continue;
             addXp(pl, other.id, points);
+            n++;
         }
+        return n;
     }
 
     private void tavernRestAward(Player pl, long day) {
         UUID u = pl.getUniqueId();
         if (lastTavernDay.getOrDefault(u, -1L) == day) return;
         lastTavernDay.put(u, day);
-        restBonus(pl, 1);
-        pl.sendMessage(C + "6Tavern rest: " + C + "a+1 profession point " + C + "7to every active profession (rested).");
+        if (pl.getGameMode() != org.bukkit.GameMode.SURVIVAL) {
+            pl.sendMessage(C + "6Tavern rest counted" + C + "7 - but profession points / Sleeper XP only"
+                    + C + "7 count in " + C + "aSURVIVAL" + C + "7 (see /prof).");
+            return;
+        }
+        int n = restBonus(pl, 1);
+        pl.sendMessage(C + "6Tavern rest: " + C + "a+1 profession point " + C + "7to "
+                + C + "a" + n + C + "7 active profession(s) (rested).");
         if (tavernSleeperXp) sleepXp(pl, day);
         pl.playSound(pl.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.7f);
     }
@@ -1314,6 +1452,7 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         UUID u = pl.getUniqueId();
         if (programSleep.contains(u)) return; // our own API sleep() re-fire guard
         if (!e.getBed().getWorld().getName().equals(sleepWorldName)) return;
+        if (isTavernBedBlock(e.getBed())) return; // paid rest - MAVOTavern owns this bed
         if (!isOwnBoundBed(pl, e.getBed())) return;
         e.setCancelled(true); // sleep only - no respawn point, no home creation
         World w = e.getBed().getWorld();
@@ -1350,8 +1489,16 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
     public void onBedEnter(PlayerBedEnterEvent e) {
         if (e.isCancelled()) return;
         if (!e.getBed().getWorld().getName().equals(sleepWorldName)) return;
+        if (isTavernBedBlock(e.getBed())) return; // never count the paid tavern beds in OUR quorum
         sleepers.put(e.getPlayer().getUniqueId(), e.getBed().getLocation());
         checkAutoSkip(e.getBed().getWorld());
+    }
+
+    private boolean isTavernBedBlock(Block b) {
+        if (tavernBed == null || b == null) return false;
+        for (Block part : bedParts(b))
+            if (part.getLocation().equals(tavernBed)) return true;
+        return false;
     }
 
     @EventHandler
@@ -1420,7 +1567,8 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         for (Block part : bedParts(e.getBlock()))
             if (part.getLocation().equals(bound)) {
                 clearBoundBed(u);
-                e.getPlayer().sendMessage(C + "7Your Sleeper bed was broken - bind a new one with " + C + "e/sleeper bind" + C + "7.");
+                e.getPlayer().sendMessage(C + "7Your Sleeper bed was broken - click " + C + "eSleeper"
+                        + C + "7 in " + C + "e/profession" + C + "7 for a new bound bed (or " + C + "e/sleeper bind" + C + "7 another bed).");
             }
     }
 

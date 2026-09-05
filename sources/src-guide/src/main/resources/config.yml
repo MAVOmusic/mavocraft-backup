@@ -606,15 +606,16 @@ features:
     name: "&d&lSleeper"
     short: "Sleep your way to +hearts, Lucky Coins and rank"
     info:
-      - "&dThe 10th profession. &7Start it in &e/prof &7- no tools!"
-      - "&7Sleep in a bed at night = &b+1 Sleeper XP&7 (vote skips"
-      - "&7never count). Need: &f50 rests &7to L2, +50 more per level."
+      - "&dThe 10th profession. &7Start it in &e/prof &7- you get"
+      - "&7a &dBOUND SLEEPER BED&7 (like the other professions' tools):"
+      - "&7place it, then right-click it at night = &b+1 XP&7. Sleep only"
+      - "&7- &cNO &7respawn point, &cNO &7home - plus &a+2 profession points&7."
+      - "&7(Vote skips never count.) Need: &f50 rests &7to L2, +50 more each."
       - "&7Every &d10 levels&7: &a+1 extra heart &7and &6+100 Lucky Coins&7."
       - "&7Cap &dL100&7: the &dSLEEPER RANK&7 (LuckPerms group)."
       - ""
-      - "&e/sleeper bind &7- bind a bed you're looking at: right-click"
-      - "&7it to rest with &cNO &7respawn point / home set, and"
-      - "&7grant &a+2 profession points &7to your other professions."
+      - "&7Lost the bed? Click &dSleeper&7 in &e/prof&7 for a new one."
+      - "&e/sleeper bind &7- or bind any bed you're looking at."
       - "&e/sleeper &7- status | &e/sleeper vote yes|no"
 
   - id: goals
