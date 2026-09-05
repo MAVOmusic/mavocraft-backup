@@ -1,4 +1,4 @@
-## build log Fri Sep  4 20:57:25 UTC 2026
+## build log Sat Sep  5 05:19:56 UTC 2026
 == sources/src-achievements ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -26,8 +26,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.091 s
-[INFO] Finished at: 2026-09-04T20:57:28Z
+[INFO] Total time:  1.075 s
+[INFO] Finished at: 2026-09-05T05:19:58Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-auction ==
 [INFO] Scanning for projects...
@@ -56,8 +56,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.091 s
-[INFO] Finished at: 2026-09-04T20:57:30Z
+[INFO] Total time:  1.077 s
+[INFO] Finished at: 2026-09-05T05:20:00Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-casino ==
 [INFO] Scanning for projects...
@@ -86,8 +86,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.099 s
-[INFO] Finished at: 2026-09-04T20:57:32Z
+[INFO] Total time:  1.023 s
+[INFO] Finished at: 2026-09-05T05:20:03Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-curator ==
 [INFO] Scanning for projects...
@@ -116,14 +116,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.072 s
-[INFO] Finished at: 2026-09-04T20:57:34Z
+[INFO] Total time:  1.077 s
+[INFO] Finished at: 2026-09-05T05:20:05Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-deathchest ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] ------------------------< mavo:mavo-deathchest >------------------------
-[INFO] Building mavo-deathchest 1.1.1
+[INFO] Building mavo-deathchest 1.2.0
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -146,14 +146,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.087 s
-[INFO] Finished at: 2026-09-04T20:57:37Z
+[INFO] Total time:  1.090 s
+[INFO] Finished at: 2026-09-05T05:20:07Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-events ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] --------------------------< mavo:mavo-events >--------------------------
-[INFO] Building mavo-events 1.2.0
+[INFO] Building mavo-events 1.2.1
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -176,14 +176,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.065 s
-[INFO] Finished at: 2026-09-04T20:57:39Z
+[INFO] Total time:  1.075 s
+[INFO] Finished at: 2026-09-05T05:20:09Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-guide ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] --------------------------< mavo:mavo-guide >---------------------------
-[INFO] Building mavo-guide 2.8.0
+[INFO] Building mavo-guide 2.8.3
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -206,8 +206,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.052 s
-[INFO] Finished at: 2026-09-04T20:57:41Z
+[INFO] Total time:  1.060 s
+[INFO] Finished at: 2026-09-05T05:20:11Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-lucky ==
 [INFO] Scanning for projects...
@@ -236,14 +236,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.092 s
-[INFO] Finished at: 2026-09-04T20:57:43Z
+[INFO] Total time:  1.072 s
+[INFO] Finished at: 2026-09-05T05:20:14Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-mobfarm ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------------------< mavo:mavo-mobfarm >--------------------------
-[INFO] Building mavo-mobfarm 2.7.0
+[INFO] Building mavo-mobfarm 2.7.7
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -251,322 +251,29 @@
 [INFO] Copying 2 resources from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.13.0:compile (default-compile) @ mavo-mobfarm ---
-[INFO] Recompiling the module because of changed source code.
-[INFO] Compiling 2 source files with javac [debug release 21] to target/classes
-[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java: Some input files use or override a deprecated API.
-[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java: Recompile with -Xlint:deprecation for details.
-[INFO] -------------------------------------------------------------
-[WARNING] COMPILATION WARNING : 
-[INFO] -------------------------------------------------------------
-[WARNING] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/MobFarm.java:[1452,58] CHORUS_FRUIT in org.bukkit.event.player.PlayerTeleportEvent.TeleportCause has been deprecated and marked for removal
-[INFO] 1 warning
-[INFO] -------------------------------------------------------------
-[INFO] -------------------------------------------------------------
-[ERROR] COMPILATION ERROR : 
-[INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[110,34] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[126,35] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[139,33] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[265,43] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[317,42] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[378,46] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[407,40] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[413,47] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[419,41] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[439,37] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[468,34] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[519,44] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[534,42] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[558,45] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[574,43] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[591,46] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[607,43] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[627,52] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[643,46] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[662,44] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[686,48] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[703,45] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[723,46] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[742,43] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[759,43] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[773,47] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[786,48] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[806,45] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[822,46] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[846,43] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[864,47] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[883,44] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[906,44] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[932,41] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[944,41] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[954,45] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[964,43] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[972,44] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[985,46] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[996,47] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1008,41] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1020,41] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1031,42] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1043,43] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1057,43] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1072,42] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1084,45] cannot find symbol
-  symbol:   class MobDef
-  location: class mavo.mobfarm.BayGeometry
-[INFO] 47 errors 
-[INFO] -------------------------------------------------------------
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-mobfarm ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ mavo-mobfarm ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-mobfarm ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-mobfarm ---
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
+[INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.311 s
-[INFO] Finished at: 2026-09-04T20:57:47Z
+[INFO] Total time:  1.090 s
+[INFO] Finished at: 2026-09-05T05:20:16Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project mavo-mobfarm: Compilation failure: Compilation failure: 
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[110,34] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[126,35] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[139,33] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[265,43] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[317,42] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[378,46] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[407,40] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[413,47] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[419,41] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[439,37] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[468,34] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[519,44] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[534,42] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[558,45] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[574,43] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[591,46] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[607,43] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[627,52] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[643,46] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[662,44] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[686,48] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[703,45] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[723,46] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[742,43] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[759,43] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[773,47] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[786,48] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[806,45] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[822,46] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[846,43] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[864,47] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[883,44] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[906,44] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[932,41] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[944,41] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[954,45] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[964,43] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[972,44] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[985,46] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[996,47] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1008,41] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1020,41] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1031,42] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1043,43] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1057,43] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1072,42] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/main/java/mavo/mobfarm/BayGeometry.java:[1084,45] cannot find symbol
-[ERROR]   symbol:   class MobDef
-[ERROR]   location: class mavo.mobfarm.BayGeometry
-[ERROR] -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
 == sources/src-professions ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -----------------------< mavo:mavo-professions >------------------------
-[INFO] Building mavo-professions 3.14.2
+[INFO] Building mavo-professions 3.15.4
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -589,8 +296,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.088 s
-[INFO] Finished at: 2026-09-04T20:57:49Z
+[INFO] Total time:  1.078 s
+[INFO] Finished at: 2026-09-05T05:20:18Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-shopnpc ==
 [INFO] Scanning for projects...
@@ -619,8 +326,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.052 s
-[INFO] Finished at: 2026-09-04T20:57:51Z
+[INFO] Total time:  1.093 s
+[INFO] Finished at: 2026-09-05T05:20:21Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wanderer ==
 [INFO] Scanning for projects...
@@ -649,9 +356,38 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.055 s
-[INFO] Finished at: 2026-09-04T20:57:53Z
+[INFO] Total time:  1.052 s
+[INFO] Finished at: 2026-09-05T05:20:23Z
 [INFO] ------------------------------------------------------------------------
+== sources/src-warps ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< mavo:mavo-warps >---------------------------
+[INFO] Building mavo-warps 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] Artifact com.github.MilkBowl:VaultAPI:pom:1.7.1 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [papermc (https://repo.papermc.io/repository/maven-public/, default, releases+snapshots), central (https://repo.maven.apache.org/maven2, default, releases)]
+[INFO] Artifact com.github.MilkBowl:VaultAPI:pom:1.7.1 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [papermc (https://repo.papermc.io/repository/maven-public/, default, releases+snapshots), central (https://repo.maven.apache.org/maven2, default, releases)]
+[WARNING] The POM for com.github.MilkBowl:VaultAPI:jar:1.7.1 is missing, no dependency information available
+[INFO] Artifact com.github.MilkBowl:VaultAPI:jar:1.7.1 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [papermc (https://repo.papermc.io/repository/maven-public/, default, releases+snapshots), central (https://repo.maven.apache.org/maven2, default, releases)]
+[INFO] Artifact com.github.MilkBowl:VaultAPI:jar:1.7.1 is present in the local repository, but cached from a remote repository ID that is unavailable in current build context, verifying that is downloadable from [papermc (https://repo.papermc.io/repository/maven-public/, default, releases+snapshots), central (https://repo.maven.apache.org/maven2, default, releases)]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  0.484 s
+[INFO] Finished at: 2026-09-05T05:20:24Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal on project mavo-warps: Could not resolve dependencies for project mavo:mavo-warps:jar:1.0.0
+[ERROR] dependency: com.github.MilkBowl:VaultAPI:jar:1.7.1 (provided)
+[ERROR] 	com.github.MilkBowl:VaultAPI:jar:1.7.1 was not found in https://repo.papermc.io/repository/maven-public/ during a previous attempt. This failure was cached in the local repository and resolution is not reattempted until the update interval of papermc has elapsed or updates are forced
+[ERROR] 	com.github.MilkBowl:VaultAPI:jar:1.7.1 was not found in https://repo.maven.apache.org/maven2 during a previous attempt. This failure was cached in the local repository and resolution is not reattempted until the update interval of central has elapsed or updates are forced
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/DependencyResolutionException
 == sources/src-wild ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -679,6 +415,6 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.051 s
-[INFO] Finished at: 2026-09-04T20:57:56Z
+[INFO] Total time:  1.080 s
+[INFO] Finished at: 2026-09-05T05:20:27Z
 [INFO] ------------------------------------------------------------------------
