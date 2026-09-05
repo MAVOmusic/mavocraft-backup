@@ -31,7 +31,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-/** MAVOMobFarm 2.7.3 - every mob has its own hand-built structure (crypt/pyramid/igloo/tower/cage/vault/obelisk/court/basin/caldera/tank/fortress/bastion + 14 unique pens), its own datapack, and its own /mobfarm build <mob>. Loot chest exposed on the trench floor; kill method + positions shared. */
+/** MAVOMobFarm 2.7.4 - every mob has its own hand-built structure (crypt/pyramid/igloo/tower/cage/vault/obelisk/court/basin/caldera/tank/fortress/bastion + 14 unique pens), its own datapack, and its own /mobfarm build <mob>. Loot chest exposed on the trench floor; kill method + positions shared. */
 public final class MobFarm extends JavaPlugin implements Listener, TabCompleter {
 
     /**
@@ -145,7 +145,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 for (UUID u : end) endSession(u, true);
             }
         }.runTaskTimer(this, 40L, 40L);
-        getLogger().info("MAVOMobFarm 2.7.3 enabled. mobs=" + mobs.size()
+        getLogger().info("MAVOMobFarm 2.7.4 enabled. mobs=" + mobs.size()
                 + " center=" + (center == null ? "?" : center.getBlockX() + "," + center.getBlockZ())
                 + " ai=" + mobAiEnabled());
     }
@@ -350,7 +350,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         }
         String a = args[0].toLowerCase(Locale.ROOT);
         if (a.equals("info")) {
-            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.7.3 " + ChatColor.GRAY + "entry "
+            sender.sendMessage(ChatColor.GOLD + "MobFarm 2.7.4 " + ChatColor.GRAY + "entry "
                     + ChatColor.YELLOW + getConfig().getInt("entry-cost")
                     + ChatColor.GRAY + " · " + getConfig().getInt("session-minutes") + "m"
                     + ChatColor.GRAY + " · pick from " + ChatColor.GREEN + minPickCost()
@@ -411,15 +411,21 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             }
             case "build" -> {
                 if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
-                MobDef mb = args.length > 1 ? findMob(args[1]) : null;
-                if (args.length > 1 && mb == null) {
-                    p.sendMessage(ChatColor.RED + "Unknown mob '" + args[1] + "'. /mobfarm build <mob>");
+                // /mobfarm build [force|all] - force regenerates ALL bay zips from the
+                // plugin's pristine layouts (overwrites your saved edits!); default KEEPS
+                // every existing <mob>-datapack.zip so your saves are never lost.
+                boolean forceAll = args.length > 1 && (args[1].equalsIgnoreCase("force")
+                        || args[1].equalsIgnoreCase("all"));
+                MobDef mb = args.length > 1 && !forceAll ? findMob(args[1]) : null;
+                if (args.length > 1 && mb == null && !forceAll) {
+                    p.sendMessage(ChatColor.RED + "Unknown mob '" + args[1] + "'. /mobfarm build <mob>"
+                            + " (or /mobfarm build force to regenerate all packs)");
                     return true;
                 }
                 if (mb != null) {
                     BayGeometry.buildMob(this, mb, p::sendMessage);
                 } else {
-                    buildComplex(p);
+                    buildComplex(p, forceAll);
                 }
             }
             case "rebuild" -> {
@@ -432,7 +438,8 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 if (mr != null) {
                     BayGeometry.buildMob(this, mr, p::sendMessage);
                 } else {
-                    clearComplex(p); buildComplex(p);
+                    // safe: identical to /mobfarm build - existing bay + hub zips are kept
+                    buildComplex(p, false);
                 }
             }
             case "clear" -> {
@@ -464,7 +471,11 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                     bays.add(new int[]{o.getBlockX() - 12, o.getBlockX() + 12,
                             o.getBlockZ() - 12, o.getBlockZ() + 10});
                 }
-                if (BayGeometry.writeHubPack(this, w, minX, maxX, minZ, maxZ, minY, maxY, bays)) {
+                // cover the whole protected area (AABB + protect radius) so paths that
+                // run past the bays / around the farm edge are captured too
+                int r = protectRadius();
+                if (BayGeometry.writeHubPack(this, w, minX - r, maxX + r, minZ - r, maxZ + r,
+                        minY - 4, maxY + 8, bays)) {
                     p.sendMessage(ChatColor.GREEN + "Saved hub + footpaths -> "
                             + BayGeometry.hubPackFile(w).getAbsolutePath());
                     p.sendMessage(ChatColor.GRAY + "The 36 bay boxes are NOT included (each bay has"
@@ -847,11 +858,11 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         p.teleport(dest);
     }
 
-    // ---------------- build (2.7.3: packs + hub (unless saved); per-bay apply separate) ----------------
-    /** /mobfarm build (no arg): generate all 36 <id>-datapack.zip into world/datapacks/
-     *  AND build the hub/HUD platform ONLY. No per-bay build is applied (the packs are
-     *  picked up at the next server START, then /mobfarm build <mob> applies one bay). */
-    private void buildComplex(Player admin) {
+    // ---------------- build (2.7.4: keeps saved zips unless force; hub only if unsaved) ----------------
+    /** /mobfarm build (no arg): ensures all 36 <id>-datapack.zip (+ hub platform if none
+     *  saved). EXISTING per-mob zips are ALWAYS KEPT - your /mobfarm <mob> save edits are
+     *  never overwritten; /mobfarm build force regenerates them from the pristine layouts. */
+    private void buildComplex(Player admin, boolean forceAll) {
         if (center == null) { admin.sendMessage(ChatColor.RED + "Set center first."); return; }
         stopAllFarmActivity("build");
         World w = center.getWorld();
@@ -889,13 +900,15 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                     + " untouched (restore: /mobfarm buildhub after the restart).");
         }
 
-        // generate every mob's datapack from its pristine Java layout (bays cleared again;
-        // only the packs + hub remain - /mobfarm build <mob> applies packs from here on)
-        int n = 0;
+        // generate every mob's datapack from its pristine Java layout, UNLESS the zip
+        // already exists (a saved bay = your work; only /mobfarm build force regenerates
+        // all packs). First-run after the setup flow: all 36 are created.
+        int n = 0, kept = 0;
         List<String> bad = new ArrayList<>();
         for (MobDef m : mobs.values()) {
             computeGeom(m);
             try {
+                if (!forceAll && BayGeometry.wasBuilt(this, m)) { kept++; continue; }
                 if (BayGeometry.generatePack(this, m)) { m.built = true; n++; }
                 else bad.add(m.id);
             } catch (Throwable t) {
@@ -908,8 +921,11 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         data.set("built", false); saveData();
         spawnHubHolo(); refreshBayHolos();
         String dir = BayGeometry.packDir(w).getAbsolutePath();
-        admin.sendMessage(ChatColor.GREEN + "Hub built + " + n + "/" + mobs.size()
-                + " datapacks generated -> " + dir);
+        admin.sendMessage(ChatColor.GREEN + "Hub ready. " + n + " packs generated, " + kept
+                + " existing packs KEPT (your saved bays are safe) -> " + dir);
+        if (forceAll && kept > 0)
+            admin.sendMessage(ChatColor.YELLOW + "force: all packs were regenerated from the"
+                    + " plugin layouts - any /mobfarm <mob> save edits are overwritten!");
         admin.sendMessage(ChatColor.YELLOW + "The server scans datapacks at STARTUP only: "
                 + "restart once, then /mobfarm build <mob> builds each bay from its zip.");
         admin.sendMessage(ChatColor.GRAY + "TP: /tp @s " + hx + " " + (hy + 1) + " " + hz

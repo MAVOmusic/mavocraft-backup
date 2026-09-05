@@ -22,7 +22,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * MAVOMobFarm 2.7.3 - every one of the 36 mobs gets a HAND-BUILT layout with a different
+ * MAVOMobFarm 2.7.4 - every one of the 36 mobs gets a HAND-BUILT layout with a different
  * structure (sunken crypt, pyramid, igloo, tower, cage, vault, obelisk, courtyard, basin,
  * caldera, maze, court, dome, tank, fortress, bastion + 14 unique animal pens).
  *
@@ -644,7 +644,7 @@ final class BayGeometry {
                 + "/mobfarm build " + m.id + " loads it back into the world.");
     }
 
-    /* ------------------------------------------------ hub + footpath datapack (2.7.3) */
+    /* ------------------------------------------------ hub + footpath datapack (2.7.4) */
 
     static File hubPackFile(World w) {
         return new File(packDir(w), "hub-datapack.zip");
