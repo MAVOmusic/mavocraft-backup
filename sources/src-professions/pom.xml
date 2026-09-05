@@ -20,6 +20,6 @@
     <dependency><groupId>me.clip</groupId><artifactId>placeholderapi</artifactId><version>2.11.6</version><scope>provided</scope></dependency>
   </dependencies>
   <build>
-    <finalName>MAVOProfessions-3.15.1</finalName>
+    <finalName>MAVOProfessions-3.15.2</finalName>
   </build>
 </project>
