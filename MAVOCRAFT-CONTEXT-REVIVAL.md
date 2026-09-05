@@ -838,3 +838,11 @@ CI run 33814070963 SUCCESS. Commit chain: f6a14d7 (sources) -> 7a0c525 (ci: rebu
 - **Discord pack:** DISCORD-PACK-2026-09-05.md section 4 rewritten as "CURRENT WORK": CW1 (in progress), CW2 (ready - the two lists), CW3 = the 10 ideas queued. Pushed first (60442bf).
 - **CI:** 33946699042 SUCCESS on 70ec6ce -> f5b27c2. Jars: MAVOProfessions-3.15.4.jar 59,029 B / MAVOMobFarm-2.7.7.jar 86,754 B (root + jars/ identical). Verified versions + strings (3.15.4 gambler rebalance + NOT-sellable lore, MobFarm build-order output). Old 3.15.3/2.7.6 jars removed in finalize.
 - **Deploy:** STOP; delete MAVOMobFarm-2.7.6.jar + MAVOProfessions-3.15.3.jar (also 2.7.5/3.15.2 if still present); upload 2.7.7 + 3.15.4; keep configs/data (jar migrates gambler values + sleep keys itself). Boot: "3.15.4: Gambler rebalanced..." + "MAVOProfessions v3.15.4 enabled: 10 professions [...]". Test: /prof gambler page / gambler XP from a bet; place Sleeper bed -> break -> pickup keeps "Sleeper Bed" (not sellable); /mobfarm order shows both lists.
+
+## 2026-09-05 HOTFIX 24 — MAVOWarps 1.0.0 (CW#3 idea 1: public player warps)
+- **What:** NEW plugin. Players buy a warp slot (25,000 first / 50,000 second / 100,000 third - extra-warp-costs list, empty = capped) and register a public warp at their base; the whole server can /warp <name> or browse /warps (GUI, paginated, owner + coords + visits, click to teleport).
+- **Safety (matches homes/portals):** 3s stand-still title countdown, move cancels, monsters within 12 blocks block it (no escaping fights), 30s personal cooldown, destination chunk loads + safe-air fallback (up to 4 above, else highest block).
+- **Commands:** /warp (info+slots), /warp <name>, /warps, /warp create <name>, /warp remove <name>, /warp rename <old> <new>, /warp info <name>; admin /warp delete <name> + /warp tp <name> (console works). Names: 3-20 chars [a-z0-9_-]. Survival pays, creative free (admin testing).
+- **Data:** plugins/MAVOWarps/data.yml (warps.<name> + visits). Config: costs/warmup/monster-radius/cooldown/max-per-page. Persist across restarts. No PAPI/TAB impact.
+- **CI + jars:** run + sizes filled below after build; zip refreshed in finalize.
+- **Deploy:** STOP; upload MAVOWarps-1.0.0.jar (NEW - no old jar to delete); keep plugins/MAVOWarps (auto-created). No config touches.

@@ -1,0 +1,18 @@
+name: MAVOWarps
+version: 1.0.0
+main: mavo.warps.Warps
+api-version: '1.13'
+description: Public player warps - buy a warp slot, share your base (MAVOcraft)
+author: MAVO
+softdepend: [Vault]
+commands:
+  warp:
+    description: "Teleport to a public warp; owner: /warp create|remove|rename"
+    usage: /warp <name> | create <name> | remove <name> | rename <old> <new>
+  warps:
+    description: Open the public warps list
+    usage: /warps
+permissions:
+  mavowarps.admin:
+    description: Admin warp management (delete/tp/reload)
+    default: op

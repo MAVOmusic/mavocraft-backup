@@ -1,0 +1,10 @@
+# MAVOWarps - public player warps
+# Players buy a warp slot (one-time) and share their base with the server.
+cost-create: 25000          # coins to create your FIRST warp
+extra-warp-costs:           # coins for 2nd, 3rd... warp slot (empty = no extra slots)
+  - 50000
+  - 100000
+warmup-seconds: 3           # stand-still teleport countdown
+monster-radius: 12          # monsters inside block the teleport (same as homes/portals)
+cooldown-seconds: 30        # personal cooldown between warp teleports
+max-per-page: 45            # warps shown per /warps page
