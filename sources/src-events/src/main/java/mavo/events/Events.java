@@ -10,6 +10,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Monster;
@@ -65,6 +66,30 @@ public final class Events extends JavaPlugin implements Listener {
     public void onDisable() { stopEvent(false); }
 
     // ---------------- scheduling ----------------
+    private World eventWorld() {
+        World w = Bukkit.getWorld("world");
+        return w != null ? w : (Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0));
+    }
+
+    /** Zombie Siege night window: 18:30-06:00 (ticks 12500 -> 6000), same as the sleep vote. */
+    private boolean isNightNow() {
+        World w = eventWorld();
+        if (w == null) return true; // no world clock = don't block the event
+        long t = w.getTime() % 24000L;
+        return t >= 12500L || t < 6000L;
+    }
+
+    private String pickEvent() {
+        String ev = EVENTS[rng.nextInt(EVENTS.length)];
+        if (ev.equals("zombiesiege") && !isNightNow()) {
+            // daytime: never auto-start the siege before sunset (18:30) - roll another
+            String alt;
+            do { alt = EVENTS[rng.nextInt(EVENTS.length)]; } while (alt.equals("zombiesiege"));
+            ev = alt;
+        }
+        return ev;
+    }
+
     private void scheduleNext() {
         if (!getConfig().getBoolean("auto-events", true)) return;
         int min = getConfig().getInt("min-minutes-between", 45);
@@ -72,7 +97,7 @@ public final class Events extends JavaPlugin implements Listener {
         long delayTicks = (min + rng.nextInt(max - min)) * 60L * 20L;
         Bukkit.getScheduler().runTaskLater(this, () -> {
             if (active == null && Bukkit.getOnlinePlayers().size() >= 1)
-                startEvent(EVENTS[rng.nextInt(EVENTS.length)]);
+                startEvent(pickEvent());
             scheduleNext();
         }, delayTicks);
     }
@@ -162,6 +187,13 @@ public final class Events extends JavaPlugin implements Listener {
         }
         if (ev.equals("zombiesiege")) {
             siegeTaskId = Bukkit.getScheduler().runTaskTimer(this, () -> {
+                // sunrise check: the siege ends at 06:00 (tick 6000) - no daylight zombies
+                if (!isNightNow()) {
+                    stopEvent(false);
+                    Bukkit.broadcastMessage(pretty("zombiesiege") + ChatColor.RESET + " "
+                            + ChatColor.GRAY + "has ended - the sun rose (06:00).");
+                    return;
+                }
                 var online = Bukkit.getOnlinePlayers().stream()
                         .filter(pl -> pl.getGameMode() == org.bukkit.GameMode.SURVIVAL).toList();
                 if (online.isEmpty()) return;
@@ -282,6 +314,10 @@ public final class Events extends JavaPlugin implements Listener {
                 if (!s.hasPermission("mavoevents.admin")) { s.sendMessage(ChatColor.RED + "No permission."); return true; }
                 if (a.length < 2 || !Arrays.asList(EVENTS).contains(a[1].toLowerCase(Locale.ROOT))) {
                     s.sendMessage(ChatColor.RED + "Events: " + String.join(", ", EVENTS)); return true;
+                }
+                if (a[1].equalsIgnoreCase("zombiesiege") && !isNightNow()) {
+                    s.sendMessage(ChatColor.RED + "Zombie Siege only runs at night (18:30-06:00).");
+                    return true;
                 }
                 startEvent(a[1].toLowerCase(Locale.ROOT));
             }

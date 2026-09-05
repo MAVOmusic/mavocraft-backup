@@ -1,4 +1,4 @@
-# MAVOcraft — UPDATE GUIDE (2026-09-05: MobFarm 2.7.5 hub fix + SLEEP PACK — Professions 3.15.2 / DeathChest 1.2.0 / Guide 2.8.3)
+# MAVOcraft — UPDATE GUIDE (2026-09-05: MobFarm 2.7.6 zone enable/disable + Events 1.2.1 siege night window + Professions 3.15.3 Sleeper fix — MobFarm 2.7.5/DeathChest 1.2.0/Guide 2.8.3 stay)
 
 Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
@@ -17,43 +17,48 @@ Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
 ## 2. DELETE these files from plugins/ (jars only)
 
-    MAVOMobFarm-2.7.4.jar         <- replace with 2.7.5
-    MAVOProfessions-3.15.1.jar    <- replace with 3.15.2 (3.15.0 too if still there)
+    MAVOMobFarm-2.7.5.jar         <- replace with 2.7.6 (2.7.4 too if still there)
+    MAVOEvents-1.2.0.jar          <- replace with 1.2.1
+    MAVOProfessions-3.15.2.jar    <- replace with 3.15.3 (3.15.1/3.15.0 too if still there)
     MAVODeathChest-1.1.1.jar      <- replace with 1.2.0
-    MAVOGuide-2.8.2.jar           <- replace with 2.8.3 (2.8.1 too if still there)
+    MAVOGuide-2.8.2.jar           <- already replaced with 2.8.3 (keep 2.8.3)
     (2.6.x / older MobFarm jars if still there)
 
 AuctionHouse 1.0.3 / Mobile plug-ins unchanged.
 
 ## 3. UPLOAD these jars into plugins/
 
-    MAVOMobFarm-2.7.5.jar       (buildhub/build <mob> apply zips directly - no restart,
-                                  no "Unknown data pack"; keeps saved zips, protects farm +50)
-    MAVOProfessions-3.15.2.jar  (Sleeper profession + bound Sleeper Bed + night vote + rest bonuses;
-                                  ADDS OR REPAIRS the sleeper section in an existing config automatically)
-    MAVODeathChest-1.2.0.jar    (/grave costs scale with Player Level: 1000/10 at Lv1, x2 per level)
-    MAVOGuide-2.8.3.jar         (v19: Sleeper page + fixed duplicate keys in the shipped config)
+    MAVOMobFarm-2.7.6.jar       (2.7.5 + zone disable/enable: /mobfarm disable <mob|all> hides a
+                                  zone from /mobfarm pick until /mobfarm enable <mob>; pick auto-opens
+                                  on /mobfarm enter; clicking your ACTIVE zone = free return (no rebuy))
+    MAVOEvents-1.2.1.jar        (Zombie Siege = night only: never starts before 18:30, auto-ends at
+                                  sunrise 06:00; /event start zombiesiege blocked in daytime)
+    MAVOProfessions-3.15.3.jar  (Sleeper fix: migration now reads the raw config file - the jar defaults
+                                  were hiding the missing sleeper section, that is why it stayed at 9;
+                                  /sleeper debug prints what is on disk vs loaded)
+    MAVODeathChest-1.2.0.jar    (keep - already uploaded)
+    MAVOGuide-2.8.3.jar         (keep - already uploaded)
 
 ## 4. KEEP all configs / data
 
-- plugins/MAVOProfessions/config.yml + data.yml: KEEP (the 3.15.2 jar adds/REPAIRS the
-  sleeper section + sleep keys itself: "3.15.2: added|repaired the Sleeper profession"
-  appears in the boot log; your 9 professions + levels are untouched).
+- plugins/MAVOProfessions/config.yml + data.yml: KEEP (3.15.3 now reads the RAW file so it
+  REALLY adds/repairs the sleeper section; your 9 professions + levels are untouched).
+- plugins/MAVOEvents/config.yml: KEEP (siege window is built-in, no config keys needed).
 - plugins/MAVODeathChest/config.yml + data.yml: KEEP (costs are migrated to level-scaled
   1000/10 bases automatically; your graves are untouched).
-- plugins/MAVOGuide/config.yml: DELETE this ONE file - the 2.8.3 default is the corrected
-  config (its old copy still has duplicate icon/lines keys = the join-time warnings);
-  it regenerates clean on boot. plugins/MAVOMobFarm/config.yml + data.yml: KEEP.
+- plugins/MAVOGuide/config.yml: KEEP the 2.8.3 one (deleted + regenerated last update).
+  plugins/MAVOMobFarm/config.yml + data.yml: KEEP (zone enabled/disabled is stored in data.yml,
+  applied by /mobfarm disable|enable).
 - world/datapacks/*-datapack.zip (zombie etc.) and anything you copied to your PC: KEEP.
 
 ## 5. START the server
 
 Boot log (exact):
-  [MAVOProfessions] 3.15.2: added|repaired the Sleeper profession in plugins/MAVOProfessions/config.yml.
-  [MAVOProfessions] MAVOProfessions v3.15.2 enabled: 10 professions [archer, ..., sleeper] ...
-and NO "duplicate keys found" warnings at join.
-If your boot log STILL says 9 professions, post the PROFESSIONS section of your
-plugins/MAVOProfessions/config.yml into the chat.
+  [MAVOProfessions] 3.15.3: Sleeper profession already present|added|repaired the Sleeper profession ...
+  [MAVOProfessions] MAVOProfessions v3.15.3 enabled: 10 professions [archer, ..., sleeper] ...
+  [MAVOMobFarm] MAVOMobFarm v2.7.6 enabled. mobs=36 ...  (real version, no more "2.7.4")
+If it STILL says 9 professions, run /sleeper debug and send me the output (it prints
+professions ON DISK vs loaded - one command, answers everything).
 Your world still contains the hub, footpath and zombie bay exactly as they are.
 
 ## 5b. SLEEP PACK - one-time admin setup
@@ -71,7 +76,17 @@ Then a quick test at night (or /time set night 18000 on a test account, SURVIVAL
 - 5+ players online at 18:30 -> "Sleep time!" broadcast; type `!sleep yes` / `!sleep no`.
 - /grave -> costs should show 1000 coins / 10 LC at Player Level 1.
 
-## 5c. TAB - correct Sleeper placeholder (exact line, replace the old one)
+## 5c. MOBFARM 2.7.6 - unbuilt zones: disable, then enable after /mobfarm build <mob>
+
+- Zones are wiped right now, so first: /mobfarm disable all  then  /mobfarm enable zombie
+  (keeps only the built bay visible - nobody can buy/teleport into a missing bay = no fall damage).
+- Build the next bay as usual (/mobfarm build husk), then /mobfarm enable husk -> icon back.
+- Persisted in plugins/MAVOMobFarm/data.yml - survives restarts. /mobfarm disable|enable <mob|all>
+  only affects the pick/prices menus + guards /mobfarm current; your zips and bays untouched.
+- /mobfarm enter now auto-opens the pick menu on arrival; clicking your ACTIVE zone = FREE
+  return (same as /mobfarm current). Switching to another mob still pays (cost doubles per pick).
+
+## 5d. TAB - correct Sleeper placeholder (exact line, replace the old one)
 
 stream scoreboard line (this one ONLY):
     - "&e🌾 &f%mavoprof_farmer%    &d😴 &f%mavoprof_sleeper% "

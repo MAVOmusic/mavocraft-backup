@@ -68,6 +68,9 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
     private final Map<String, MobDef> mobs = new LinkedHashMap<>();
     private final Map<UUID, Session> sessions = new HashMap<>();
     private final Map<UUID, PendingEnter> pending = new HashMap<>();
+    /** 2.7.6: zones with no bay built yet - hidden from /mobfarm pick so nobody can buy
+     *  a zone that isn't there (fall damage) until the admin runs /mobfarm enable <mob>. */
+    private final Set<String> disabled = new HashSet<>();
     private NamespacedKey holoKey, farmMobKey, stackHoloKey, lastHitKey;
     private long communityCoins, communityTarget;
     private int communityStack;
@@ -145,9 +148,10 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 for (UUID u : end) endSession(u, true);
             }
         }.runTaskTimer(this, 40L, 40L);
-        getLogger().info("MAVOMobFarm 2.7.4 enabled. mobs=" + mobs.size()
+        getLogger().info("MAVOMobFarm v" + getDescription().getVersion() + " enabled. mobs=" + mobs.size()
                 + " center=" + (center == null ? "?" : center.getBlockX() + "," + center.getBlockZ())
-                + " ai=" + mobAiEnabled());
+                + " ai=" + mobAiEnabled()
+                + (disabled.isEmpty() ? "" : " disabled=" + disabled.size()));
     }
 
     @Override public void onDisable() {
@@ -185,6 +189,8 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         communityTarget = data.getLong("community.target", getConfig().getLong("community.start-target", 1_000_000L));
         communityStack = data.getInt("community.stack", getConfig().getInt("community.stack-start", 2));
         if (communityStack < 1) communityStack = getConfig().getInt("community.stack-start", 2);
+        disabled.clear();
+        for (String id : data.getStringList("disabled")) if (mobs.containsKey(id)) disabled.add(id);
         loadBlacklist();
         if (center != null) {
             recomputeAABB();
@@ -220,6 +226,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         data.set("community.coins", communityCoins);
         data.set("community.target", communityTarget);
         data.set("community.stack", communityStack);
+        data.set("disabled", new ArrayList<>(disabled));
         try { data.save(dataFile); } catch (Exception ignored) {}
     }
 
@@ -500,6 +507,11 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                     p.sendMessage(ChatColor.RED + "No paid zone yet. /mobfarm pick to unlock a mob zone.");
                     return true;
                 }
+                if (disabled.contains(mc.id)) {
+                    p.sendMessage(ChatColor.RED + "Your zone is disabled (not built). "
+                            + ChatColor.AQUA + "/mobfarm pick" + ChatColor.RED + " another mob.");
+                    return true;
+                }
                 if (mc.stand == null) computeGeom(mc);
                 Location dest = mc.stand.clone();
                 dest.setYaw(180f); dest.setPitch(15f);
@@ -513,9 +525,59 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             case "buy" -> buySpawner(p);
             case "extend" -> extendSession(p);
             case "pick" -> openPick(p);
+            case "disable" -> {
+                if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
+                setZonesDisabled(p, args.length > 1 ? args[1] : null, true);
+            }
+            case "enable" -> {
+                if (!p.hasPermission("mavomobfarm.admin")) { p.sendMessage(ChatColor.RED + "No."); return true; }
+                setZonesDisabled(p, args.length > 1 ? args[1] : null, false);
+            }
             default -> p.sendMessage(ChatColor.RED + "Unknown. /mobfarm");
         }
         return true;
+    }
+
+    /** 2.7.6: /mobfarm disable|enable <mob|all> - hide/show a zone in /mobfarm pick so
+     *  nobody can buy/unlock a bay that isn't built yet (fall damage). Persisted in data.yml. */
+    private void setZonesDisabled(Player admin, String id, boolean dis) {
+        if (id == null) {
+            admin.sendMessage(ChatColor.RED + "Usage: /mobfarm " + (dis ? "disable" : "enable") + " <mob|all>");
+            return;
+        }
+        List<MobDef> targets = new ArrayList<>();
+        if (id.equalsIgnoreCase("all")) targets.addAll(mobs.values());
+        else {
+            MobDef m = findMob(id);
+            if (m == null) { admin.sendMessage(ChatColor.RED + "Unknown mob '" + id + "'. /mobfarm status for the list."); return; }
+            targets.add(m);
+        }
+        int n = 0;
+        for (MobDef m : targets) {
+            boolean was = disabled.contains(m.id);
+            if (dis) disabled.add(m.id); else disabled.remove(m.id);
+            if (was != dis) n++;
+        }
+        saveData();
+        if (dis) {
+            // pull any live session off a zone that just got hidden
+            for (Session s : sessions.values()) {
+                if (!disabled.contains(s.mobId)) continue;
+                s.unlocked = false;
+                if (s.spawnTask != null) { s.spawnTask.cancel(); s.spawnTask = null; }
+                clearSessionMobs(s); removeStackHolo(s);
+                if (s.hud != null) updateHud(s);
+                Player pl = Bukkit.getPlayer(s.owner);
+                if (pl != null && pl.isOnline()) {
+                    if (center != null) pl.teleport(center.clone().add(0.5, 1, 0.5));
+                    pl.sendMessage(ChatColor.RED + "Your farm zone was disabled (not built yet) - "
+                            + ChatColor.AQUA + "/mobfarm pick" + ChatColor.RED + " another zone.");
+                }
+            }
+        }
+        admin.sendMessage((dis ? ChatColor.RED + "" + ChatColor.BOLD + "Disabled " : ChatColor.GREEN + "" + ChatColor.BOLD + "Enabled ")
+                + ChatColor.YELLOW + n + ChatColor.GRAY + " zone(s) - "
+                + (dis ? "hidden from /mobfarm pick until /mobfarm enable <mob>." : "icon is back in /mobfarm pick."));
     }
 
     private MobDef findMob(String id) {
@@ -552,22 +614,40 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         String label = wingIdx == 0 ? "Hostile (1/2)" : "Farm animals (2/2)";
         Inventory inv = Bukkit.createInventory(null, 54,
                 ChatColor.DARK_RED + "MobFarm Pick — " + label);
+        List<MobDef> all = wingMobs(wing);
+        List<MobDef> list = new ArrayList<>();
+        for (MobDef m : all) if (!disabled.contains(m.id)) list.add(m);
+        int hidden = all.size() - list.size();
         int slot = 0;
-        for (MobDef m : wingMobs(wing)) {
+        for (MobDef m : list) {
             ItemStack it = new ItemStack(eggIcon(m));
             ItemMeta meta = it.getItemMeta();
             meta.setDisplayName(m.display);
             List<String> lore = new ArrayList<>();
             lore.add(ChatColor.GRAY + "Wing: " + m.wing + " · " + m.style);
             long now = pickCost(m, s);
-            lore.add(ChatColor.YELLOW + "Pick #" + (s.picks + 1) + " cost: " + fmt(now) + " coins");
-            lore.add(ChatColor.DARK_GRAY + "Next pick (this session): " + fmt(Math.min(now * 2L, Long.MAX_VALUE / 8)));
-            if (m.id.equals(s.mobId) && s.unlocked) lore.add(ChatColor.GREEN + "✓ ACTIVE");
-            else if (m.id.equals(s.mobId)) lore.add(ChatColor.GOLD + "Selected — pay to unlock");
-            lore.add(ChatColor.AQUA + "Click to pay & teleport to zone");
+            if (m.id.equals(s.mobId) && s.unlocked) {
+                lore.add(ChatColor.GREEN + "✓ ACTIVE — click = return to zone (FREE)");
+                lore.add(ChatColor.GRAY + "Switching to another mob still costs "
+                        + ChatColor.YELLOW + fmt(now) + "+" + ChatColor.GRAY + ".");
+            } else {
+                lore.add(ChatColor.YELLOW + "Pick #" + (s.picks + 1) + " cost: " + fmt(now) + " coins");
+                lore.add(ChatColor.DARK_GRAY + "Next pick (this session): " + fmt(Math.min(now * 2L, Long.MAX_VALUE / 8)));
+                if (m.id.equals(s.mobId)) lore.add(ChatColor.GOLD + "Selected — pay to unlock");
+                lore.add(ChatColor.AQUA + "Click to pay & teleport to zone");
+            }
             meta.setLore(lore);
             it.setItemMeta(meta);
             inv.setItem(slot++, it);
+        }
+        if (hidden > 0) {
+            ItemStack b = new ItemStack(Material.BARRIER);
+            ItemMeta bm = b.getItemMeta();
+            bm.setDisplayName(ChatColor.RED + "" + ChatColor.BOLD + hidden + " zone(s) not built");
+            bm.setLore(List.of(ChatColor.GRAY + "Hidden with /mobfarm disable <mob>.",
+                    ChatColor.AQUA + "/mobfarm enable <mob>" + ChatColor.GRAY + " brings it back."));
+            b.setItemMeta(bm);
+            inv.setItem(53, b);
         }
         // nav + info
         ItemStack nav = new ItemStack(Material.ARROW);
@@ -594,8 +674,11 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
         String label = wingIdx == 0 ? "Hostile (1/2)" : "Farm animals (2/2)";
         Inventory inv = Bukkit.createInventory(null, 54,
                 ChatColor.DARK_RED + "MobFarm Prices — " + label);
+        List<MobDef> all = wingMobs(wing);
+        List<MobDef> list = new ArrayList<>();
+        for (MobDef m : all) if (!disabled.contains(m.id)) list.add(m);
         int slot = 0;
-        for (MobDef m : wingMobs(wing)) {
+        for (MobDef m : list) {
             ItemStack it = new ItemStack(eggIcon(m));
             ItemMeta meta = it.getItemMeta();
             meta.setDisplayName(m.display);
@@ -649,7 +732,9 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
             if (existing.spawnTask == null && existing.unlocked) startSpawnTask(existing);
             if (existing.hud == null) startHud(existing); else updateHud(existing);
             teleportToSession(p, existing);
-            p.sendMessage(ChatColor.GREEN + "Welcome back — same session/stack. /mobfarm pick");
+            // 2.7.6: pick menu auto-opens on arrival so the player picks/returns right away
+            openPick(p);
+            p.sendMessage(ChatColor.GREEN + "Welcome back — same session/stack.");
             return;
         }
         if (pending.containsKey(p.getUniqueId())) { p.sendMessage(ChatColor.RED + "Already entering."); return; }
@@ -812,6 +897,22 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
                 if (ChatColor.stripColor(m.display).equalsIgnoreCase(name)) { chosen = m; break; }
             }
             if (chosen == null) return;
+            if (disabled.contains(chosen.id)) {
+                p.sendMessage(ChatColor.RED + "That zone is disabled (not built yet). "
+                        + ChatColor.AQUA + "/mobfarm enable " + chosen.id);
+                return;
+            }
+            // 2.7.6: the ACTIVE pick is a FREE return (same as /mobfarm current - no rebuild,
+            // no charge). Switching to another mob (even one bought earlier) still pays, and
+            // each paid pick doubles the next cost - going back later = pay again.
+            if (s.unlocked && chosen.id.equals(s.mobId)) {
+                p.closeInventory();
+                teleportToSession(p, s);
+                p.sendMessage(ChatColor.GREEN + "Back in your " + ChatColor.stripColor(chosen.display)
+                        + " zone (free). " + ChatColor.GRAY + "Another mob costs "
+                        + ChatColor.YELLOW + fmt(pickCost(chosen, s)) + "+" + ChatColor.GRAY + " to switch.");
+                return;
+            }
             long cost = pickCost(chosen, s);
             // switching mob mid-session still requires payment; each paid pick doubles
             boolean needPay = !s.unlocked || !chosen.id.equals(s.mobId);
@@ -853,7 +954,7 @@ public final class MobFarm extends JavaPlugin implements Listener, TabCompleter 
 
     private void teleportToSession(Player p, Session s) {
         MobDef m = mobs.get(s.mobId);
-        if (m == null || center == null) { goHub(p); return; }
+        if (m == null || center == null || disabled.contains(m.id)) { goHub(p); return; }
         if (m.stand == null) computeGeom(m);
         Location dest = m.stand.clone();
         dest.setYaw(180f); dest.setPitch(20f);

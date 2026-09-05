@@ -146,6 +146,13 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         }
         migrateCfg();
         loadCfg();
+        if (sleeperProf() == null) {
+            getLogger().warning("3.15.3: Sleeper did not load after migration - forcing defaults and reloading.");
+            migrateCfg(true);
+            loadCfg();
+        }
+        if (sleeperProf() == null)
+            getLogger().severe("3.15.3: STILL no Sleeper profession. Run /sleeper debug and send the output.");
         getServer().getPluginManager().registerEvents(this, this);
         if (getCommand("profession") != null) getCommand("profession").setTabCompleter(this);
         if (getCommand("sleeper") != null) getCommand("sleeper").setTabCompleter(this);
@@ -179,62 +186,75 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         return Registry.ENCHANTMENT.get(NamespacedKey.minecraft(key.toLowerCase(Locale.ROOT)));
     }
 
-    /** 3.15.2: an existing config.yml has no Sleeper profession and/or no sleep section
-     *  (saveDefaultConfig never overwrites an existing file) - write them so the 10th
-     *  profession + vote actually load on the live server. Also REPAIRS a malformed
-     *  entry: 'contains("sleeper")' is true for a stray scalar (e.g. "sleeper: true"
-     *  typed at professions level), but the loader then skips it silently - that is
-     *  exactly the "still 9 professions" case, so a real section is required. */
-    private void migrateCfg() {
+    /** 3.15.3: read the ON-DISK file with NO defaults. The jar's bundled config.yml
+     *  (which contains the complete sleeper section) is registered as config DEFAULTS,
+     *  so getConfig().contains("professions.sleeper")/get(...) returned the DEFAULT
+     *  section even when the user's file never had it - migration saw "valid" and
+     *  skipped while loadCfg()'s getKeys(false) (defaults ignored) loaded 9. That is
+     *  the exact "still 9 professions, no migration log" case. */
+    private void migrateCfg() { migrateCfg(false); }
+
+    private void migrateCfg(boolean force) {
+        YamlConfiguration disk = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "config.yml"));
         boolean changed = false;
-        ConfigurationSection profSection = getConfig().getConfigurationSection("professions");
+        ConfigurationSection profSection = disk.getConfigurationSection("professions");
         Object curSleeper = profSection == null ? null : profSection.get("sleeper");
-        boolean sleeperOk = curSleeper instanceof ConfigurationSection
+        boolean sleeperOk = !force && curSleeper instanceof ConfigurationSection
                 && ((ConfigurationSection) curSleeper).getString("display") != null
                 && ((ConfigurationSection) curSleeper).getBoolean("sleeper", false);
         if (!sleeperOk) {
             if (curSleeper != null) {
-                getConfig().set("professions.sleeper", null);
-                getLogger().warning("3.15.2: 'professions.sleeper' exists but is not a complete section"
+                disk.set("professions.sleeper", null);
+                getLogger().warning("3.15.3: 'professions.sleeper' exists on disk but is not a complete section"
                         + " (bad indentation or a stray value) - replacing it with the Sleeper defaults.");
             }
-            getConfig().set("professions.sleeper.display", "&d😴 Sleeper");
-            getConfig().set("professions.sleeper.action", "nights rested");
-            getConfig().set("professions.sleeper.icon", "RED_BED");
-            getConfig().set("professions.sleeper.no-tool", true);
-            getConfig().set("professions.sleeper.sleeper", true);
-            getConfig().set("professions.sleeper.xp-per-level", 50);
-            getConfig().set("professions.sleeper.xp-base", 1);
-            getConfig().set("professions.sleeper.xp-growth", 1.0);
-            getConfig().set("professions.sleeper.max-level", 100);
-            getConfig().set("professions.sleeper.coin-bonus", 0.0);
-            getConfig().set("professions.sleeper.enchant-pool", new ArrayList<>());
-            getConfig().set("professions.sleeper.rank-commands.100",
-                    Arrays.asList("lp user %player% parent add sleeper"));
+            writeSleeperDefaults(disk);
             changed = true;
-            getLogger().info("3.15.2: " + (curSleeper == null ? "added" : "repaired")
+            getLogger().info("3.15.3: " + (curSleeper == null ? "added" : "repaired")
                     + " the Sleeper profession in plugins/MAVOProfessions/config.yml.");
+        } else {
+            getLogger().info("3.15.3: Sleeper profession already present in plugins/MAVOProfessions/config.yml.");
         }
-        Object rawSleep = getConfig().get("sleep");
+        Object rawSleep = disk.get("sleep");
         if (rawSleep != null && !(rawSleep instanceof ConfigurationSection)) {
-            getConfig().set("sleep", null);
-            getLogger().warning("3.15.2: 'sleep' exists but is not a section - replacing it with defaults.");
+            disk.set("sleep", null);
+            getLogger().warning("3.15.3: 'sleep' exists on disk but is not a section - replacing it with defaults.");
         }
-        ConfigurationSection sleepSec = getConfig().getConfigurationSection("sleep");
+        ConfigurationSection sleepSec = disk.getConfigurationSection("sleep");
         if (sleepSec == null || !sleepSec.contains("vote-open-tick")) {
-            if (!getConfig().contains("sleep.vote-open-tick")) getConfig().set("sleep.vote-open-tick", 12500);
-            if (!getConfig().contains("sleep.vote-close-tick")) getConfig().set("sleep.vote-close-tick", 13500);
-            if (!getConfig().contains("sleep.vote-min-online")) getConfig().set("sleep.vote-min-online", 5);
-            if (!getConfig().contains("sleep.vote-turnout")) getConfig().set("sleep.vote-turnout", 0.75);
-            if (!getConfig().contains("sleep.skip-to-tick")) getConfig().set("sleep.skip-to-tick", 6000);
-            if (!getConfig().contains("sleep.world")) getConfig().set("sleep.world", "world");
-            if (!getConfig().contains("sleep.tavern-bed")) getConfig().set("sleep.tavern-bed", "");
-            if (!getConfig().contains("sleep.tavern-rest-sleeper-xp")) getConfig().set("sleep.tavern-rest-sleeper-xp", true);
-            if (!getConfig().contains("sleep.rest-bonus-includes-sleeper")) getConfig().set("sleep.rest-bonus-includes-sleeper", false);
+            if (!disk.contains("sleep.vote-open-tick")) disk.set("sleep.vote-open-tick", 12500);
+            if (!disk.contains("sleep.vote-close-tick")) disk.set("sleep.vote-close-tick", 13500);
+            if (!disk.contains("sleep.vote-min-online")) disk.set("sleep.vote-min-online", 5);
+            if (!disk.contains("sleep.vote-turnout")) disk.set("sleep.vote-turnout", 0.75);
+            if (!disk.contains("sleep.skip-to-tick")) disk.set("sleep.skip-to-tick", 6000);
+            if (!disk.contains("sleep.world")) disk.set("sleep.world", "world");
+            if (!disk.contains("sleep.tavern-bed")) disk.set("sleep.tavern-bed", "");
+            if (!disk.contains("sleep.tavern-rest-sleeper-xp")) disk.set("sleep.tavern-rest-sleeper-xp", true);
+            if (!disk.contains("sleep.rest-bonus-includes-sleeper")) disk.set("sleep.rest-bonus-includes-sleeper", false);
             changed = true;
-            getLogger().info("3.15.2: added the sleep section to plugins/MAVOProfessions/config.yml.");
+            getLogger().info("3.15.3: added the sleep section to plugins/MAVOProfessions/config.yml.");
         }
-        if (changed) saveConfig();
+        if (changed) {
+            try { disk.save(new File(getDataFolder(), "config.yml")); }
+            catch (Exception ex) { getLogger().severe("3.15.3: could not save config.yml: " + ex.getMessage()); }
+        }
+        reloadConfig();
+    }
+
+    private void writeSleeperDefaults(YamlConfiguration cfg) {
+        cfg.set("professions.sleeper.display", "&d😴 Sleeper");
+        cfg.set("professions.sleeper.action", "nights rested");
+        cfg.set("professions.sleeper.icon", "RED_BED");
+        cfg.set("professions.sleeper.no-tool", true);
+        cfg.set("professions.sleeper.sleeper", true);
+        cfg.set("professions.sleeper.xp-per-level", 50);
+        cfg.set("professions.sleeper.xp-base", 1);
+        cfg.set("professions.sleeper.xp-growth", 1.0);
+        cfg.set("professions.sleeper.max-level", 100);
+        cfg.set("professions.sleeper.coin-bonus", 0.0);
+        cfg.set("professions.sleeper.enchant-pool", new ArrayList<>());
+        cfg.set("professions.sleeper.rank-commands.100",
+                Arrays.asList("lp user %player% parent add sleeper"));
     }
 
     private void loadCfg() {
@@ -1761,8 +1781,32 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
                 case "tavernset":
                     if (!pl.hasPermission("mavoprof.admin")) { pl.sendMessage(ChatColor.RED + "No permission."); return true; }
                     return tavernBedSet(pl);
+                case "debug": {
+                    // ground truth: what is REALLY on disk vs what the loader sees (the
+                    // bundled config defaults can hide a missing sleeper section)
+                    File f = new File(getDataFolder(), "config.yml");
+                    YamlConfiguration disk = YamlConfiguration.loadConfiguration(f);
+                    ConfigurationSection dp = disk.getConfigurationSection("professions");
+                    Object raw = dp == null ? null : dp.get("sleeper");
+                    pl.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "Sleeper debug - MAVOProfessions "
+                            + getDescription().getVersion());
+                    pl.sendMessage(ChatColor.GRAY + "config file: " + ChatColor.AQUA + f.getAbsolutePath()
+                            + ChatColor.GRAY + " exists=" + f.exists());
+                    pl.sendMessage(ChatColor.GRAY + "professions ON DISK (" + (dp == null ? 0 : dp.getKeys(false).size())
+                            + "): " + (dp == null ? ChatColor.RED + "<none>" : ChatColor.YELLOW + dp.getKeys(false).toString()));
+                    pl.sendMessage(ChatColor.GRAY + "professions.sleeper ON DISK: " + (raw == null
+                            ? ChatColor.RED + "ABSENT"
+                            : raw instanceof ConfigurationSection
+                                    ? ChatColor.GREEN + "section " + ((ConfigurationSection) raw).getKeys(false)
+                                    : ChatColor.RED + "NOT A SECTION (" + raw + ")"));
+                    pl.sendMessage(ChatColor.GRAY + "loaded professions: " + ChatColor.AQUA + profs.size()
+                            + " " + profs.keySet());
+                    pl.sendMessage(ChatColor.GRAY + "loaded sleeper: "
+                            + (sleeperProf() == null ? ChatColor.RED + "NO" : ChatColor.GREEN + "YES"));
+                    return true;
+                }
                 default:
-                    pl.sendMessage(ChatColor.GRAY + "Usage: /sleeper <bind|unbind|status|vote yes|no|tavernset>");
+                    pl.sendMessage(ChatColor.GRAY + "Usage: /sleeper <bind|unbind|status|vote yes|no|tavernset|debug>");
                     return true;
             }
         }
