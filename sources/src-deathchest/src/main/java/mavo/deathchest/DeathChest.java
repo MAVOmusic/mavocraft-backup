@@ -1,11 +1,14 @@
 package mavo.deathchest;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -18,6 +21,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -36,6 +41,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -71,17 +77,19 @@ public final class DeathChest extends JavaPlugin implements Listener {
         expireKey = new NamespacedKey(this, "dcexpire");
         idKey = new NamespacedKey(this, "dcid");
         getConfig().addDefault("expire-minutes", 30);
-        getConfig().addDefault("teleport-cost-coins", 5000);
-        getConfig().addDefault("teleport-cost-lucky", 100);
+        getConfig().addDefault("teleport-cost-coins", 1000);   // LEVEL-1 base cost
+        getConfig().addDefault("teleport-cost-lucky", 10);     // LEVEL-1 base Lucky Coin cost
+        getConfig().addDefault("teleport-scale", true);        // costs double per Player Level
+        getConfig().addDefault("teleport-scale-cap", 30);      // stop doubling at level cap (2^30)
         getConfig().addDefault("teleport-seconds", 3);
         getConfig().addDefault("monster-radius", 12);
         getConfig().options().copyDefaults(true);
-        // 1.1.1 migration: old defaults 1000/10 -> 5000/100 (late-game cost; totems stay valuable)
-        if (getConfig().getInt("teleport-cost-coins", -1) == 1000 && getConfig().getInt("teleport-cost-lucky", -1) == 10) {
-            getConfig().set("teleport-cost-coins", 5000);
-            getConfig().set("teleport-cost-lucky", 100);
+        // 1.2.0 migration: 1.1.1 flat costs 5000/100 -> level-scaled bases 1000/10
+        if (getConfig().getInt("teleport-cost-coins", -1) == 5000 && getConfig().getInt("teleport-cost-lucky", -1) == 100) {
+            getConfig().set("teleport-cost-coins", 1000);
+            getConfig().set("teleport-cost-lucky", 10);
             saveConfig();
-            getLogger().info("Migrated grave teleport costs -> 5000 coins / 100 lucky coins.");
+            getLogger().info("Migrated grave teleport costs -> level-scaled 1000 coins / 10 lucky coins at Player Level 1.");
         }
         saveConfig();
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
@@ -98,6 +106,57 @@ public final class DeathChest extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(this, this);
         Bukkit.getScheduler().runTaskTimer(this, this::sweep, 600L, 600L);
         getLogger().info("MAVODeathChest enabled - your loot is safe(ish). LC=" + (lucky != null));
+    }
+
+    // ---------------- Player Level scaled costs (1.2.0) ----------------
+    /**
+     * Player Level = average of all profession levels + achievement category levels
+     * (MAVOProfessions + MAVOAchievements data files). Unstarted professions and
+     * undetected categories count as level 1, matching the guide definition.
+     */
+    private int playerLevel(Player p) {
+        List<Double> levels = new ArrayList<>();
+        Plugin profs = Bukkit.getPluginManager().getPlugin("MAVOProfessions");
+        if (profs != null && profs.isEnabled()) {
+            File cfg = new File(profs.getDataFolder(), "config.yml");
+            File dat = new File(profs.getDataFolder(), "data.yml");
+            if (dat.isFile() && cfg.isFile()) {
+                YamlConfiguration c = YamlConfiguration.loadConfiguration(cfg);
+                YamlConfiguration d = YamlConfiguration.loadConfiguration(dat);
+                ConfigurationSection sec = c.getConfigurationSection("professions");
+                if (sec != null) for (String id : sec.getKeys(false))
+                    levels.add((double) d.getInt("p." + p.getUniqueId() + "." + id.toLowerCase(Locale.ROOT) + ".level", 1));
+            }
+        }
+        Plugin ach = Bukkit.getPluginManager().getPlugin("MAVOAchievements");
+        if (ach != null && ach.isEnabled()) {
+            File cfg = new File(ach.getDataFolder(), "config.yml");
+            File dat = new File(ach.getDataFolder(), "data.yml");
+            if (dat.isFile() && cfg.isFile()) {
+                YamlConfiguration c = YamlConfiguration.loadConfiguration(cfg);
+                YamlConfiguration d = YamlConfiguration.loadConfiguration(dat);
+                ConfigurationSection sec = c.getConfigurationSection("categories");
+                if (sec != null) for (String cat : sec.getKeys(false))
+                    levels.add((double) d.getInt("players." + p.getUniqueId() + "." + cat + ".level", 1));
+            }
+        }
+        if (levels.isEmpty()) return 1;
+        double sum = 0;
+        for (double l : levels) sum += l;
+        return Math.max(1, (int) Math.round(sum / levels.size()));
+    }
+
+    /** [coins, luckyCoins] at this player's level: base * 2^(level-1), capped. */
+    private long[] scaledCost(Player p) {
+        long baseCoins = Math.max(1, getConfig().getLong("teleport-cost-coins", 1000));
+        long baseLucky = Math.max(1, getConfig().getLong("teleport-cost-lucky", 10));
+        if (!getConfig().getBoolean("teleport-scale", true)) return new long[]{baseCoins, baseLucky};
+        int lvl = playerLevel(p);
+        int exp = Math.min(lvl - 1, Math.max(0, getConfig().getInt("teleport-scale-cap", 30)));
+        return new long[]{
+                (long) (baseCoins * Math.pow(2, exp)),
+                (long) (baseLucky * Math.pow(2, exp))
+        };
     }
 
     private String cc(String s) { return ChatColor.translateAlternateColorCodes('&', s); }
@@ -358,20 +417,23 @@ public final class DeathChest extends JavaPlugin implements Listener {
         lore.add("&7Opens in ~&f" + info[4] + " min");
         inv.setItem(13, item(Material.CHEST, "&4" + p.getName() + "'s grave", lore, null));
 
-        double coinCost = getConfig().getDouble("teleport-cost-coins", 5000);
+        long[] costs = scaledCost(p);
+        long coinCost = costs[0];
         boolean canCoins = econ != null && econ.getBalance(p) >= coinCost;
         inv.setItem(11, item(canCoins ? Material.GOLD_INGOT : Material.GRAY_DYE,
-                "&6" + (int) coinCost + " coins", List.of("&7Instant trip to your grave",
+                "&6" + coinCost + " coins", List.of("&7Instant trip to your grave",
                         "&73s countdown - moving cancels, no refund",
+                        "&7Cost scales with your Player Level: &f" + playerLevel(p),
                         canCoins ? "" : "&cNot enough coins!", "&e\u25B6 Click to travel"),
                 "pay:coins"));
 
-        int lcCost = getConfig().getInt("teleport-cost-lucky", 100);
-        boolean canLucky = canLucky(p, lcCost);
-        ItemStack lcIcon = luckyCoinItem != null ? luckyItem(lcCost) : new ItemStack(Material.GOLD_NUGGET);
+        long lcCost = costs[1];
+        boolean canLucky = canLucky(p, (int) lcCost);
+        ItemStack lcIcon = luckyCoinItem != null ? luckyItem((int) lcCost) : new ItemStack(Material.GOLD_NUGGET);
         inv.setItem(15, item(lcIcon.getType(), "&6" + lcCost + " Lucky Coins",
                 List.of("&7Instant trip to your grave",
                         "&73s countdown - moving cancels, no refund",
+                        "&7Cost scales with your Player Level: &f" + playerLevel(p),
                         canLucky ? "" : "&cNot enough Lucky Coins!", "&e\u25B6 Click to travel"),
                 "pay:lucky"));
         inv.setItem(18, item(Material.ARROW, "&e\u25C0 Back", null, "__back"));
@@ -414,17 +476,17 @@ public final class DeathChest extends JavaPlugin implements Listener {
         if (id.equals("__next")) { openList(p, h.page + 1); return; }
         if (id.startsWith("g:")) { openConfirm(p, id.substring(2)); return; }
         if (id.startsWith("pay:")) {
-            double coins = getConfig().getDouble("teleport-cost-coins", 1000);
-            int lc = getConfig().getInt("teleport-cost-lucky", 10);
-            double cost = id.endsWith("coins") ? coins : lc;
+            long[] costs = scaledCost(p);
+            long coins = costs[0], lc = costs[1];
+            long cost = id.endsWith("coins") ? coins : lc;
             String mode = id.endsWith("coins") ? "coins" : "lucky";
             if ("coins".equals(mode) && (econ == null || econ.getBalance(p) < cost)) {
                 p.sendMessage(ChatColor.RED + "Not enough coins."); return;
             }
-            if ("lucky".equals(mode) && !canLucky(p, lc)) {
+            if ("lucky".equals(mode) && !canLucky(p, (int) lc)) {
                 p.sendMessage(ChatColor.RED + "Not enough Lucky Coins."); return;
             }
-            startTeleport(p, h.graveKey, mode, cost);
+            startTeleport(p, h.graveKey, mode, (double) cost);
             p.closeInventory();
         }
     }

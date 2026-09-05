@@ -256,3 +256,39 @@ professions:
       250:  { tool: END_ROD,            name: "Gambler's Rod",        enchants: ["unbreaking:3"], note: "&6\u2660 Casino luck: &e+10%" }
       500:  { tool: LIGHTNING_ROD,      name: "777 Rod",              enchants: ["unbreaking:3"], note: "&6\u2660 Casino luck: &e+12%" }
       1000: { tool: BLAZE_ROD,          name: "Blaze of Fate",        enchants: ["unbreaking:3"], note: "&c\u2660&f\u2665 BLAZE OF FATE &c\u2666&f\u2663 &e+15% luck" }
+  # ---- SLEEPER (3.15) ----
+  # No tools. Sleep in a bed at night = +1 XP. Vote skips NEVER grant XP.
+  # Need per level: 50 * level (L1->2 = 50 rests, L2->3 = 100 more, ...).
+  # Every 10 levels: +1 extra heart and +100 Lucky Coins. Level 100 = Sleeper rank.
+  sleeper:
+    display: "&d😴 Sleeper"
+    action: "nights rested"
+    icon: RED_BED
+    no-tool: true
+    sleeper: true
+    xp-per-level: 50
+    xp-base: 1
+    xp-growth: 1.0
+    max-level: 100
+    coin-bonus: 0.0
+    enchant-pool: []
+    rank-commands:
+      100:
+        - "lp user %player% parent add sleeper"
+
+# ---------------- SLEEP PACK (3.15) ----------------
+# Night skip vote: opens 18:30, closes 19:30, only with vote-min-online players.
+# Players type !sleep yes / !sleep no in chat (or /sleeper vote yes|no).
+# Winning needs more YES than NO AND at least 75% turnout of online players.
+# Bed quorum still works WITHOUT a vote: 1->1, 2->2, 3-4->2, 5-7->3, 8-9->4, 10+->5 sleepers.
+sleep:
+  vote-open-tick: 12500        # 18:30 (tick of day)
+  vote-close-tick: 13500       # 19:30
+  vote-min-online: 5           # vote only opens with MORE than 4 online
+  vote-turnout: 0.75           # 75% of eligible players must vote
+  skip-to-tick: 6000           # wake time = 06:00 next day
+  world: world                 # world the skip/vote clock runs on
+  # Tavern bed location (right-click the plaza tavern bed, then /sleeper tavernset):
+  tavern-bed: ""               # "world,x,y,z" - rest = +1 profession point to every active profession
+  tavern-rest-sleeper-xp: true # tavern rest also counts as 1 successful sleep for Sleeper
+  rest-bonus-includes-sleeper: false # +1/+2 rested bonus never double-dips Sleeper's own XP

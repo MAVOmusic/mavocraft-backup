@@ -381,11 +381,11 @@ features:
   - id: professions
     icon: IRON_PICKAXE
     name: "&c&lProfessions"
-    short: "Level 9 professions by grinding with bound tools"
+    short: "Level 10 professions by grinding with bound tools"
     info:
       - "&7Long-haul grind: iron@10, diamond@25, netherite@50."
-      - "&79 professions: Lumberjack, Miner, Excavator, Farmer,"
-      - "&7Hunter, Archer, Fisherman, Guardian &7and &6Gambler&7."
+      - "&710 professions: Lumberjack, Miner, Excavator, Farmer,"
+      - "&7Hunter, Archer, Fisherman, Guardian, &6Gambler &7and &dSleeper&7."
       - "&7Grind with your BOUND tool to earn XP. Tier rewards:"
       - "&7Stone > Iron (L10) > Diamond (L25) > Netherite (L50),"
       - "&7then enchant upgrades all the way to level 999."
@@ -394,6 +394,9 @@ features:
       - "&6\u2660 Gambler &7is special: XP comes from BETTING at"
       - "&7Lucky Louie's, while holding your bound lucky stick."
       - "&7The stick adds WIN LUCK - up to +15% at level 1000."
+      - ""
+      - "&dSleeper &7is special too: XP from sleeping at night -"
+      - "&7hearts + Lucky Coins every 10 levels, rank at L100."
       - ""
       - "&e/prof &7- menu (each icon shows a full deep-dive)"
       - "&e/prof top <profession> &7- leaderboards"
@@ -584,14 +587,35 @@ features:
   - id: tavern
     icon: RED_BED
     name: "&c&lSpawn Tavern"
-    short: "Pay 100 coins to skip the night safely"
+    short: "Pay 100 coins (or vote) to skip the night"
     info:
       - "&7At the plaza &cTavern&7, right-click the marked bed"
       - "&7at &bnight&7 (or during a thunderstorm)."
       - "&7Cost: &e100 \u26C3&7. Dawn breaks for the whole server."
       - "&7One rest per player - bed locks for you until &enoon&7."
-      - "&7No more running outside spawn just to sleep."
+      - "&7Rest bonus: &a+1 profession point &7to every active"
+      - "&7profession (and 1 Sleeper rest if you started it)."
+      - ""
+      - "&65+ players online? &7A FREE &e!sleep yes/no &7vote opens"
+      - "&7at &e18:30 &7(chat - no bed needed). 75% turnout + more"
+      - "&7yes than no skips to &f06:00&7. Vote skips give NO XP."
       - "&e/tavern &7- see if your rest is available"
+
+  - id: sleeper
+    icon: RED_BED
+    name: "&d&lSleeper"
+    short: "Sleep your way to +hearts, Lucky Coins and rank"
+    info:
+      - "&dThe 10th profession. &7Start it in &e/prof &7- no tools!"
+      - "&7Sleep in a bed at night = &b+1 Sleeper XP&7 (vote skips"
+      - "&7never count). Need: &f50 rests &7to L2, +50 more per level."
+      - "&7Every &d10 levels&7: &a+1 extra heart &7and &6+100 Lucky Coins&7."
+      - "&7Cap &dL100&7: the &dSLEEPER RANK&7 (LuckPerms group)."
+      - ""
+      - "&e/sleeper bind &7- bind a bed you're looking at: right-click"
+      - "&7it to rest with &cNO &7respawn point / home set, and"
+      - "&7grant &a+2 profession points &7to your other professions."
+      - "&e/sleeper &7- status | &e/sleeper vote yes|no"
 
   - id: goals
     icon: BEACON
@@ -657,7 +681,9 @@ features:
       - "&7When you die, your items go into a locked grave chest"
       - "&7only YOU can open. You have 30 minutes to get back"
       - "&7before it bursts open for anyone to loot."
-      - "&e/grave &7- teleport for &e5,000 coins&7 or &6100 Lucky Coins&7"
+      - "&e/grave &7- teleport cost scales with your &ePlayer Level&7:"
+      - "&7&e1,000 coins &7or &610 Lucky Coins &7at Lv 1,"
+      - "&7doubling every level (Lv5 = 16,000 / 160)."
   - id: wild
     icon: COMPASS
     name: "&a&lWild Teleport"
@@ -746,6 +772,8 @@ features:
     pages:
       - "&c&lTavern"
       - "&7Four beds — paid night skip locks until &enoon&7."
+      - "&7A rest at the Tavern also grants &a+1 profession point"
+      - "&7to every active profession (rested bonus)."
       - "&7Right-click the &6Innkeeper &7for bar food/drink:"
       - "&7&f1 each per MC day&7, &dsoulbound &7(can't shop-sell)."
       - "&7Affordable heal + refresh for the grind."

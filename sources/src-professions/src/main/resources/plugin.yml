@@ -1,16 +1,19 @@
 name: MAVOProfessions
-version: 3.14.2
+version: 3.15.0
 main: mavo.professions.Professions
 api-version: '1.13'
 description: Grind professions with tiered tool rewards (MAVOcraft)
 author: MAVO
-softdepend: [Vault, PlaceholderAPI, MAVOMobFarm]
+softdepend: [Vault, PlaceholderAPI, MAVOMobFarm, MAVOLuckyCoins]
 commands:
   profession:
     description: Open the professions menu / leaderboard
     aliases: [prof, professions]
     usage: /profession [check|top <prof>|almost <prof>|addxp <prof> <n>|reload]
+  sleeper:
+    description: Sleeper profession - bind bed, vote, status (sleep pack)
+    usage: /sleeper <bind|unbind|status|vote <yes|no>|tavernset>
 permissions:
   mavoprof.admin:
-    description: Allows /profession reload
+    description: Allows /profession reload and /sleeper tavernset
     default: op

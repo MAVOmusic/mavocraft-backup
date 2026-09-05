@@ -1,6 +1,7 @@
 package mavo.professions;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,12 +23,17 @@ import net.milkbowl.vault.economy.Economy;
 import org.jetbrains.annotations.NotNull;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.Tag;
+import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -48,13 +54,20 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerBedEnterEvent;
+import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -82,6 +95,34 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             Material.BEETROOTS, Material.NETHER_WART, Material.MELON, Material.PUMPKIN, Material.SUGAR_CANE,
             Material.CACTUS, Material.COCOA, Material.SWEET_BERRY_BUSH, Material.BAMBOO);
 
+    // ------------------ sleep pack 3.15 ------------------
+    private static final String SLEEPER = "sleeper";
+    private static final char C = '\u00a7';
+    private int voteOpenTick, voteCloseTick, voteMinOnline, sleepSkipTick;
+    private double voteTurnout;
+    private String sleepWorldName;
+    private Location tavernBed;
+    private boolean tavernSleeperXp, restBonusIncludesSleeper;
+    private Object lucky;
+    private Method luckyGive;
+    /** players currently in a bed in the sleep world (uuid -> bed location) */
+    private final Map<UUID, Location> sleepers = new HashMap<>();
+    /** last day a player earned sleeper XP (world fullTime/24000 before the skip) */
+    private final Map<UUID, Long> lastSleepXpDay = new HashMap<>();
+    /** last day a player earned the tavern rest bonus */
+    private final Map<UUID, Long> lastTavernDay = new HashMap<>();
+    /** tavern bed right-clicks awaiting the paid night skip (player -> millis) */
+    private final Map<UUID, Long> pendingTavern = new HashMap<>();
+    /** vote state */
+    private final Map<UUID, Boolean> votes = new java.util.concurrent.ConcurrentHashMap<>();
+    private volatile boolean voteOpen = false;
+    private long voteDay = -1;
+    /** reentrancy guard while our own Player#sleep() API call is running */
+    private final Set<UUID> programSleep = new HashSet<>();
+    /** fullTime days we already skipped via our own logic (bed quorum or vote) */
+    private final Set<Long> ourSkipDays = new HashSet<>();
+    private long lastFullSeen = Long.MIN_VALUE;
+
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -96,20 +137,33 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         data = YamlConfiguration.loadConfiguration(dataFile);
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp != null) econ = rsp.getProvider();
+        // Lucky Coins bridge for Sleeper level rewards (reflection, like MAVODeathChest)
+        Plugin lc = getServer().getPluginManager().getPlugin("MAVOLuckyCoins");
+        if (lc != null) {
+            lucky = lc;
+            try { luckyGive = lc.getClass().getMethod("giveCoins", Player.class, int.class); }
+            catch (Exception ex) { getLogger().warning("MAVOLuckyCoins API not found: " + ex.getMessage()); }
+        }
         loadCfg();
         getServer().getPluginManager().registerEvents(this, this);
         if (getCommand("profession") != null) getCommand("profession").setTabCompleter(this);
+        if (getCommand("sleeper") != null) getCommand("sleeper").setTabCompleter(this);
         new BukkitRunnable() {
             public void run() {
                 if (dirty) { save(); dirty = false; }
                 tickBars();
             }
         }.runTaskTimer(this, 100L, 40L);
+        new BukkitRunnable() {
+            public void run() { sleepClock(); }
+        }.runTaskTimer(this, 60L, 20L);
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new ProfExpansion(this).register();
             getLogger().info("PlaceholderAPI expansion registered (%mavoprof_...%).");
         }
-        getLogger().info("MAVOProfessions v3 enabled: " + profs.size() + " professions.");
+        getLogger().info("MAVOProfessions v3.15 enabled: " + profs.size() + " professions"
+                + (tavernBed != null ? ", tavern rest hooked at " + tavernBed.getWorld().getName()
+                + " " + tavernBed.getBlockX() + " " + tavernBed.getBlockY() + " " + tavernBed.getBlockZ() : ""));
     }
 
     @Override
@@ -131,6 +185,27 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         enchantChance = getConfig().getDouble("enchant-chance", 0.40);
         capStep = Math.max(1, getConfig().getInt("cap-step", 25));
         xpFlattenLevel = Math.max(1, getConfig().getInt("xp-flatten-level", 250));
+        ConfigurationSection slp = getConfig().getConfigurationSection("sleep");
+        if (slp != null) {
+            voteOpenTick = slp.getInt("vote-open-tick", 12500);       // 18:30
+            voteCloseTick = slp.getInt("vote-close-tick", 13500);     // 19:30
+            voteMinOnline = Math.max(1, slp.getInt("vote-min-online", 5));
+            voteTurnout = Math.max(0.1, Math.min(1.0, slp.getDouble("vote-turnout", 0.75)));
+            sleepSkipTick = Math.max(0, Math.min(23999, slp.getInt("skip-to-tick", 6000)));
+            sleepWorldName = slp.getString("world", "world");
+            tavernSleeperXp = slp.getBoolean("tavern-rest-sleeper-xp", true);
+            restBonusIncludesSleeper = slp.getBoolean("rest-bonus-includes-sleeper", false);
+            String tb = slp.getString("tavern-bed", "");
+            try {
+                String[] p = tb.split(",");
+                World w = p.length >= 4 && Bukkit.getWorld(p[0]) != null ? Bukkit.getWorld(p[0]) : null;
+                tavernBed = w != null ? new Location(w, Double.parseDouble(p[1]), Double.parseDouble(p[2]), Double.parseDouble(p[3])) : null;
+            } catch (Exception ex) { tavernBed = null; }
+        } else {
+            voteOpenTick = 12500; voteCloseTick = 13500; voteMinOnline = 5;
+            voteTurnout = 0.75; sleepSkipTick = 6000; sleepWorldName = "world";
+            tavernBed = null; tavernSleeperXp = true; restBonusIncludesSleeper = false;
+        }
         rankCommands.clear();
         ConfigurationSection rcs = getConfig().getConfigurationSection("rank-commands");
         if (rcs != null) for (String k : rcs.getKeys(false))
@@ -154,6 +229,9 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             p.xpGrowth = Math.max(1.0, c.getDouble("xp-growth", 1.02));
             p.maxLevel = Math.max(1, c.getInt("max-level", 250));
             p.coinBonus = Math.max(0.0, c.getDouble("coin-bonus", 0.1));
+            p.noTool = c.getBoolean("no-tool", false);
+            p.sleeper = c.getBoolean("sleeper", false);
+            p.perLevelXp = Math.max(0, c.getInt("xp-per-level", 0));
             ConfigurationSection prc = c.getConfigurationSection("rank-commands");
             if (prc != null) for (String k : prc.getKeys(false))
                 p.rankCommands.put(Integer.parseInt(k), prc.getStringList(k));
@@ -255,6 +333,9 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
     }
 
     double xpNeeded(Prof p, int curLevel) {
+        // Sleeper-style professions: need = xp-per-level * current level
+        // (L1->2 = 50, L2->3 = 100, L3->4 = 150 ...)
+        if (p.perLevelXp > 0) return p.perLevelXp * (long) curLevel;
         return Math.ceil(p.xpBase * Math.pow(p.xpGrowth, Math.min(curLevel, xpFlattenLevel)));
     }
 
@@ -769,7 +850,7 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         holder.inv = inv;
         ItemStack fill = named(new ItemStack(Material.GRAY_STAINED_GLASS_PANE), " ", null);
         for (int i = 0; i < 27; i++) inv.setItem(i, fill);
-        int[] slots = {9, 10, 11, 12, 13, 14, 15, 16, 17};
+        int[] slots = {9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
         int i = 0;
         UUID u = pl.getUniqueId();
         for (Prof p : profs.values()) {
@@ -781,45 +862,61 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             ItemStack it;
             List<String> lore = new ArrayList<>();
             if (!isStarted) {
-                it = new ItemStack(toolMat(p, p.branches.values().iterator().next(), 0));
+                it = new ItemStack(p.noTool ? p.icon : toolMat(p, p.branches.values().iterator().next(), 0));
                 lore.add(ChatColor.GRAY + "Not started yet. XP from: " + ChatColor.WHITE + p.action);
                 lore.add("");
-                if (p.branches.size() > 1) {
-                    lore.add(ChatColor.GRAY + "You get " + ChatColor.WHITE + p.branches.size() + " bound tools" + ChatColor.GRAY + ":");
-                    for (Branch b : p.branches.values())
-                        lore.add(ChatColor.GRAY + " \u2022 " + ChatColor.WHITE + (b.name != null ? b.name
-                                : toolMat(p, b, 0).name().toLowerCase(Locale.ROOT).replace('_', ' ')));
-                } else {
-                    lore.add(ChatColor.GRAY + "Free bound tool: " + ChatColor.WHITE
-                            + toolMat(p, p.branches.values().iterator().next(), 0).name().toLowerCase(Locale.ROOT).replace('_', ' '));
-                }
-                lore.add(ChatColor.GRAY + "Only bound tools earn " + p.display + ChatColor.GRAY + " XP.");
-                // ---- deep dive: tier road map ----
-                lore.add("");
-                lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "THE ROAD AHEAD");
-                for (Map.Entry<Integer, Tier> te : p.tiers.entrySet()) {
-                    StringBuilder ens = new StringBuilder();
-                    for (Map.Entry<Enchantment, Integer> en : te.getValue().base.entrySet()) {
-                        if (ens.length() > 0) ens.append(ChatColor.DARK_GRAY + ", ");
-                        ens.append(ChatColor.AQUA).append(en.getKey().getKey().getKey().replace('_', ' '))
-                           .append(" ").append(en.getValue());
+                if (p.noTool) {
+                    lore.add(ChatColor.GRAY + "No tools - earn XP by sleeping in a bed at night.");
+                    lore.add(ChatColor.GRAY + "Vote skips do NOT count as a successful sleep.");
+                    if (p.sleeper) {
+                        lore.add("");
+                        lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "THE ROAD AHEAD");
+                        lore.add(ChatColor.YELLOW + " L10 " + ChatColor.WHITE + "\u2764 +1 heart " + ChatColor.DARK_GRAY + "\u2022 " + ChatColor.YELLOW + "+100 \u2b50 Lucky Coins");
+                        lore.add(ChatColor.YELLOW + " L20 " + ChatColor.WHITE + "\u2764 +1 heart " + ChatColor.DARK_GRAY + "\u2022 " + ChatColor.YELLOW + "+100 \u2b50 Lucky Coins");
+                        lore.add(ChatColor.YELLOW + " ... " + ChatColor.GRAY + "every 10 levels!");
+                        lore.add(ChatColor.GOLD + " L100 " + ChatColor.WHITE + "\u2728 SLEEPER RANK \u2728");
+                        lore.add("");
+                        lore.add(ChatColor.GRAY + "XP per sleep: " + ChatColor.YELLOW + "50" + ChatColor.GRAY + " at L1, then +50 more per level.");
+                        lore.add(ChatColor.GRAY + "Tip: " + ChatColor.AQUA + "/sleeper bind " + ChatColor.GRAY + "your own bed for a +2 rested bonus.");
                     }
-                    lore.add(ChatColor.YELLOW + " L" + te.getKey() + " " + ChatColor.WHITE
-                            + te.getValue().tool.name().toLowerCase(Locale.ROOT).replace('_', ' ')
-                            + (ens.length() > 0 ? ChatColor.DARK_GRAY + " + " + ens : ""));
+                } else {
+                    if (p.branches.size() > 1) {
+                        lore.add(ChatColor.GRAY + "You get " + ChatColor.WHITE + p.branches.size() + " bound tools" + ChatColor.GRAY + ":");
+                        for (Branch b : p.branches.values())
+                            lore.add(ChatColor.GRAY + " \u2022 " + ChatColor.WHITE + (b.name != null ? b.name
+                                    : toolMat(p, b, 0).name().toLowerCase(Locale.ROOT).replace('_', ' ')));
+                    } else {
+                        lore.add(ChatColor.GRAY + "Free bound tool: " + ChatColor.WHITE
+                                + toolMat(p, p.branches.values().iterator().next(), 0).name().toLowerCase(Locale.ROOT).replace('_', ' '));
+                    }
+                    lore.add(ChatColor.GRAY + "Only bound tools earn " + p.display + ChatColor.GRAY + " XP.");
+                    // ---- deep dive: tier road map ----
+                    lore.add("");
+                    lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "THE ROAD AHEAD");
+                    for (Map.Entry<Integer, Tier> te : p.tiers.entrySet()) {
+                        StringBuilder ens = new StringBuilder();
+                        for (Map.Entry<Enchantment, Integer> en : te.getValue().base.entrySet()) {
+                            if (ens.length() > 0) ens.append(ChatColor.DARK_GRAY + ", ");
+                            ens.append(ChatColor.AQUA).append(en.getKey().getKey().getKey().replace('_', ' '))
+                               .append(" ").append(en.getValue());
+                        }
+                        lore.add(ChatColor.YELLOW + " L" + te.getKey() + " " + ChatColor.WHITE
+                                + te.getValue().tool.name().toLowerCase(Locale.ROOT).replace('_', ' ')
+                                + (ens.length() > 0 ? ChatColor.DARK_GRAY + " + " + ens : ""));
+                    }
+                    lore.add(ChatColor.YELLOW + " L31+" + ChatColor.GRAY + " enchant roll every level-up:");
+                    lore.add(ChatColor.GRAY + "   40% to L30, then 35/30/25/20/15%");
+                    lore.add(ChatColor.YELLOW + " L50+" + ChatColor.GRAY + " enchants past vanilla caps");
+                    lore.add(ChatColor.GRAY + "   (+1 per " + capStep + " levels, e.g. Eff 6, 7, 8...)");
+                    lore.add(ChatColor.YELLOW + " L100 " + ChatColor.GRAY + "\u2248 Eff/Sharp +2 over vanilla, Unb V+");
+                    lore.add("");
+                    lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "PRESTIGE RANKS");
+                    lore.add(ChatColor.WHITE + " 250 FLEXER " + ChatColor.DARK_GRAY + "\u2022 " + ChatColor.GREEN + "420 YE MAN");
+                    lore.add(ChatColor.RED + " 666 SATAN " + ChatColor.DARK_GRAY + "\u2022 " + ChatColor.GOLD + "999 GOD (255 enchants)");
+                    lore.add(ChatColor.GRAY + " Each fills your enchants to cap + LP rank!");
+                    lore.add("");
+                    lore.add(ChatColor.GRAY + "Coin bonus per action: " + ChatColor.YELLOW + (int) Math.round(p.coinBonus * 100) + "%" + ChatColor.GRAY + " chance");
                 }
-                lore.add(ChatColor.YELLOW + " L31+" + ChatColor.GRAY + " enchant roll every level-up:");
-                lore.add(ChatColor.GRAY + "   40% to L30, then 35/30/25/20/15%");
-                lore.add(ChatColor.YELLOW + " L50+" + ChatColor.GRAY + " enchants past vanilla caps");
-                lore.add(ChatColor.GRAY + "   (+1 per " + capStep + " levels, e.g. Eff 6, 7, 8...)");
-                lore.add(ChatColor.YELLOW + " L100 " + ChatColor.GRAY + "\u2248 Eff/Sharp +2 over vanilla, Unb V+");
-                lore.add("");
-                lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "PRESTIGE RANKS");
-                lore.add(ChatColor.WHITE + " 250 FLEXER " + ChatColor.DARK_GRAY + "\u2022 " + ChatColor.GREEN + "420 YE MAN");
-                lore.add(ChatColor.RED + " 666 SATAN " + ChatColor.DARK_GRAY + "\u2022 " + ChatColor.GOLD + "999 GOD (255 enchants)");
-                lore.add(ChatColor.GRAY + " Each fills your enchants to cap + LP rank!");
-                lore.add("");
-                lore.add(ChatColor.GRAY + "Coin bonus per action: " + ChatColor.YELLOW + (int) Math.round(p.coinBonus * 100) + "%" + ChatColor.GRAY + " chance");
                 lore.add(ChatColor.GRAY + "Max level: " + ChatColor.YELLOW + p.maxLevel);
                 lore.add("");
                 lore.add(ChatColor.GREEN + "" + ChatColor.BOLD + "CLICK TO START!");
@@ -830,25 +927,36 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
                     lore.add(ChatColor.GOLD + "\u2605 MAX LEVEL!");
                 } else if (pending) {
                     int newLevel = lv + 1;
-                    lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "TOOL UPGRADE READY - Level " + newLevel);
-                    for (Branch b : p.branches.values()) {
-                        UpgradeResult sim = simulateUpgrade(u, p, b, newLevel, enchState(u, p.id, b.id));
-                        String label = b.name != null ? b.name : "Tool";
-                        if (sim.tierChange) {
-                            lore.add(ChatColor.AQUA + "\u2B06 " + label + ": NEW TIER "
-                                    + ChatColor.WHITE + sim.material.name().toLowerCase(Locale.ROOT).replace('_', ' '));
-                            for (Map.Entry<Enchantment, Integer> en : sim.ench.entrySet())
-                                lore.add(ChatColor.AQUA + "    " + en.getKey().getKey().getKey().replace('_', ' ') + " " + en.getValue());
-                        } else if (sim.gained != null) {
-                            lore.add(ChatColor.GREEN + "\u2728 " + label + ": " + ChatColor.AQUA
-                                    + sim.gained.getKey().getKey().replace('_', ' ') + " " + sim.gainedLevel);
-                        } else {
-                            lore.add(ChatColor.GRAY + "\u2727 " + label + ": no new enchant" + ChatColor.DARK_GRAY + " (" + (int) (chanceFor(newLevel) * 100) + "%)");
+                    if (p.noTool) {
+                        lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "SLEEPER LEVEL " + newLevel + " READY!");
+                        if (p.sleeper && newLevel % 10 == 0)
+                            lore.add(ChatColor.LIGHT_PURPLE + "\u2764 +1 heart  +100 \u2b50 Lucky Coins!");
+                        if (p.sleeper && newLevel >= p.maxLevel)
+                            lore.add(ChatColor.GOLD + "\u2728 SLEEPER RANK unlocked!");
+                        lore.add("");
+                        lore.add(ChatColor.GREEN + "CLICK TO CLAIM!");
+                        lore.add(ChatColor.GRAY + "(XP is paused until you do)");
+                    } else {
+                        lore.add(ChatColor.GOLD + "" + ChatColor.BOLD + "TOOL UPGRADE READY - Level " + newLevel);
+                        for (Branch b : p.branches.values()) {
+                            UpgradeResult sim = simulateUpgrade(u, p, b, newLevel, enchState(u, p.id, b.id));
+                            String label = b.name != null ? b.name : "Tool";
+                            if (sim.tierChange) {
+                                lore.add(ChatColor.AQUA + "\u2B06 " + label + ": NEW TIER "
+                                        + ChatColor.WHITE + sim.material.name().toLowerCase(Locale.ROOT).replace('_', ' '));
+                                for (Map.Entry<Enchantment, Integer> en : sim.ench.entrySet())
+                                    lore.add(ChatColor.AQUA + "    " + en.getKey().getKey().getKey().replace('_', ' ') + " " + en.getValue());
+                            } else if (sim.gained != null) {
+                                lore.add(ChatColor.GREEN + "\u2728 " + label + ": " + ChatColor.AQUA
+                                        + sim.gained.getKey().getKey().replace('_', ' ') + " " + sim.gainedLevel);
+                            } else {
+                                lore.add(ChatColor.GRAY + "\u2727 " + label + ": no new enchant" + ChatColor.DARK_GRAY + " (" + (int) (chanceFor(newLevel) * 100) + "%)");
+                            }
                         }
+                        lore.add("");
+                        lore.add(ChatColor.GREEN + "CLICK TO UPGRADE! " + ChatColor.GRAY + "(tools repaired too)");
+                        lore.add(ChatColor.GRAY + "(XP is paused until you do)");
                     }
-                    lore.add("");
-                    lore.add(ChatColor.GREEN + "CLICK TO UPGRADE! " + ChatColor.GRAY + "(tools repaired too)");
-                    lore.add(ChatColor.GRAY + "(XP is paused until you do)");
                 } else {
                     int filled = (int) Math.min(20, cur * 20 / Math.max(1, need));
                     StringBuilder bar = new StringBuilder(ChatColor.DARK_GRAY + "[" + ChatColor.RED);
@@ -858,14 +966,22 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
                     bar.append(ChatColor.DARK_GRAY).append("]");
                     lore.add(bar.toString());
                     lore.add(ChatColor.GRAY + "" + (int) cur + " / " + (int) need + " " + p.action);
-                    Integer nextTier = p.tiers.higherKey(lv);
-                    if (nextTier != null)
-                        lore.add(ChatColor.GRAY + "Next tier at level " + ChatColor.YELLOW + nextTier);
-                    boolean missing = false;
-                    for (Branch b : p.branches.values())
-                        if (findBoundSlot(pl, p.id, b.id) == -1) missing = true;
-                    if (missing)
-                        lore.add(ChatColor.RED + "\u26A0 Tool missing! Click for a replacement.");
+                    if (p.sleeper) {
+                        int next = (lv / 10 + 1) * 10;
+                        if (lv < p.maxLevel)
+                            lore.add(ChatColor.LIGHT_PURPLE + "L" + next + ": +1 heart, +100 \u2b50");
+                        if (p.maxLevel == 100 && lv < p.maxLevel)
+                            lore.add(ChatColor.GOLD + "L100: \u2728 SLEEPER RANK");
+                    } else {
+                        Integer nextTier = p.tiers.higherKey(lv);
+                        if (nextTier != null)
+                            lore.add(ChatColor.GRAY + "Next tier at level " + ChatColor.YELLOW + nextTier);
+                        boolean missing = false;
+                        for (Branch b : p.branches.values())
+                            if (findBoundSlot(pl, p.id, b.id) == -1) missing = true;
+                        if (missing)
+                            lore.add(ChatColor.RED + "\u26A0 Tool missing! Click for a replacement.");
+                    }
                 }
             }
             ItemMeta meta = it.getItemMeta();
@@ -896,25 +1012,33 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
 
         // -------- start profession: hand out all bound starter tools --------
         if (!started(u, profId)) {
-            int free = 0;
-            for (ItemStack s : pl.getInventory().getStorageContents()) if (s == null) free++;
-            if (free < p.branches.size()) {
-                pl.sendMessage(ChatColor.RED + "Free up " + p.branches.size() + " inventory slot(s) for your starter tools!");
-                pl.playSound(pl.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
-                return;
-            }
-            for (Branch b : p.branches.values()) {
-                Map<Enchantment, Integer> base = tierBaseline(p, b, p.tiers.firstKey());
-                pl.getInventory().addItem(buildTool(pl, p, b, 0, base));
-                saveEnchState(u, profId, b.id, base);
+            if (!p.noTool) {
+                int free = 0;
+                for (ItemStack s : pl.getInventory().getStorageContents()) if (s == null) free++;
+                if (free < p.branches.size()) {
+                    pl.sendMessage(ChatColor.RED + "Free up " + p.branches.size() + " inventory slot(s) for your starter tools!");
+                    pl.playSound(pl.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+                    return;
+                }
+                for (Branch b : p.branches.values()) {
+                    Map<Enchantment, Integer> base = tierBaseline(p, b, p.tiers.firstKey());
+                    pl.getInventory().addItem(buildTool(pl, p, b, 0, base));
+                    saveEnchState(u, profId, b.id, base);
+                }
             }
             set(u, profId, "started", true);
             set(u, profId, "level", 1);
             set(u, profId, "xp", 0);
             set(u, profId, "pending", false);
             pl.playSound(pl.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
-            pl.sendMessage(p.display + ChatColor.GREEN + " started! " + ChatColor.GRAY
-                    + "Use your bound tool" + (p.branches.size() > 1 ? "s" : "") + " to earn XP.");
+            if (p.noTool) {
+                pl.sendMessage(p.display + ChatColor.GREEN + " started! " + ChatColor.GRAY
+                        + "Sleep in a bed at night to earn XP - vote skips don't count.");
+                applySleeperHealth(pl);
+            } else {
+                pl.sendMessage(p.display + ChatColor.GREEN + " started! " + ChatColor.GRAY
+                        + "Use your bound tool" + (p.branches.size() > 1 ? "s" : "") + " to earn XP.");
+            }
             openMenu(pl);
             return;
         }
@@ -946,54 +1070,71 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
     private void doClaim(Player pl, Prof p, String profId, boolean reopen) {
         UUID u = pl.getUniqueId();
         int newLevel = level(u, profId) + 1;
-        // pre-check: every missing tool needs a free slot
-        int missing = 0;
-        for (Branch b : p.branches.values())
-            if (findBoundSlot(pl, profId, b.id) == -1) missing++;
-        int free = 0;
-        for (ItemStack s : pl.getInventory().getStorageContents()) if (s == null) free++;
-        if (missing > free) {
-            pl.sendMessage(ChatColor.RED + "Free up " + missing + " inventory slot(s) - some bound tools are missing!");
-            pl.playSound(pl.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
-            return;
-        }
         boolean anyTier = false, anyOver = false;
         List<String> gains = new ArrayList<>();
-        String broadcastName = null;
-        for (Branch b : p.branches.values()) {
-            UpgradeResult sim = simulateUpgrade(u, p, b, newLevel, enchState(u, profId, b.id));
-            ItemStack upgraded = buildTool(pl, p, b, newLevel, sim.ench);
-            int slot = findBoundSlot(pl, profId, b.id);
-            if (slot >= 0) pl.getInventory().setItem(slot, upgraded);
-            else pl.getInventory().addItem(upgraded);
-            saveEnchState(u, profId, b.id, sim.ench);
-            String label = b.name != null ? b.name : "tool";
-            if (sim.tierChange) anyTier = true;
-            if (upgraded.getItemMeta().getDisplayName().contains("Masterwork")) anyOver = true;
-            if (broadcastName == null) broadcastName = upgraded.getItemMeta().getDisplayName();
-            if (sim.gained != null)
-                gains.add(label + " +" + sim.gained.getKey().getKey().replace('_', ' ') + " " + sim.gainedLevel);
+        if (!p.noTool) {
+            // pre-check: every missing tool needs a free slot
+            int missing = 0;
+            for (Branch b : p.branches.values())
+                if (findBoundSlot(pl, profId, b.id) == -1) missing++;
+            int free = 0;
+            for (ItemStack s : pl.getInventory().getStorageContents()) if (s == null) free++;
+            if (missing > free) {
+                pl.sendMessage(ChatColor.RED + "Free up " + missing + " inventory slot(s) - some bound tools are missing!");
+                pl.playSound(pl.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+                return;
+            }
+            for (Branch b : p.branches.values()) {
+                UpgradeResult sim = simulateUpgrade(u, p, b, newLevel, enchState(u, profId, b.id));
+                ItemStack upgraded = buildTool(pl, p, b, newLevel, sim.ench);
+                int slot = findBoundSlot(pl, profId, b.id);
+                if (slot >= 0) pl.getInventory().setItem(slot, upgraded);
+                else pl.getInventory().addItem(upgraded);
+                saveEnchState(u, profId, b.id, sim.ench);
+                String label = b.name != null ? b.name : "tool";
+                if (sim.tierChange) anyTier = true;
+                if (upgraded.getItemMeta().getDisplayName().contains("Masterwork")) anyOver = true;
+                if (sim.gained != null)
+                    gains.add(label + " +" + sim.gained.getKey().getKey().replace('_', ' ') + " " + sim.gainedLevel);
+            }
         }
         set(u, profId, "level", newLevel);
         set(u, profId, "xp", 0);
         set(u, profId, "pending", false);
         pl.playSound(pl.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
-        if (anyTier)
-            pl.sendMessage(p.display + ChatColor.GREEN + " Level " + newLevel + ChatColor.GOLD + " NEW TIER unlocked!");
-        else if (!gains.isEmpty())
-            pl.sendMessage(p.display + ChatColor.GREEN + " Level " + newLevel + " - " + ChatColor.AQUA + String.join(ChatColor.GRAY + ", " + ChatColor.AQUA, gains));
-        else
-            pl.sendMessage(p.display + ChatColor.GREEN + " Level " + newLevel + ChatColor.GRAY + " - no new enchants this time, tools repaired.");
-        String title = newLevel >= p.maxLevel ? "GOD" : newLevel == 666 ? "SATAN SET"
-                : newLevel == 420 ? "YE MAN SET" : newLevel == 250 ? "FLEXER SET" : null;
-        if (title != null)
+        if (p.noTool) {
+            StringBuilder msg = new StringBuilder(p.display + ChatColor.GREEN + " Level " + newLevel);
+            if (p.sleeper) {
+                if (newLevel % 10 == 0 && newLevel < p.maxLevel)
+                    msg.append(ChatColor.LIGHT_PURPLE + "  \u2764 +1 heart, +100 \u2b50 Lucky Coins!");
+                if (newLevel >= p.maxLevel)
+                    msg.append(ChatColor.GOLD + "  \u2728 SLEEPER RANK!");
+            }
+            pl.sendMessage(msg.toString());
+            if (p.sleeper) sleeperClaimBonus(pl, newLevel);
+        } else {
+            if (anyTier)
+                pl.sendMessage(p.display + ChatColor.GREEN + " Level " + newLevel + ChatColor.GOLD + " NEW TIER unlocked!");
+            else if (!gains.isEmpty())
+                pl.sendMessage(p.display + ChatColor.GREEN + " Level " + newLevel + " - " + ChatColor.AQUA + String.join(ChatColor.GRAY + ", " + ChatColor.AQUA, gains));
+            else
+                pl.sendMessage(p.display + ChatColor.GREEN + " Level " + newLevel + ChatColor.GRAY + " - no new enchants this time, tools repaired.");
+        }
+        if (p.noTool && p.sleeper && newLevel >= p.maxLevel) {
             Bukkit.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "\u2738 " + ChatColor.AQUA + pl.getName()
-                    + ChatColor.GOLD + " unlocked " + ChatColor.BOLD + title + ChatColor.GOLD + " in "
-                    + stripColor(p.display) + ChatColor.GOLD + "! \u2738");
-        else if (anyTier || anyOver)
-            Bukkit.broadcastMessage(ChatColor.AQUA + pl.getName() + ChatColor.GRAY + " reached "
-                    + stripColor(p.display) + ChatColor.GRAY + " Lv " + newLevel
-                    + (anyOver ? ChatColor.RED + " \u2605 Masterwork!" : ChatColor.GRAY + " - new tier!"));
+                    + ChatColor.GOLD + " unlocked " + ChatColor.BOLD + "SLEEPER RANK" + ChatColor.GOLD + " (100 nights of rest)! \u2738");
+        } else if (!p.noTool) {
+            String title = newLevel >= p.maxLevel ? "GOD" : newLevel == 666 ? "SATAN SET"
+                    : newLevel == 420 ? "YE MAN SET" : newLevel == 250 ? "FLEXER SET" : null;
+            if (title != null)
+                Bukkit.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "\u2738 " + ChatColor.AQUA + pl.getName()
+                        + ChatColor.GOLD + " unlocked " + ChatColor.BOLD + title + ChatColor.GOLD + " in "
+                        + stripColor(p.display) + ChatColor.GOLD + "! \u2738");
+            else if (anyTier || anyOver)
+                Bukkit.broadcastMessage(ChatColor.AQUA + pl.getName() + ChatColor.GRAY + " reached "
+                        + stripColor(p.display) + ChatColor.GRAY + " Lv " + newLevel
+                        + (anyOver ? ChatColor.RED + " \u2605 Masterwork!" : ChatColor.GRAY + " - new tier!"));
+        }
         List<String> rc = rankCommands.get(newLevel);
         if (rc != null) for (String c : rc)
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), c.replace("%player%", pl.getName()));
@@ -1003,9 +1144,458 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         if (reopen) openMenu(pl);
     }
 
+    // ================= SLEEP PACK 3.15: vote, Sleeper, bound bed, rest bonus =================
+
+    private Prof sleeperProf() { return profs.get(SLEEPER); }
+
+    private int onlineCount() { return Bukkit.getOnlinePlayers().size(); }
+
+    /** Bed quorum table: 1->1, 2->2, 3-4->2, 5-7->3, 8-9->4, 10+->5. */
+    private int sleepersNeeded(int online) {
+        if (online <= 1) return 1;
+        if (online == 2) return 2;
+        if (online <= 4) return 2;
+        if (online <= 7) return 3;
+        if (online <= 9) return 4;
+        return 5;
+    }
+
+    private boolean canSleepNow(World w) {
+        int tick = (int) (w.getFullTime() % 24000L);
+        return tick >= 12000 || w.isThundering(); // night or thunderstorm
+    }
+
+    // ---------- vote clock ----------
+    private void sleepClock() {
+        World w = Bukkit.getWorld(sleepWorldName);
+        if (w == null) return;
+        long full = w.getFullTime();
+        long day = full / 24000L;
+        int tick = (int) (full % 24000L);
+        if (lastFullSeen != Long.MIN_VALUE) {
+            long diff = full - lastFullSeen;
+            // a night skip we didn't perform = MAVOTavern paid rest -> award pending taverner
+            if (diff >= 24000L && diff <= 30000L && !ourSkipDays.contains(day) && !ourSkipDays.contains(day - 1)
+                    && !pendingTavern.isEmpty()) {
+                long now = System.currentTimeMillis();
+                for (Map.Entry<UUID, Long> e : new HashMap<>(pendingTavern).entrySet()) {
+                    if (now - e.getValue() > 30000L) continue;
+                    Player pl = Bukkit.getPlayer(e.getKey());
+                    if (pl != null && pl.isOnline()) tavernRestAward(pl, day - 1);
+                    pendingTavern.remove(e.getKey());
+                }
+            }
+            if (diff > 0) ourSkipDays.remove(day - 1); // prune old markers
+        }
+        lastFullSeen = full;
+        // reopen every night; close at 19:30
+        if (!voteOpen && day != voteDay && tick >= voteOpenTick && tick < voteCloseTick
+                && onlineCount() >= voteMinOnline) {
+            voteOpen = true;
+            voteDay = day;
+            votes.clear();
+            int online = onlineCount();
+            Bukkit.broadcastMessage(C + "6" + C + "l" + C + "a" + " Sleep time! " + C + "7It's " + C + "e18:30"
+                    + C + "7 - vote " + C + "a" + C + "l" + C + "e!sleep yes" + C + "7 or " + C + "c" + C + "l!sleep no"
+                    + C + "7 to skip to morning. Closes " + C + "e19:30" + C + "7. ("
+                    + C + "b" + online + C + "7 online, " + C + "e75%" + C + "7 turnout + more yes wins)");
+            for (Player pl : Bukkit.getOnlinePlayers())
+                pl.playSound(pl.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1.1f);
+        } else if (voteOpen && (tick >= voteCloseTick || day != voteDay)) {
+            tallyVote(w, day);
+        }
+        // clear stale pending tavern clicks
+        if (!pendingTavern.isEmpty()) {
+            long now = System.currentTimeMillis();
+            pendingTavern.entrySet().removeIf(e -> now - e.getValue() > 60000L);
+        }
+    }
+
+    private void tallyVote(World w, long day) {
+        voteOpen = false;
+        votes.clear();
+        int eligible = onlineCount();
+        int yes = 0, no = 0, voted = 0;
+        for (Boolean v : votesCache()) { voted++; if (v) yes++; else no++; }
+        int needed = (int) Math.ceil(eligible * voteTurnout);
+        boolean turnout = voted >= needed;
+        boolean yesWins = yes > no;
+        if (voted == 0) {
+            Bukkit.broadcastMessage(C + "8" + C + "lSleep vote closed " + C + "7- no one voted, the night continues.");
+            return;
+        }
+        if (yesWins && turnout) {
+            skipNight(w, day, true);
+            return;
+        }
+        Bukkit.broadcastMessage(C + "c" + C + "lSleep vote failed " + C + "7- " + C + "a" + yes + " yes"
+                + C + "7 / " + C + "c" + no + " no" + C + "7 (" + voted + "/" + eligible + " voted, "
+                + needed + " needed). " + C + "7The night continues - " + C + "6" + sleepersNeeded(eligible)
+                + C + "7 players in bed still skips it!");
+    }
+
+    /** snapshot votes safely (chat events may be async) */
+    private List<Boolean> votesCache() {
+        return new ArrayList<>(votes.values());
+    }
+
+    // ---------- night skip ----------
+    private void skipNight(World w, long day, boolean viaVote) {
+        long target = (day + 1) * 24000L + sleepSkipTick;
+        w.setFullTime(target);
+        ourSkipDays.add(day);
+        // any skip ends tonight's vote
+        voteOpen = false;
+        votes.clear();
+        if (!viaVote) {
+            long xpDays = day;
+            for (Map.Entry<UUID, Location> e : new HashMap<>(sleepers).entrySet()) {
+                if (!e.getValue().getWorld().equals(w)) continue;
+                Player pl = Bukkit.getPlayer(e.getKey());
+                if (pl == null || !pl.isOnline()) continue;
+                sleepXp(pl, xpDays);
+                if (isOwnBoundBed(pl, e.getValue().getBlock())) {
+                    // bound-bed rest: +2 profession points to the other active professions
+                    restBonus(pl, 2);
+                    pl.sendMessage(C + "d" + "Sleeper bed rest: " + C + "a+2 profession points " + C + "7(rested).");
+                }
+            }
+        }
+        for (Map.Entry<UUID, Location> e : new HashMap<>(sleepers).entrySet()) {
+            Player pl = Bukkit.getPlayer(e.getKey());
+            if (pl != null && pl.isOnline() && pl.getSleepTicks() > 0) {
+                try { pl.wakeup(false); } catch (Exception ignore) { }
+            }
+        }
+        sleepers.clear();
+        if (!viaVote) {
+            Bukkit.broadcastMessage(C + "6" + C + "l\u2600 " + C + "aMorning! " + C + "7Night skipped - bedtime worked.");
+        } else {
+            Bukkit.broadcastMessage(C + "6" + C + "l\u2600 " + C + "aMorning! " + C + "7The " + C + "e!sleep"
+                    + C + "7 vote passed and skipped the night.");
+        }
+    }
+
+    /** one successful sleep counts toward the Sleeper profession (once per day). */
+    private void sleepXp(Player pl, long day) {
+        UUID u = pl.getUniqueId();
+        if (lastSleepXpDay.getOrDefault(u, -1L) == day) return;
+        Prof sp = sleeperProf();
+        if (sp == null || !started(u, SLEEPER)) return;
+        lastSleepXpDay.put(u, day);
+        addXp(pl, SLEEPER, 1);
+        pl.playSound(pl.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 0.6f);
+    }
+
+    /** tavern rest or bound-bed rest: +points XP to every OTHER active profession. */
+    private void restBonus(Player pl, int points) {
+        for (Map.Entry<String, Prof> e : profs.entrySet()) {
+            Prof other = e.getValue();
+            if (other.noTool && !restBonusIncludesSleeper) continue; // Sleeper has its own sleep XP
+            if (!started(pl.getUniqueId(), other.id) || level(pl.getUniqueId(), other.id) >= other.maxLevel) continue;
+            addXp(pl, other.id, points);
+        }
+    }
+
+    private void tavernRestAward(Player pl, long day) {
+        UUID u = pl.getUniqueId();
+        if (lastTavernDay.getOrDefault(u, -1L) == day) return;
+        lastTavernDay.put(u, day);
+        restBonus(pl, 1);
+        pl.sendMessage(C + "6Tavern rest: " + C + "a+1 profession point " + C + "7to every active profession (rested).");
+        if (tavernSleeperXp) sleepXp(pl, day);
+        pl.playSound(pl.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.7f);
+    }
+
+    // ---------- bed events ----------
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onBedEnterLow(PlayerBedEnterEvent e) {
+        Player pl = e.getPlayer();
+        UUID u = pl.getUniqueId();
+        if (programSleep.contains(u)) return; // our own API sleep() re-fire guard
+        if (!e.getBed().getWorld().getName().equals(sleepWorldName)) return;
+        if (!isOwnBoundBed(pl, e.getBed())) return;
+        e.setCancelled(true); // sleep only - no respawn point, no home creation
+        World w = e.getBed().getWorld();
+        if (!canSleepNow(w)) {
+            pl.sendMessage(C + "7You can only rest at night (or in a storm).");
+            return;
+        }
+        programSleep.add(u);
+        boolean ok = false;
+        try {
+            ok = pl.sleep(e.getBed().getLocation(), false);
+            if (!ok) pl.sendMessage(C + "cCouldn't get into your bound bed.");
+        } catch (Exception ex) {
+            pl.sendMessage(C + "cCouldn't get into your bound bed: " + ex.getMessage());
+        } finally {
+            programSleep.remove(u);
+        }
+        if (!ok) return;
+        sleepers.put(u, e.getBed().getLocation());
+        pl.sendMessage(C + "d" + "Sleeper bed: " + C + "7resting - no respawn/home set here.");
+        if (onlineCount() >= voteMinOnline) {
+            if (voteOpen) {
+                votes.put(pl.getUniqueId(), true);
+                pl.sendMessage(C + "aYour vote counts as YES (" + C + "e!sleep yes" + C + "a).");
+            } else {
+                pl.sendMessage(C + "7" + onlineCount() + " players online - a " + C + "e!sleep"
+                        + C + "7 vote opens at " + C + "e18:30" + C + "7.");
+            }
+        }
+        checkAutoSkip(w);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onBedEnter(PlayerBedEnterEvent e) {
+        if (e.isCancelled()) return;
+        if (!e.getBed().getWorld().getName().equals(sleepWorldName)) return;
+        sleepers.put(e.getPlayer().getUniqueId(), e.getBed().getLocation());
+        checkAutoSkip(e.getBed().getWorld());
+    }
+
+    @EventHandler
+    public void onBedLeave(PlayerBedLeaveEvent e) {
+        sleepers.remove(e.getPlayer().getUniqueId());
+    }
+
+    private void checkAutoSkip(World w) {
+        if (!canSleepNow(w)) return;
+        int online = onlineCount();
+        int inBed = 0;
+        for (Location l : sleepers.values()) if (l.getWorld().equals(w)) inBed++;
+        if (inBed >= sleepersNeeded(online)) {
+            skipNight(w, w.getFullTime() / 24000L, false);
+        }
+    }
+
+    // ---------- bound bed ----------
+    private Location boundBed(UUID u) {
+        try {
+            String w = data.getString("bed." + u + ".world", null);
+            if (w == null) return null;
+            return new Location(Bukkit.getWorld(w), data.getDouble("bed." + u + ".x"),
+                    data.getDouble("bed." + u + ".y"), data.getDouble("bed." + u + ".z"));
+        } catch (Exception ex) { return null; }
+    }
+
+    private void setBoundBed(UUID u, Location loc) {
+        data.set("bed." + u + ".world", loc.getWorld().getName());
+        data.set("bed." + u + ".x", loc.getX());
+        data.set("bed." + u + ".y", loc.getY());
+        data.set("bed." + u + ".z", loc.getZ());
+        dirty = true;
+    }
+
+    private void clearBoundBed(UUID u) {
+        data.set("bed." + u, null);
+        dirty = true;
+    }
+
+    /** resolve both halves of a bed block. */
+    private List<Block> bedParts(Block b) {
+        List<Block> out = new ArrayList<>();
+        out.add(b);
+        if (b.getBlockData() instanceof Bed bed) {
+            if (bed.getPart() == Bed.Part.HEAD) out.add(b.getRelative(bed.getFacing().getOppositeFace()));
+            else out.add(b.getRelative(bed.getFacing()));
+        }
+        return out;
+    }
+
+    private boolean isOwnBoundBed(Player pl, Block bed) {
+        if (pl == null || bed == null) return false;
+        Location bound = boundBed(pl.getUniqueId());
+        if (bound == null) return false;
+        for (Block part : bedParts(bed))
+            if (part.getLocation().equals(bound)) return true;
+        return false;
+    }
+
+    @EventHandler
+    public void onBreakBoundBed(BlockBreakEvent e) {
+        UUID u = e.getPlayer().getUniqueId();
+        Location bound = boundBed(u);
+        if (bound == null) return;
+        for (Block part : bedParts(e.getBlock()))
+            if (part.getLocation().equals(bound)) {
+                clearBoundBed(u);
+                e.getPlayer().sendMessage(C + "7Your Sleeper bed was broken - bind a new one with " + C + "e/sleeper bind" + C + "7.");
+            }
+    }
+
+    // ---------- tavern rest ----------
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onTavernBedUse(PlayerInteractEvent e) {
+        if (tavernBed == null) return;
+        if (e.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return;
+        if (e.getClickedBlock() == null || !e.getClickedBlock().getType().name().contains("BED")) return;
+        for (Block part : bedParts(e.getClickedBlock()))
+            if (part.getLocation().equals(tavernBed)) {
+                // award only if MAVOTavern actually skips the night (detected by the clock)
+                pendingTavern.put(e.getPlayer().getUniqueId(), System.currentTimeMillis());
+                return;
+            }
+    }
+
+    // ---------- chat vote ----------
+    @EventHandler(ignoreCancelled = true)
+    public void onChatVote(AsyncPlayerChatEvent e) {
+        String msg = e.getMessage().trim().toLowerCase(Locale.ROOT);
+        if (!msg.startsWith("!sleep")) return;
+        UUID u = e.getPlayer().getUniqueId();
+        Boolean v = null;
+        if (msg.equals("!sleep yes") || msg.endsWith(" yes")) v = true;
+        else if (msg.equals("!sleep no") || msg.endsWith(" no")) v = false;
+        if (v == null) return; // plain !sleep = info only
+        if (!voteOpen) {
+            Bukkit.getScheduler().runTask(this, () -> e.getPlayer().sendMessage(
+                    C + "7No sleep vote is open right now (votes run 18:30-19:30 with " + voteMinOnline + "+ online)."));
+            return;
+        }
+        votes.put(u, v);
+        int yes = 0;
+        for (Boolean b : votesCache()) if (b) yes++;
+        final int fy = yes;
+        final boolean fv = v;
+        Bukkit.getScheduler().runTask(this, () -> e.getPlayer().sendMessage(
+                C + "aVote recorded " + (fv ? C + "aYES" : C + "cNO") + C + "7 - " + C + "a" + fy + " yes"
+                        + C + "7 so far. Winning needs " + C + "e" + (int) Math.ceil(onlineCount() * voteTurnout)
+                        + C + "7 votes + more yes than no."));
+    }
+
+    // ---------- Sleeper rewards ----------
+    private void sleeperClaimBonus(Player pl, int newLevel) {
+        applySleeperHealth(pl);
+        if (newLevel % 10 == 0) giveLucky(pl, 100); // L10, L20, ... L100
+    }
+
+    private void applySleeperHealth(Player pl) {
+        UUID u = pl.getUniqueId();
+        if (!started(u, SLEEPER)) return;
+        int lv = level(u, SLEEPER);
+        int hearts = lv / 10; // +1 extra heart per 10 levels
+        AttributeInstance ai = pl.getAttribute(Attribute.MAX_HEALTH);
+        if (ai != null) ai.setBaseValue(20.0 + hearts * 2.0);
+    }
+
+    private void giveLucky(Player pl, int amount) {
+        if (lucky == null || luckyGive == null) return;
+        try { luckyGive.invoke(lucky, pl, amount); }
+        catch (Exception ex) { getLogger().warning("giveCoins failed: " + ex.getMessage()); }
+    }
+
+    @EventHandler
+    public void onJoinSleeper(PlayerJoinEvent e) {
+        applySleeperHealth(e.getPlayer());
+    }
+
+    @EventHandler
+    public void onQuitSleepState(PlayerQuitEvent e) {
+        UUID u = e.getPlayer().getUniqueId();
+        sleepers.remove(u);
+        votes.remove(u);
+        pendingTavern.remove(u);
+    }
+
+    // ---------- /sleeper ----------
+    private void sleeperStatus(Player pl) {
+        Prof sp = sleeperProf();
+        if (sp == null) { pl.sendMessage(C + "cSleeper profession is not configured."); return; }
+        UUID u = pl.getUniqueId();
+        int lv = level(u, SLEEPER);
+        double cur = xp(u, SLEEPER);
+        double need = xpNeeded(sp, lv);
+        boolean started = started(u, SLEEPER);
+        Location bed = boundBed(u);
+        pl.sendMessage(C + "d" + C + "lSleeper " + C + "7- " + (started ? C + "aLv " + lv + C + "7 (" + (int) cur + "/" + (int) need + " rests"
+                + (pendingClaim(u, SLEEPER) ? C + "6, CLAIM READY" : "") + ")" : C + "cnot started") + ".");
+        if (started) {
+            pl.sendMessage(C + "7Hearts: " + C + "a" + (10 + lv / 10) + C + "7 / " + C + "aLv " + (lv / 10 * 10 + 10)
+                    + C + "7 next +1 heart +100 \u2b50");
+            if (lv < 100) pl.sendMessage(C + "7Next level: " + C + "y" + (int) need + C + "7 rests from L" + lv + ".");
+            else pl.sendMessage(C + "6" + C + "l\u2728 SLEEPER RANK \u2728");
+        }
+        if (bed == null) pl.sendMessage(C + "7Bound bed: " + C + "cnone" + C + "7 - " + C + "e/sleeper bind " + C + "7looks at a bed.");
+        else pl.sendMessage(C + "7Bound bed: " + C + "a" + bed.getBlockX() + ", " + bed.getBlockY() + ", " + bed.getBlockZ()
+                + C + "7 - right-click to sleep only (+2 rested).");
+    }
+
+    private boolean bindTargetBed(Player pl, boolean bind) {
+        if (!started(pl.getUniqueId(), SLEEPER)) {
+            pl.sendMessage(C + "cStart the Sleeper profession first in " + C + "e/profession" + C + "c.");
+            return true;
+        }
+        Block target = pl.getTargetBlockExact(5);
+        if (target == null || !target.getType().name().contains("BED")) {
+            pl.sendMessage(C + "cLook at a bed within 5 blocks.");
+            return true;
+        }
+        if (!canSleepNow(target.getWorld())) {
+            pl.sendMessage(C + "7Bind works day or night, but you can only rest at night.");
+        }
+        if (bind) {
+            setBoundBed(pl.getUniqueId(), target.getLocation());
+            pl.sendMessage(C + "aBound Sleeper bed! " + C + "7Right-click it to rest - no respawn/home here. "
+                    + C + "e/sleeper unbind" + C + "7 to change it.");
+            pl.playSound(pl.getLocation(), Sound.BLOCK_ANVIL_USE, 1f, 1.2f);
+        } else {
+            clearBoundBed(pl.getUniqueId());
+            pl.sendMessage(C + "7Sleeper bed unbound.");
+        }
+        return true;
+    }
+
+    private boolean tavernBedSet(Player pl) {
+        Block target = pl.getTargetBlockExact(5);
+        if (target == null || !target.getType().name().contains("BED")) {
+            pl.sendMessage(C + "cLook at the Tavern bed within 5 blocks.");
+            return true;
+        }
+        getConfig().set("sleep.tavern-bed", target.getWorld().getName() + "," + target.getX() + "," + target.getY() + "," + target.getZ());
+        saveConfig();
+        loadCfg();
+        pl.sendMessage(C + "aTavern bed set at " + target.getWorld().getName() + " "
+                + target.getX() + " " + target.getY() + " " + target.getZ() + C + "7 - "
+                + "Tavern rests will grant +1 profession point.");
+        return true;
+    }
+
     // ---------------- commands ----------------
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (command.getName().equalsIgnoreCase("sleeper")) {
+            if (!(sender instanceof Player pl)) { sender.sendMessage("In-game only."); return true; }
+            if (args.length == 0) { sleeperStatus(pl); return true; }
+            switch (args[0].toLowerCase(Locale.ROOT)) {
+                case "bind":
+                    return bindTargetBed(pl, true);
+                case "unbind":
+                    return bindTargetBed(pl, false);
+                case "status":
+                    sleeperStatus(pl);
+                    return true;
+                case "vote": {
+                    if (args.length < 2) { pl.sendMessage(ChatColor.RED + "Usage: /sleeper vote <yes|no>"); return true; }
+                    boolean y = args[1].equalsIgnoreCase("yes");
+                    if (!voteOpen) {
+                        pl.sendMessage(ChatColor.GRAY + "No sleep vote is open right now (votes run 18:30-19:30 with " + voteMinOnline + "+ online).");
+                        return true;
+                    }
+                    votes.put(pl.getUniqueId(), y);
+                    pl.sendMessage(ChatColor.GREEN + "Vote recorded " + (y ? ChatColor.GREEN + "YES" : ChatColor.RED + "NO")
+                            + ChatColor.GRAY + " - winning needs " + ChatColor.YELLOW
+                            + (int) Math.ceil(onlineCount() * voteTurnout) + ChatColor.GRAY + " votes + more yes than no.");
+                    return true;
+                }
+                case "tavernset":
+                    if (!pl.hasPermission("mavoprof.admin")) { pl.sendMessage(ChatColor.RED + "No permission."); return true; }
+                    return tavernBedSet(pl);
+                default:
+                    pl.sendMessage(ChatColor.GRAY + "Usage: /sleeper <bind|unbind|status|vote yes|no|tavernset>");
+                    return true;
+            }
+        }
         if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
             if (!sender.hasPermission("mavoprof.admin")) {
                 sender.sendMessage(ChatColor.RED + "No permission.");
@@ -1092,6 +1682,18 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (command.getName().equalsIgnoreCase("sleeper")) {
+            List<String> out = new ArrayList<>();
+            List<String> subs = args.length == 2 && args[0].equalsIgnoreCase("vote")
+                    ? Arrays.asList("yes", "no")
+                    : sender.hasPermission("mavoprof.admin")
+                    ? Arrays.asList("bind", "unbind", "status", "vote", "tavernset")
+                    : Arrays.asList("bind", "unbind", "status", "vote");
+            String last = args.length == 0 ? "" : args[args.length - 1].toLowerCase(Locale.ROOT);
+            for (String s : subs)
+                if (s.startsWith(last)) out.add(s);
+            return out;
+        }
         if (args.length == 1) {
             List<String> out = new ArrayList<>();
             for (String s : sender.hasPermission("mavoprof.admin") ? Arrays.asList("check", "top", "almost", "maxxp", "addxp", "claim", "reload") : Arrays.asList("check", "top"))
@@ -1134,6 +1736,9 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         Material icon;
         double xpBase, xpGrowth, coinBonus;
         int maxLevel;
+        boolean noTool;       // Sleeper-style: no bound tools, XP from sleeping
+        boolean sleeper;      // gets hearts + Lucky Coins every 10 levels
+        int perLevelXp;       // 0 = normal curve; >0 = need = perLevelXp * level
         TreeMap<Integer, Tier> tiers = new TreeMap<>();
         List<Enchantment> pool = new ArrayList<>();
         Map<String, Branch> branches = new LinkedHashMap<>();
