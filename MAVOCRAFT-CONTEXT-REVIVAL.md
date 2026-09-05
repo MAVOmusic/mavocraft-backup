@@ -844,5 +844,5 @@ CI run 33814070963 SUCCESS. Commit chain: f6a14d7 (sources) -> 7a0c525 (ci: rebu
 - **Safety (matches homes/portals):** 3s stand-still title countdown, move cancels, monsters within 12 blocks block it (no escaping fights), 30s personal cooldown, destination chunk loads + safe-air fallback (up to 4 above, else highest block).
 - **Commands:** /warp (info+slots), /warp <name>, /warps, /warp create <name>, /warp remove <name>, /warp rename <old> <new>, /warp info <name>; admin /warp delete <name> + /warp tp <name> (console works). Names: 3-20 chars [a-z0-9_-]. Survival pays, creative free (admin testing).
 - **Data:** plugins/MAVOWarps/data.yml (warps.<name> + visits). Config: costs/warmup/monster-radius/cooldown/max-per-page. Persist across restarts. No PAPI/TAB impact.
-- **CI + jars:** run + sizes filled below after build; zip refreshed in finalize.
+- **CI:** first run 33946862166 FAILED (VaultAPI not resolvable - warps pom lacked the jitpack repo), fixed in f02dcab; run 33946966957 SUCCESS -> 3b60eb6. Jar = MAVOWarps-1.0.0.jar 14,438 B (root + jars/ identical; plugin.yml 1.0.0, strings verified). build.log from the failed run removed in finalize.
 - **Deploy:** STOP; upload MAVOWarps-1.0.0.jar (NEW - no old jar to delete); keep plugins/MAVOWarps (auto-created). No config touches.

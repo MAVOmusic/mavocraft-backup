@@ -532,7 +532,7 @@ built/disabled status, so you always know what's next.
 ■ CURRENT WORK 3 — THE 10 IDEAS (all approved, queued in this order)
 
 ```
-1. PLAYER WARPS (/warp)
+1. PLAYER WARPS (/warp) ✅ SHIPPED (MAVOWarps 1.0.0)
 Players buy a warp slot and share their base.
 - /warp create <name> (coins, e.g. 25k) - at your base
 - /warp <name> - teleport (3s, same safety rules)
