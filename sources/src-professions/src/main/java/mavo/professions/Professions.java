@@ -163,7 +163,7 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             getLogger().info("PlaceholderAPI expansion registered (%mavoprof_...%).");
         }
         getLogger().info("MAVOProfessions v" + getDescription().getVersion() + " enabled: "
-                + profs.size() + " professions"
+                + profs.size() + " professions " + profs.keySet().stream().sorted().toList()
                 + (tavernBed != null ? ", tavern rest hooked at " + tavernBed.getWorld().getName()
                 + " " + tavernBed.getBlockX() + " " + tavernBed.getBlockY() + " " + tavernBed.getBlockZ() : ""));
     }
@@ -179,13 +179,25 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         return Registry.ENCHANTMENT.get(NamespacedKey.minecraft(key.toLowerCase(Locale.ROOT)));
     }
 
-    /** 3.15.1: an existing 3.14.x config.yml has no Sleeper profession and no sleep
-     *  section (saveDefaultConfig never overwrites an existing file) - write them so
-     *  the 10th profession + vote actually load on the user's live server. */
+    /** 3.15.2: an existing config.yml has no Sleeper profession and/or no sleep section
+     *  (saveDefaultConfig never overwrites an existing file) - write them so the 10th
+     *  profession + vote actually load on the live server. Also REPAIRS a malformed
+     *  entry: 'contains("sleeper")' is true for a stray scalar (e.g. "sleeper: true"
+     *  typed at professions level), but the loader then skips it silently - that is
+     *  exactly the "still 9 professions" case, so a real section is required. */
     private void migrateCfg() {
         boolean changed = false;
         ConfigurationSection profSection = getConfig().getConfigurationSection("professions");
-        if (profSection == null || !profSection.contains("sleeper")) {
+        Object curSleeper = profSection == null ? null : profSection.get("sleeper");
+        boolean sleeperOk = curSleeper instanceof ConfigurationSection
+                && ((ConfigurationSection) curSleeper).getString("display") != null
+                && ((ConfigurationSection) curSleeper).getBoolean("sleeper", false);
+        if (!sleeperOk) {
+            if (curSleeper != null) {
+                getConfig().set("professions.sleeper", null);
+                getLogger().warning("3.15.2: 'professions.sleeper' exists but is not a complete section"
+                        + " (bad indentation or a stray value) - replacing it with the Sleeper defaults.");
+            }
             getConfig().set("professions.sleeper.display", "&d😴 Sleeper");
             getConfig().set("professions.sleeper.action", "nights rested");
             getConfig().set("professions.sleeper.icon", "RED_BED");
@@ -200,7 +212,13 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             getConfig().set("professions.sleeper.rank-commands.100",
                     Arrays.asList("lp user %player% parent add sleeper"));
             changed = true;
-            getLogger().info("3.15.1: added the Sleeper profession to plugins/MAVOProfessions/config.yml.");
+            getLogger().info("3.15.2: " + (curSleeper == null ? "added" : "repaired")
+                    + " the Sleeper profession in plugins/MAVOProfessions/config.yml.");
+        }
+        Object rawSleep = getConfig().get("sleep");
+        if (rawSleep != null && !(rawSleep instanceof ConfigurationSection)) {
+            getConfig().set("sleep", null);
+            getLogger().warning("3.15.2: 'sleep' exists but is not a section - replacing it with defaults.");
         }
         ConfigurationSection sleepSec = getConfig().getConfigurationSection("sleep");
         if (sleepSec == null || !sleepSec.contains("vote-open-tick")) {
@@ -214,7 +232,7 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             if (!getConfig().contains("sleep.tavern-rest-sleeper-xp")) getConfig().set("sleep.tavern-rest-sleeper-xp", true);
             if (!getConfig().contains("sleep.rest-bonus-includes-sleeper")) getConfig().set("sleep.rest-bonus-includes-sleeper", false);
             changed = true;
-            getLogger().info("3.15.1: added the sleep section to plugins/MAVOProfessions/config.yml.");
+            getLogger().info("3.15.2: added the sleep section to plugins/MAVOProfessions/config.yml.");
         }
         if (changed) saveConfig();
     }
@@ -260,7 +278,11 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         if (sec == null) return;
         for (String id : sec.getKeys(false)) {
             ConfigurationSection c = sec.getConfigurationSection(id);
-            if (c == null) continue;
+            if (c == null) {
+                getLogger().warning("config.yml: professions." + id
+                        + " is not a section - skipped (bad indentation or stray value).");
+                continue;
+            }
             Prof p = new Prof();
             p.id = id.toLowerCase(Locale.ROOT);
             p.display = ChatColor.translateAlternateColorCodes('&', c.getString("display", id));

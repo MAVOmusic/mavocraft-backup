@@ -1,10 +1,20 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 18
+version: 19
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&d&lv19 &7- Sleeper is LIVE (10th profession!)"
+    icon: RED_BED
+    lines:
+      - "&7New 10th profession: &e/profession&7 -> Sleeper takes a &fbound bed&7."
+      - "&7Place the bed (auto-binds), right-click it at night: &fsleep only&7 -"
+      - "&7no respawn point, no home. Lost it? Replacement in &e/profession&7."
+      - "&750 rests per level, +1 heart + &e100 Lucky Coins&7 every 10 levels,"
+      - "&7&eLv100 = Sleeper rank&7. Tavern rest = &f+1 point&7 to every"
+      - "&7active profession. Points only count in &fSURVIVAL&7."
+      - ""
   - title: "&e&lv18 &7- Fix batch: Extras, DeathChest, Casino, MobFarm"
     icon: EMERALD
     lines:
@@ -33,6 +43,7 @@ whatsnew:
       - "&7Completed exhibits turn into a &agreen box&7 - locked, no refunds."
       - "&7Donated items show &a\u2714 Already donated&7 - do not crate them."
       - ""
+  - title: "&e&lv15 &7- Museum shop auto-reload"
     icon: CHEST
     lines:
       - "&7&e/museum shopsgen&7 (admin) now reloads &fEconomyShopGUI&7 itself"

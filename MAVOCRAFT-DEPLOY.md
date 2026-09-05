@@ -1,4 +1,4 @@
-# MAVOcraft — UPDATE GUIDE (2026-09-05: MobFarm 2.7.5 hub fix + SLEEP PACK — Professions 3.15.1 / DeathChest 1.2.0 / Guide 2.8.2)
+# MAVOcraft — UPDATE GUIDE (2026-09-05: MobFarm 2.7.5 hub fix + SLEEP PACK — Professions 3.15.2 / DeathChest 1.2.0 / Guide 2.8.3)
 
 Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
@@ -18,9 +18,9 @@ Plain steps. Only replace/delete files named here. Never delete plugin folders.
 ## 2. DELETE these files from plugins/ (jars only)
 
     MAVOMobFarm-2.7.4.jar         <- replace with 2.7.5
-    MAVOProfessions-3.15.0.jar    <- replace with 3.15.1
+    MAVOProfessions-3.15.1.jar    <- replace with 3.15.2 (3.15.0 too if still there)
     MAVODeathChest-1.1.1.jar      <- replace with 1.2.0
-    MAVOGuide-2.8.1.jar           <- replace with 2.8.2
+    MAVOGuide-2.8.2.jar           <- replace with 2.8.3 (2.8.1 too if still there)
     (2.6.x / older MobFarm jars if still there)
 
 AuctionHouse 1.0.3 / Mobile plug-ins unchanged.
@@ -29,23 +29,31 @@ AuctionHouse 1.0.3 / Mobile plug-ins unchanged.
 
     MAVOMobFarm-2.7.5.jar       (buildhub/build <mob> apply zips directly - no restart,
                                   no "Unknown data pack"; keeps saved zips, protects farm +50)
-    MAVOProfessions-3.15.1.jar  (Sleeper profession + bound Sleeper Bed + night vote + rest bonuses;
-                                  adds Sleeper to an existing config automatically)
+    MAVOProfessions-3.15.2.jar  (Sleeper profession + bound Sleeper Bed + night vote + rest bonuses;
+                                  ADDS OR REPAIRS the sleeper section in an existing config automatically)
     MAVODeathChest-1.2.0.jar    (/grave costs scale with Player Level: 1000/10 at Lv1, x2 per level)
-    MAVOGuide-2.8.2.jar         (professions/tavern/deathchest pages updated, new Sleep page)
+    MAVOGuide-2.8.3.jar         (v19: Sleeper page + fixed duplicate keys in the shipped config)
 
 ## 4. KEEP all configs / data
 
-- plugins/MAVOProfessions/config.yml + data.yml: KEEP (Sleeper + sleep section are added by
-  the new jar with defaults; your 9 professions + levels are untouched).
+- plugins/MAVOProfessions/config.yml + data.yml: KEEP (the 3.15.2 jar adds/REPAIRS the
+  sleeper section + sleep keys itself: "3.15.2: added|repaired the Sleeper profession"
+  appears in the boot log; your 9 professions + levels are untouched).
 - plugins/MAVODeathChest/config.yml + data.yml: KEEP (costs are migrated to level-scaled
   1000/10 bases automatically; your graves are untouched).
-- plugins/MAVOGuide/config.yml: KEEP. plugins/MAVOMobFarm/config.yml + data.yml: KEEP.
+- plugins/MAVOGuide/config.yml: DELETE this ONE file - the 2.8.3 default is the corrected
+  config (its old copy still has duplicate icon/lines keys = the join-time warnings);
+  it regenerates clean on boot. plugins/MAVOMobFarm/config.yml + data.yml: KEEP.
 - world/datapacks/*-datapack.zip (zombie etc.) and anything you copied to your PC: KEEP.
 
 ## 5. START the server
 
-Boot log: "MAVOProfessions v3.15.1 enabled: 10 professions..." and NO warnings.
+Boot log (exact):
+  [MAVOProfessions] 3.15.2: added|repaired the Sleeper profession in plugins/MAVOProfessions/config.yml.
+  [MAVOProfessions] MAVOProfessions v3.15.2 enabled: 10 professions [archer, ..., sleeper] ...
+and NO "duplicate keys found" warnings at join.
+If your boot log STILL says 9 professions, post the PROFESSIONS section of your
+plugins/MAVOProfessions/config.yml into the chat.
 Your world still contains the hub, footpath and zombie bay exactly as they are.
 
 ## 5b. SLEEP PACK - one-time admin setup
@@ -62,6 +70,16 @@ Then a quick test at night (or /time set night 18000 on a test account, SURVIVAL
 - Tavern bed right-click (100 coins) at night -> "+1 profession point to N active profession(s)".
 - 5+ players online at 18:30 -> "Sleep time!" broadcast; type `!sleep yes` / `!sleep no`.
 - /grave -> costs should show 1000 coins / 10 LC at Player Level 1.
+
+## 5c. TAB - correct Sleeper placeholder (exact line, replace the old one)
+
+stream scoreboard line (this one ONLY):
+    - "&e🌾 &f%mavoprof_farmer%    &d😴 &f%mavoprof_sleeper% "
+
+NOT %mavoprof_sleeper_% and NOT %mavoprof_sleeper_*% (no suffix - the plain id is the
+placeholder; it prints "not started" until Sleeper is started, then Lv / progress).
+Also add to placeholder-refresh-intervals:  "%mavoprof_sleeper%": 1000
+Then /tab reload. Same line works on the grind board too.
 
 ## 6. SAVE YOUR WORK FIRST (most important step)
 
