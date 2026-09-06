@@ -90,6 +90,8 @@ public final class FishComp extends JavaPlugin implements Listener {
         saveData();
     }
 
+    private void saveData() { try { data.save(dataFile); } catch (Throwable ignored) { } }
+
     private void loadCfg() {
         try { zone = ZoneId.of(getConfig().getString("timezone", "Europe/London")); }
         catch (Throwable t) { zone = ZoneId.of("Europe/London"); }
@@ -128,8 +130,7 @@ public final class FishComp extends JavaPlugin implements Listener {
         return start;
     }
 
-    private void restoreWindow() {
-        long start = data.getLong("window.start", 0), end = data.getLong("window.end", 0);
+    private void restoreWindow() {        long start = data.getLong("window.start", 0), end = data.getLong("window.end", 0);
         if (start > 0 && end > start && System.currentTimeMillis() < end && System.currentTimeMillis() >= start - 30 * 60_000L) {
             windowStart = start; windowEnd = end; counting = true;
             scores.clear();

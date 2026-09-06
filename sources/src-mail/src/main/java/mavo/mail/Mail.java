@@ -154,7 +154,8 @@ public final class Mail extends JavaPlugin implements Listener {
             ItemStack icon;
             String who = data.getString(path + ".from-name", "?");
             if (item != null) icon = item.clone();
-            else if (coins > 0) icon = new ItemStack(Material.GOLD_INGOT, Math.min(64, Math.max(1, coins / 1000)));
+            else if (coins > 0) icon = new ItemStack(Material.GOLD_INGOT,
+                    (int) Math.min(64, Math.max(1, coins / 1000)));
             else icon = new ItemStack(Material.PAPER);
             ItemMeta m = icon.getItemMeta();
             List<String> lore = new ArrayList<>();
