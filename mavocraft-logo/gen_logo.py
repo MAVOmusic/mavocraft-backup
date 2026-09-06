@@ -1,78 +1,163 @@
 #!/usr/bin/env python3
-"""MAVOCRAFT block logo generator.
+"""MAVOCRAFT block logo generator - matches the reference art.
 
-Draws "MAVOCRAFT" with a classic 5x7 pixel font (scaled 2x -> 2x2 blocks per
-pixel) and emits ready-to-paste Minecraft /fill commands. All coordinates are
-RELATIVE (~) to the player, so:
+Reference look:
+  - chunky cream "cracked stone" letters (bone_block = cream; swap to
+    cracked_stone_bricks for real cracks)
+  - black concrete background, NO frame
+  - a CREEPER FACE built into both A's (black cutout)
+  - 3D extrusion: a dark deepslate copy of every letter, offset to the
+    bottom-left (world -x / +z) so the logo reads 3D from below
 
-    1. Stand at the TOP-LEFT corner of where the logo should go (the block at
-       the ceiling you want to be the top-left of the logo), looking NORTH.
-    2. Paste the commands in mavocraft-logo/fill-commands.txt.
-    3. Look up: the logo reads correctly when you stand under it facing north.
-
-Layout (blocks):
-    canvas 126 wide x 18 deep, 1 block thick at your eye-height Y when you
-    stand under it. Frame = GOLD_BLOCK, letters = SEA_LANTERN (they glow),
-    background = BLACK_CONCRETE.
+All /fill coordinates are RELATIVE (~) to the player, so:
+  1. Fly so your FEET are exactly on the bottom plane of the plaza ceiling.
+  2. Stand at the TOP-LEFT corner of where the logo goes, FACING NORTH.
+  3. Paste fill-commands.txt. Look up: logo reads correctly from below.
 """
+
 import sys, zlib, struct
 
-# 5x7 pixel font
+# ---------------- palette (change these lines to re-tint) ----------------
+BLOCK_BG      = "black_concrete"     # background
+BLOCK_LETTER  = "bone_block"         # cream stone letters (alt: cracked_stone_bricks)
+BLOCK_SHADOW  = "deepslate"          # 3D extrusion / shadow
+
+# ---------------- layout ----------------
+SCALE = 2                 # blocks per font pixel (2 = chunky)
+GAP_PX = 2                # gap between letters
+SHADOW_DX = -2            # extrusion offset in blocks (world x; -2 = west/left)
+SHADOW_DZ = 2             # extrusion offset in blocks (world z; +2 = south/down)
+WORD = "MAVOCRAFT"
+
+# ---------------- 7 x 9 chunky font (X = letter, . = empty) ----------------
+# The two A's carry the creeper face (same glyph; reference shows it in both).
 FONT = {
-    "M": ["#...#", "##..#", "#.#.#", "#..##", "#...#", "#...#", "#...#"],
-    "A": [".###.", "#...#", "#...#", "#####", "#...#", "#...#", "#...#"],
-    "V": ["#...#", "#...#", "#...#", "#...#", "#...#", ".#.#.", "..#.."],
-    "O": [".###.", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."],
-    "C": [".####", "#....", "#....", "#....", "#....", "#....", ".####"],
-    "R": ["####.", "#...#", "#...#", "####.", "#.#..", "#..#.", "#...#"],
-    "F": ["#####", "#....", "#....", "####.", "#....", "#....", "#...."],
-    "T": ["#####", "..#..", "..#..", "..#..", "..#..", "..#..", "..#.."],
+    "M": [
+        "X.....X",
+        "XX...XX",
+        "X.X.X.X",
+        "X..X..X",
+        "X.....X",
+        "X.....X",
+        "X.....X",
+        "X.....X",
+        "X.....X",
+    ],
+    "A": [
+        "..XXX..",
+        ".XXXXX.",
+        "XX...XX",
+        "X..X..X",   # creeper eyes (cut)
+        "X..X..X",   # creeper eyes (cut)
+        "XXXXXXX",   # mouth top
+        "XX.X.XX",   # mouth teeth (cut)
+        "XXXXXXX",   # mouth bottom
+        "XX...XX",
+    ],
+    "V": [
+        "X.....X",
+        "X.....X",
+        "X.....X",
+        "X.....X",
+        ".X...X.",
+        ".X...X.",
+        "..X.X..",
+        "..X.X..",
+        "...X...",
+    ],
+    "O": [
+        ".XXXXX.",
+        "XX...XX",
+        "XX...XX",
+        "XX...XX",
+        "XX...XX",
+        "XX...XX",
+        "XX...XX",
+        "XX...XX",
+        ".XXXXX.",
+    ],
+    "C": [
+        ".XXXXX.",
+        "XX.....",
+        "XX.....",
+        "XX.....",
+        "XX.....",
+        "XX.....",
+        "XX.....",
+        "XX.....",
+        ".XXXXX.",
+    ],
+    "R": [
+        "XXXXX..",
+        "XX...XX",
+        "XX...XX",
+        "XX...XX",
+        "XXXXX..",
+        "XX.XX..",
+        "XX..XX.",
+        "XX...XX",
+        "XX...XX",
+    ],
+    "F": [
+        "XXXXXXX",
+        "XX.....",
+        "XX.....",
+        "XX.....",
+        "XXXXX..",
+        "XX.....",
+        "XX.....",
+        "XX.....",
+        "XX.....",
+    ],
+    "T": [
+        "XXXXXXX",
+        "...X...",
+        "...X...",
+        "...X...",
+        "...X...",
+        "...X...",
+        "...X...",
+        "...X...",
+        "...X...",
+    ],
 }
 
-SCALE = 2          # blocks per font pixel (2 -> each pixel is 2x2 blocks)
-GAP_PX = 2         # pixel gap between letters
-NUM_LETTERS = 9    # M A V O C R A F T
-
-BBG = "black_concrete"   # background
-BLTR = "sea_lantern"     # letter fill (glows)
-BFRAME = "gold_block"    # 2-block frame
-
+# ---------------- pixel grid ----------------
 def pixel_grid():
-    """Return (w_px,h_px,grid) where grid[y][x] = letter char or None."""
-    word = "MAVOCRAFT"
-    w = NUM_LETTERS * 5 + (NUM_LETTERS - 1) * GAP_PX
-    h = 7
+    w = len(WORD) * 7 + (len(WORD) - 1) * GAP_PX
+    h = 9
     grid = [[None] * w for _ in range(h)]
     x = 0
-    for ch in word:
+    for ch in WORD:
         glyph = FONT[ch]
-        for ry in range(7):
-            for rx in range(5):
-                if glyph[ry][rx] == "#":
+        for ry in range(9):
+            for rx in range(7):
+                if glyph[ry][rx] == "X":
                     grid[ry][x + rx] = ch
-        x += 5 + GAP_PX
+        x += 7 + GAP_PX
     return w, h, grid
 
+# ---------------- commands ----------------
 def commands():
-    out = []
     wpx, hpx, grid = pixel_grid()
-    # canvas: 1px border (2 blocks) around everything
-    cw = wpx * SCALE + 2 * SCALE          # full canvas width in blocks
-    ch_ = hpx * SCALE + 2 * SCALE         # full canvas depth in blocks
-    out.append(f"# MAVOCRAFT logo - {cw} x {ch_} blocks (1 thick) at your Y")
-    out.append(f"# Stand at the TOP-LEFT corner (looking NORTH) then paste everything below.")
-    out.append(f"# Palette: background=black_concrete  letters=sea_lantern  frame=gold_block")
-    out.append("")
-    out.append(f"/fill ~0 ~0 ~0 ~{cw - 1} ~0 ~{ch_ - 1} minecraft:{BBG}")
-    # frame: two top rows, two bottom rows, two left cols, two right cols
-    out.append(f"/fill ~0 ~0 ~0 ~{cw - 1} ~0 ~1 minecraft:{BFRAME}")
-    out.append(f"/fill ~0 ~0 ~{ch_ - 2} ~{cw - 1} ~0 ~{ch_ - 1} minecraft:{BFRAME}")
-    out.append(f"/fill ~0 ~0 ~0 ~1 ~0 ~{ch_ - 1} minecraft:{BFRAME}")
-    out.append(f"/fill ~{cw - 2} ~0 ~0 ~{cw - 1} ~0 ~{ch_ - 1} minecraft:{BFRAME}")
-    # letters: per 2-block row, per contiguous run of set pixels -> one fill
+    margin = 2                       # black border all round (blocks)
+    faceW = wpx * SCALE
+    faceH = hpx * SCALE
+    x0, z0 = margin, margin
+    # canvas must also cover the shadow overhang
+    cw = faceW + 2 * margin + max(0, SHADOW_DX) - min(0, SHADOW_DX)
+    ch_ = faceH + 2 * margin + max(0, SHADOW_DZ) - min(0, SHADOW_DZ)
+    out = ["# MAVOCRAFT logo - creeper edition, %dx%d blocks (1 thick)" % (cw, ch_),
+           "# Stand at the TOP-LEFT corner (facing NORTH) at ceiling height, then paste.",
+           "# Letters=%s  background=%s  extrusion/shadow=%s (offset %+d,%+d)"
+           % (BLOCK_LETTER, BLOCK_BG, BLOCK_SHADOW, SHADOW_DX, SHADOW_DZ),
+           ""]
+    # background
+    out.append("/fill ~0 ~0 ~0 ~%d ~0 ~%d minecraft:%s" % (cw - 1, ch_ - 1, BLOCK_BG))
+    # face pixels
+    face = set()
     for ry in range(hpx):
-        z0 = SCALE + ry * SCALE
-        z1 = z0 + SCALE - 1
+        z0row = z0 + ry * SCALE
         rx = 0
         while rx < wpx:
             if grid[ry][rx] is None:
@@ -81,12 +166,38 @@ def commands():
             start = rx
             while rx < wpx and grid[ry][rx] is not None:
                 rx += 1
-            x0 = SCALE + start * SCALE
-            x1 = SCALE + (rx - 1) * SCALE + SCALE - 1
-            out.append(f"/fill ~{x0} ~0 ~{z0} ~{x1} ~0 ~{z1} minecraft:{BLTR}")
-            # two-pixel letters are 2 blocks tall -> next row band handled separately
-    return out, cw, ch_
+            xa = x0 + start * SCALE
+            xb = x0 + (rx - 1) * SCALE + SCALE - 1
+            za = z0row
+            zb = z0row + SCALE - 1
+            out.append("/fill ~%d ~0 ~%d ~%d ~0 ~%d minecraft:%s"
+                       % (xa, za, xb, zb, BLOCK_LETTER))
+            for gx in range(xa, xb + 1):
+                for gz in range(za, zb + 1):
+                    face.add((gx, gz))
+    # shadow pixels (offset copy, only where no face pixel sits)
+    shadow = set()
+    for (gx, gz) in face:
+        s = (gx + SHADOW_DX, gz + SHADOW_DZ)
+        if s not in face and 0 <= s[0] < cw and 0 <= s[1] < ch_:
+            shadow.add(s)
+    # group shadow runs per row
+    rows = {}
+    for (gx, gz) in shadow:
+        rows.setdefault(gz, []).append(gx)
+    for gz in sorted(rows):
+        xs = sorted(rows[gz])
+        i = 0
+        while i < len(xs):
+            j = i
+            while j + 1 < len(xs) and xs[j + 1] == xs[j] + 1:
+                j += 1
+            out.append("/fill ~%d ~0 ~%d ~%d ~0 ~%d minecraft:%s"
+                       % (xs[i], gz, xs[j], gz, BLOCK_SHADOW))
+            i = j + 1
+    return out, cw, ch_, face, shadow
 
+# ---------------- PNG preview ----------------
 def write_png(path, w, h, pixels):
     def chunk(t, d):
         c = t + d
@@ -99,10 +210,10 @@ def write_png(path, w, h, pixels):
     with open(path, "wb") as f:
         f.write(png)
 
-def preview(path, cw, ch_, grid, wpx, hpx):
-    px = 8  # pixels per block in the preview
+def preview(path, cw, ch_, face, shadow):
+    px = 8
     W, H = cw * px, ch_ * px
-    col = {"b": (29, 29, 33), "l": (207, 232, 234), "f": (246, 214, 76)}
+    col = {"b": (13, 13, 15), "l": (236, 230, 218), "s": (40, 40, 46)}
     pix = [0] * (W * H * 3)
     def setb(x, y, c):
         r, g, b = col[c]
@@ -110,24 +221,16 @@ def preview(path, cw, ch_, grid, wpx, hpx):
             for xx in range(x * px, (x + 1) * px):
                 i = (yy * W + xx) * 3
                 pix[i], pix[i + 1], pix[i + 2] = r, g, b
-    for y in range(ch_):
-        for x in range(cw):
-            c = "b"
-            if x < 2 or x >= cw - 2 or y < 2 or y >= ch_ - 2:
-                c = "f"
-            else:
-                gx = (x - 2) // SCALE
-                gy = (y - 2) // SCALE
-                if gy < hpx and gx < wpx and grid[gy][gx] is not None:
-                    c = "l"
-            setb(x, y, c)
+    for (x, y) in face:
+        setb(x, y, "l")
+    for (x, y) in shadow:
+        setb(x, y, "s")
     write_png(path, W, H, pix)
 
 if __name__ == "__main__":
-    cmds, cw, ch_ = commands()
+    cmds, cw, ch_, face, shadow = commands()
     with open(sys.argv[1] if len(sys.argv) > 1 else "fill-commands.txt", "w") as f:
         f.write("\n".join(cmds) + "\n")
-    wpx, hpx, grid = pixel_grid()
-    preview("MAVOCRAFT-logo-preview.png", cw, ch_, grid, wpx, hpx)
-    lit = sum(1 for row in grid for c in row if c is not None)
-    print(f"canvas {cw}x{ch_} blocks, {lit*SCALE*SCALE} letter blocks, {len(cmds)} commands")
+    preview("MAVOCRAFT-logo-preview.png", cw, ch_, face, shadow)
+    print("canvas %dx%d blocks | %d letter blocks | %d shadow blocks | %d commands"
+          % (cw, ch_, len(face), len(shadow), len(cmds)))
