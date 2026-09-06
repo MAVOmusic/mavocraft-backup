@@ -223,6 +223,32 @@ v19 — SLEEPER IS LIVE (10TH PROFESSION!)
 - Points only count in SURVIVAL
 ```
 
+```
+═══════════════════════════════════════
+v20 — PLAYER WARPS + CHEST SHOPS
+═══════════════════════════════════════
+- /warp create <name> (25k coins) - buy a public warp at your base
+- /warps - browse everyone's warps; /warp <name> teleports (3s safety)
+- Chest shops: fill a chest, /cshop create <price>, buyers right-click
+- Buy 1 / shift = buy 64; owner sneak+right-click = storage
+- Shop chests can't be broken, exploded or pushed by pistons
+```
+
+```
+═══════════════════════════════════════
+v21 — THE BIG BUILD (IDEAS 3-10!)
+═══════════════════════════════════════
+- ⚔ Weekly BOSS RAID - /boss join, Sat 20:00, scaled HP, shared loot
+- 🎁 Custom CRATES + KEYS - common/rare/mythic, right-click to open
+- ⚡ DOUBLE XP WEEKENDS - Fri 18:00 -> Sun 18:00, all profession XP x2
+- 🐶 PETS 2.0 - pets now carry a stack + pull XP orbs, they level up
+- 🎣 FISHING TOURNAMENT - random 2h weekend window, top 3 paid
+- ✉ MAIL - /mail send <player> [coins] [message], grab items too
+- 🎃 SEASONAL CALENDAR - Spooky/Festive/Anniversary events + candy
+- 🔨 AUCTION 1.1 - Buy Now prices + live bids (+5 min on snipes)
+- 💤 Sleep now wakes you at 07:00 (was 12:00 - days are longer!)
+```
+
 ---
 
 ## 3. FEATURES — paste into `✨┃features` (one block each)
@@ -488,60 +514,187 @@ TAB shows: rank | name | Lv + % | coords | day | deaths.
 - /sb - switch scoreboard (stream / grind)
 ```
 
+```
+⚔ BOSS RAID (/boss)
+One boss a week, the whole server fights it together.
+- /boss join - join the queue (opens 10 min before Sat 20:00)
+- /boss return - back to the arena if you die
+- Boss HP scales with raiders (2,000 + 100 each)
+- Kill rewards: coins (per participant + damage bonus), Lucky Coins,
+  a trophy for top damage, and a Mythic crate key
+```
+
+```
+🎁 CRATES + KEYS (/crate)
+Weighted reward crates you open with a key.
+- Right-click a crate block with a matching key to roll
+- Tiers: COMMON / RARE / MYTHIC (bigger prizes, longer cooldowns)
+- Keys come from: boss raid, quests, community goals, admins
+- Prizes: coins, Lucky Coins or items (even Elytra in Mythic!)
+```
+
+```
+⚡ DOUBLE XP WEEKENDS
+Every weekend your profession XP is doubled.
+- Fri 18:00 -> Sun 18:00 (UK time)
+- Applies to ALL profession XP (mining, farming, hunting...)
+- Bossbar countdown while it is live
+- /xpboost - check when the next boost starts
+```
+
+```
+🐶 PETS 2.0 (/pets)
+Pets are companions now - not just decoration.
+- /pets - buy Cat / Dog / Fox / Parrot / Axolotl / Turtle
+- Each pet levels up while active (+1 XP per minute)
+- Abilities: pulls XP orbs to you, and carries one stack in /pet menu
+- Your pet follows you and cannot be hurt
+```
+
+```
+🎣 FISHING TOURNAMENT (/fishcomp)
+Every week a random 2-hour fishing window.
+- Every catch = 1 point (salmon 2, pufferfish 3, tropical fish 4)
+- Top 3 win coins (15k / 8k / 5k), everyone with 3+ catches gets paid
+- /fishcomp - status + all-time leaderboard
+```
+
+```
+✉ MAIL (/mail)
+Send coins and items to anyone, even when they are offline.
+- /mail send <name> 1000 "nice build!"  (+ the item in your hand)
+- /mail - claim: coins go straight to your balance
+- Expires after 7 days, max 100 held per player
+```
+
+```
+🎃 SEASONAL EVENTS (/season)
+The server changes with the real calendar.
+- Spooky Season (25 Oct - 2 Nov): mobs drop candy
+- Festive Season (20 Dec - 5 Jan): cookie drops from mobs
+- Anniversary (1-8 Sep): cake drops + DOUBLE XP all week
+- /season - which season is active
+```
+
+```
+🔨 AUCTION HOUSE 1.1 (/ah)
+The auction house just got faster and more exciting.
+- /ah add hand 34 340 12h 500 - set a Buy Now price too
+- Click a listing: buy instantly, or BID +10% / +25%
+- Bids in the last minute extend the auction +5 minutes (no sniping)
+- Highest bid wins at the end - money was held safely in escrow
+```
+
+```
+💤 SLEEP RULE CHANGE
+Sleeping now wakes everyone at 07:00 instead of 12:00.
+- Full night of active play every day - no more losing half the day
+- The !sleep vote skip now also lands at 07:00
+```
+
 ---
 
 ## 4. CURRENT WORK — paste into `🛠┃current-work`
 
 ```
-■ CURRENT WORK 1 — GAMBLER + SLEEPER BED EXPLOIT (IN PROGRESS)
-Problem:
-- Sleep gives +1/+2 profession points to EVERY active profession,
-  including Gambler. Gambler needs only 5 XP per level (xp-base 5,
-  growth 1.008) = 5 nights of sleep = free Gambler level. Way too easy.
-- Sleeper bed exploit: place bound bed -> break it -> it drops as a
-  NORMAL bed (sellable, ~56 coins). /profession gives another bound bed,
-  place, break, sell... infinite coins.
-Fix (in the build):
-- Gambler rebalanced: xp-base 5 -> 30, xp-growth 1.008 -> 1.012
-  (sleep still gives points, but 30 nights = L2 - betting is the real path)
-- Sleeper bed NEVER drops as a normal bed again: breaking it drops the
-  BOUND bed item (pick it up, place again = rebinds).
-- Bound beds are explosion-proof (TNT can't dupe them either).
-- Bed shop sell price: RED_BED set to 1 in the EconomyShopGUI sell config
-  (defence in depth - we'll give the exact file).
+■ CURRENT WORK 1 — GAMBLER + SLEEPER BED EXPLOIT ✅ SHIPPED (3.15.4)
+- Gambler rebalanced: xp-base 5 -> 30, growth 1.008 -> 1.012
+- Sleeper bed never drops as a normal bed; bound bed is explosion-proof
+- RED_BED shop sell price set to 1 (defence in depth)
 ```
 
 ```
-■ CURRENT WORK 2 — MOB FARM BUILD ORDER (READY)
+■ CURRENT WORK 2 — MOB FARM BUILD ORDER ✅ SHIPPED (2.7.7)
 Build in this exact order - bays are 30 blocks apart along the line.
-Same row = connect them, then move to the next row.
-HOSTILE WING (west, x -80 -> -200, rows z -40 -> -160):
-  Row 1 (z -40):   zombie -> husk -> skeleton -> stray -> hoglin
-  Row 2 (z -80):   spider -> cave_spider -> creeper -> enderman -> piglin
-  Row 3 (z -120):  blaze -> magma_cube -> slime -> wither_skeleton -> silverfish
-  Row 4 (z -160):  drowned -> guardian -> witch -> pillager -> phantom
-ANIMAL WING (east, x +80 -> +170, rows z -40 -> -160):
-  Row 1 (z -40):   cow -> pig -> chicken -> sheep
-  Row 2 (z -80):   rabbit -> villager -> iron_golem -> squid
-  Row 3 (z -120):  glow_squid -> bee -> fox -> goat
-  Row 4 (z -160):  llama -> panda -> frog -> sniffer
-New command: /mobfarm order - prints this list live with each bay's
-built/disabled status, so you always know what's next.
+HOSTILE WEST (x -80 -> -200):  z-40 zombie husk skeleton stray hoglin
+  z-80 spider cave_spider creeper enderman piglin
+  z-120 blaze magma_cube slime wither_skeleton silverfish
+  z-160 drowned guardian witch pillager phantom
+ANIMAL EAST (x +80 -> +170):  z-40 cow pig chicken sheep
+  z-80 rabbit villager iron_golem squid
+  z-120 glow_squid bee fox goat
+  z-160 llama panda frog sniffer
+/mobfarm order prints this live with built/disabled status per bay.
 ```
 
-■ CURRENT WORK 3 — THE 10 IDEAS (all approved, queued in this order)
+■ CURRENT WORK 3 — THE 10 IDEAS ✅ ALL SHIPPED (v20 + v21)
 
 ```
-1. PLAYER WARPS (/warp) ✅ SHIPPED (MAVOWarps 1.0.0)
-Players buy a warp slot and share their base.
-- /warp create <name> (coins, e.g. 25k) - at your base
-- /warp <name> - teleport (3s, same safety rules)
-- /warps - public list, searchable
-- Hard gates: 1 per player + expandable, cooldown per player
-Why: wild spawns + 5-400k range means bases are far apart; warps = community.
+1. PLAYER WARPS (/warp) ✅ MAVOWarps 1.0.0 - buy/share a public warp
+2. CHEST SHOPS (/cshop) ✅ MAVOChestShops 1.0.0 - player shops, buy GUI
+3. WEEKLY BOSS RAID (/boss) ✅ MAVOBossRaid 1.0.0 - Sat 20:00, scaled HP
+4. CUSTOM CRATES + KEYS (/crate) ✅ MAVOCrates 1.0.0 - common/rare/mythic
+5. DOUBLE XP WEEKENDS (/xpboost) ✅ MAVODoubleXp 1.0.0 - Fri-Sun x2
+6. AH QUICK-BUY + BID TIMERS ✅ AuctionHouse 1.1.0 - Buy Now, +5min snipes
+7. PET ABILITIES 2.0 (/pets) ✅ MAVOPets 2.0.0 - carry + XP orbs + levels
+8. FISHING TOURNAMENT (/fishcomp) ✅ MAVOFishComp 1.0.0 - weekly 2h window
+9. MAIL SYSTEM (/mail) ✅ MAVOMail 1.0.0 - coins + items offline-safe
+10. SEASONAL CALENDAR (/season) ✅ MAVOSeasonal 1.0.0 - Spooky/Festive/Anniversary
+```
+
+■ CURRENT WORK 4 — NEXT 10 (draft, based on the most famous Minecraft plugins)
+
+```
+11. TELEPORT REQUESTS (/tpa) - inspired by EssentialsX
+Ask to teleport to a friend: /tpa <name> -> they accept. Same 3s safety,
+cooldown, no spam. Great for meeting up without sharing warps.
+```
+
+```
+12. CHEST & DOOR LOCKS (/lock) - inspired by LWC / ChestLock
+Lock any chest/furnace/door with /lock, add friends with /trust.
+Fits on top of claims - private storage even in shared areas.
+```
+
+```
+13. TREE FELLING (/timber) - inspired by UltimateTimber
+Chop the bottom log, whole tree falls. Gives Lumberjack XP per log
+(drops are normal). Huge build QoL, big QoL win.
+```
+
+```
+14. CUSTOM CRAFTING (MAVOCrafting) - inspired by Slimefun-lite
+Craftable versions of uncraftables: chainmail, saddles, name tags, leads,
+totems, spawn eggs. Config-driven recipes, no OP machine spam.
+```
+
+```
+15. CUSTOM ENCHANTS (/enchants) - inspired by EcoEnchants / ExcellentEnchants
+Enchant gems from crates/boss/quests: Vein Miner, Auto Smelt, XP Boost,
+Multi Jump, Glowing. Up to tier 3, one per tool, balanced with professions.
+```
+
+```
+16. COUPLES (/marry) - inspired by MarriageMaster
+Propose, get married: shared home (/couple home), /couple tp, heart particles,
+anniversary chest. Pure social fun, no pvp buffs.
+```
+
+```
+17. AMBIENT MINI-BOSSES (/mobs) - inspired by MythicMobs / Elitemobs
+10 rare biome bosses roam the wild (swamp witch lord, desert pharaoh...).
+Drops: enchants, keys, cosmetic heads. Feeds achievements + quests.
+```
+
+```
+18. SPAWNERS (/spawners) - inspired by SilkSpawners
+Mine spawners with Silk Touch, /spawner info shows the mob.
+Mob Farm stays the main source - spawners are a rare boss/mythic drop.
+```
+
+```
+19. RANKED DUELS (/duel) - inspired by the Duels plugin
+Challenge a player, pick a kit, fight in an arena. Win/loss record +
+rating, weekly top 5. No loot loss - pure sport.
+```
+
+```
+20. GUILDS (/guild) - inspired by Factions / Kingdoms
+Create a guild, guild chat + bank, claim a territory (paid, limited).
+Guild wars = declared battles with a timer. The big social endgame.
 ```
 
 ---
 ---
 
-*Generated 2026-09-05 from the live repo (MAVOcraft 26.2, 39 MAVO/Bukkit plugins).*
+*Generated 2026-09-06 from the live repo (MAVOcraft, 46 MAVO plugins).*

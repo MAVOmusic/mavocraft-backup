@@ -1,178 +1,95 @@
-# MAVOcraft — UPDATE GUIDE (2026-09-05: MobFarm 2.7.7 build order + Professions 3.15.4 Gambler rebalance + Sleeper bed anti-exploit — 2.7.6/1.2.1/3.15.3 also in this batch if not deployed yet)
+# MAVOcraft — UPDATE GUIDE (2026-09-06: THE BIG BUILD v21 — Boss Raid, Crates, Double XP, Pets 2.0, Fishing Tourney, Mail, Seasonal, AH 1.1.0, Professions 3.15.5 bedtime 7:00)
 
 Plain steps. Only replace/delete files named here. Never delete plugin folders.
 
-## 0. READ THIS FIRST (mobfarm saves + sleep pack setup)
+## 0. READ THIS FIRST
 
-- MobFarm 2.7.5 fixes buildhub/"Unknown data pack": the hub + bay zips are now applied
-  DIRECTLY in Java, so `/mobfarm buildhub` and `/mobfarm build <mob>` work right after
-  savehub with NO server restart. The MobFarm jar NEVER contains your footpath:
-  `/mobfarm savehub` MUST have been run before any `/mobfarm purge`/`clear`, and hub +
-  bay zips copied to your PC.
-- The Sleep pack adds the 10th profession (Sleeper), the 18:30 night vote and level-scaled
-  grave costs. It needs ONE admin setup command after boot (`/sleeper tavernset`) and the
-  LuckPerms group `sleeper` (only if you want the L100 rank group; command below).
+- MAVOProfessions **3.15.5** changes one thing: sleeping in a bed now wakes you at
+  **07:00 (tick 1000)** instead of 12:00 (tick 6000). The old value on your server
+  gets migrated automatically (only if it is still the default 6000; a custom
+  wake value is left alone).
+- MAVODoubleXp hooks into Professions by reflection — install BOTH in the same stop.
+- MAVOCrates must load BEFORE MAVOBossRaid if you want boss crate keys (softdepend
+  handles the order; missing crate key = boss still pays coins/LC, no key).
+- AuctionHouse 1.1.0 keeps the same data.yml — listings/cooldowns/inbox are
+  compatible. Old listings just have no bid/buy-now fields until re-posted.
 
 ## 1. STOP the server (full stop, no /reload)
 
-## 2. DELETE these files from plugins/ (jars only) - DELETE NOTHING FOR MAVOWarps / MAVOChestShops (both new)
+## 2. DELETE these files from plugins/ (jars only)
 
-    MAVOMobFarm-2.7.6.jar         <- replace with 2.7.7 (2.7.5/2.7.4 too if still there)
-    MAVOEvents-1.2.0.jar          <- replace with 1.2.1 (if not yet)
-    MAVOProfessions-3.15.3.jar    <- replace with 3.15.4 (3.15.2/3.15.1/3.15.0 too if still there)
-    MAVODeathChest-1.1.1.jar      <- replace with 1.2.0
-    MAVOGuide-2.8.2.jar           <- already replaced with 2.8.3 (keep 2.8.3)
-    (2.6.x / older MobFarm jars if still there)
+    MAVOProfessions-3.15.4.jar    <- replace with 3.15.5 (3.15.3/older too if still there)
+    MAVOAuctionHouse-1.0.3.jar    <- replace with 1.1.0 (1.0.x/older too if still there)
+    MAVOPets-1.0.0.jar            <- replace with 2.0.0
+    (nothing else - all other jars stay)
 
-AuctionHouse 1.0.3 / Mobile plug-ins unchanged.
+## 3. UPLOAD these jars into plugins/  (9 files)
 
-## 3. UPLOAD these jars into plugins/
+    MAVOProfessions-3.15.5.jar  (bedtime wake-up 12:00 -> 07:00; + DoubleXp hook: every
+                                 profession XP grant is multiplied while a boost runs)
+    MAVOAuctionHouse-1.1.0.jar  (QUICK-BUY + BID TIMERS: /ah add ... [buy-now]; listing
+                                 shows Buy Now + current bid; click listing -> buy / Buy Now /
+                                 bid +10%/+25% /custom /ah bid <id> [amount]; bids in the last
+                                 60s auto-extend +5 min; auctions with bids settle to the top
+                                 bidder at expiry (their coins were escrowed); use /ah buy <id>)
+    MAVOBossRaid-1.0.0.jar      (NEW - weekly boss: /boss join opens 10 min before Sat 20:00;
+                                 scaled HP (2,000 + 100/raider), coins + damage bonus +
+                                 Lucky Coins + trophy + crate key; admin: /boss setarena|now|cancel)
+    MAVOCrates-1.0.0.jar        (NEW - custom crates + keys: /crate set <name> on a block,
+                                 /crate givekey <player> <common|rare|mythic>; right-click crate
+                                 with matching key = weighted roll; blocks unbreakable by players)
+    MAVODoubleXp-1.0.0.jar      (NEW - DOUBLE XP weekends: Fri 18:00 -> Sun 18:00 (Europe/London,
+                                 config); bossbar countdown; /xpboost status; admin /xpboost now
+                                 <minutes> [mult] | off | reload)
+    MAVOPets-2.0.0.jar          (NEW abilities: /pets = shop (cat/dog/fox/parrot/axolotl/turtle),
+                                 /pet menu = carry slot + xorb toggle + recall; pet levels +1 XP
+                                 per active minute (max 100); pets invulnerable, follow you)
+    MAVOFishComp-1.0.0.jar      (NEW - weekly fishing tournament: one random 2h window
+                                 Sat/Sun; any catch = 1 pt, rares worth more; top 3 coins,
+                                 participation 500 for 3+ catches; /fishcomp status|top)
+    MAVOMail-1.0.0.jar          (NEW - /mail send <player> [coins] [message] (+ held item);
+                                 /mail GUI to claim; 7-day expiry, max 100, offline safe)
+    MAVOSeasonal-1.0.0.jar      (NEW - season calendar: Spooky 25 Oct-2 Nov, Festive 20 Dec-5 Jan,
+                                 Anniversary 1-8 Sep; mobs drop candy; Anniversary = x2 XP;
+                                 /season status; admin /season toggle <id> to test early)
 
-    MAVOMobFarm-2.7.7.jar       (2.7.6 + /mobfarm order - prints the bay build sequence row by row
-                                  with built/disabled status for each; all 2.7.6 zone features inside)
-    MAVOEvents-1.2.1.jar        (Zombie Siege = night only: never starts before 18:30, auto-ends at
-                                  sunrise 06:00; /event start zombiesiege blocked in daytime)
-    MAVOProfessions-3.15.4.jar  (Gambler rebalanced: xp-base 5->30 + growth 1.008->1.012 (sleep rests
-                                  no longer = free Gambler levels); Sleeper bed NEVER drops as a normal
-                                  sellable bed - breaking it drops the BOUND bed, explosions preserve it)
-    MAVODeathChest-1.2.0.jar    (keep - already uploaded)
-    MAVOGuide-2.8.3.jar         (keep - already uploaded)
-    MAVOWarps-1.0.0.jar         (NEW - public player warps: /warp create = 25k coins, /warps list,
-                                  /warp <name> teleports with 3s safety; 50k/100k for 2nd/3rd slot)
-    MAVOChestShops-1.0.0.jar    (NEW - player chest shops: items in chest -> /cshop create <price>,
-                                  right-click to buy (1 or 64), sneak+click = owner storage;
-                                  /cshop price|remove|list|info; optional market regions + /cshop rent)
+## 4. KEEP all configs / data — BUT note
 
-## 4. KEEP all configs / data
-
-- plugins/MAVOProfessions/config.yml + data.yml: KEEP (jar rewrites the gambler curve + sleep keys
-  itself; professions + levels untouched).
-- plugins/EconomyShopGUI - find the RED_BED sell price and set it to 1 (defence in depth for the
-  Sleeper bed; it is in one of the shops/*.yml files with a `sell:` key - same files the AH scans).
-- plugins/MAVOEvents/config.yml: KEEP (siege window is built-in, no config keys needed).
-- plugins/MAVODeathChest/config.yml + data.yml: KEEP (costs are migrated to level-scaled
-  1000/10 bases automatically; your graves are untouched).
-- plugins/MAVOGuide/config.yml: KEEP the 2.8.3 one (deleted + regenerated last update).
-  plugins/MAVOMobFarm/config.yml + data.yml: KEEP (zone enabled/disabled is stored in data.yml,
-  applied by /mobfarm disable|enable).
-- world/datapacks/*-datapack.zip (zombie etc.) and anything you copied to your PC: KEEP.
+- plugins/MAVOProfessions/config.yml + data.yml: KEEP. 3.15.5 migrates
+  `sleep.skip-to-tick` 6000 -> 1000 on boot when it is still the old default.
+- plugins/MAVOAuctionHouse/config.yml + data.yml: KEEP (same storage).
+- plugins/MAVOPets/data.yml: KEEP (2.0.0 reads the same save; old 1.0.0 "pets" key is
+  ignored, purchases in the new format live under pets2 - no conflict).
+- EconomyShopGUI: no change this time.
+- New plugins create their own folders on first boot (no config to pre-place).
 
 ## 5. START the server
 
-Boot log (exact):
-  [MAVOProfessions] 3.15.3: Sleeper profession already present|added|repaired the Sleeper profession ...
-  [MAVOProfessions] MAVOProfessions v3.15.3 enabled: 10 professions [archer, ..., sleeper] ...
-  [MAVOMobFarm] MAVOMobFarm v2.7.6 enabled. mobs=36 ...  (real version, no more "2.7.4")
-If it STILL says 9 professions, run /sleeper debug and send me the output (it prints
-professions ON DISK vs loaded - one command, answers everything).
-Your world still contains the hub, footpath and zombie bay exactly as they are.
+Expected boot lines (order depends on jar loading):
+    MAVOProfessions v3.15.5 enabled: 10 professions [.., sleeper]
+    3.15.5: bedtime wake-up 12:00 -> 7:00 (if the old default was migrated)
+    MAVOAuctionHouse 1.1.0 enabled. shopSell=.. listings=..
+    MAVOBossRaid v1.0.0 enabled - next raid Sat 20:00 arena=NOT SET (/boss setarena)
+    MAVOCrates v1.0.0 enabled - 3 crate type(s), 0 block(s).
+    MAVODoubleXp v1.0.0 enabled - weekly FRI 18:00 -> SUN 18:00 x2.0.
+    MAVOPets v2.0.0 enabled - 6 pet types, N owned pet(s) total.
+    MAVOFishComp v1.0.0 enabled - current window ...
+    MAVOMail v1.0.0 enabled - max 100 per player, 7 day expiry.
+    MAVOSeasonal v1.0.0 enabled - 3 season(s) defined, active: none|anniversary
 
-## 5b. SLEEP PACK - one-time admin setup
+## 6. ONE-TIME ADMIN SETUP (after boot)
 
-    /sleeper tavernset        <- look at the plaza Tavern bed and run this (2 blocks or less)
-                                 so Tavern rests award +1 profession point to active professions
-    lp creategroup sleeper    <- optional: creates the group for the L100 SLEEPER RANK
-                                 (per-profession config commands run at L100 automatically;
-                                 default "lp user %player% parent add sleeper")
+1. /boss setarena          - stand in your boss arena, then /boss now to test
+2. /crate set common|rare|mythic  - look at each crate block you build
+   /crate givekey <player> <name> [n]  - hand out keys (boss/quests can too)
+3. /xpboost status         - shows the weekly window (default already on)
+4. /season status          - calendar; /season toggle anniversary to test
+5. /fishcomp status        - next weekend window
+6. /pets /pet menu         - player-facing; pet prices in config if you want them lower
+7. /mail                   - tell players: /mail send <name> 1000 "nice build!"
 
-Then a quick test at night (or /time set night 18000 on a test account, SURVIVAL mode so XP counts):
-- /profession -> 10 icons including Sleeper. Start it: you get the BOUND SLEEPER BED.
-- Place the bed, right-click it at night -> +1 Sleeper XP, +2 profession points (no respawn/home).
-- Tavern bed right-click (100 coins) at night -> "+1 profession point to N active profession(s)".
-- 5+ players online at 18:30 -> "Sleep time!" broadcast; type `!sleep yes` / `!sleep no`.
-- /grave -> costs should show 1000 coins / 10 LC at Player Level 1.
+## 7. MAVOCRAFT-CONTEXT + DISCORD
 
-## 5c. MOBFARM 2.7.6 - unbuilt zones: disable, then enable after /mobfarm build <mob>
-
-- Zones are wiped right now, so first: /mobfarm disable all  then  /mobfarm enable zombie
-  (keeps only the built bay visible - nobody can buy/teleport into a missing bay = no fall damage).
-- Build the next bay as usual (/mobfarm build husk), then /mobfarm enable husk -> icon back.
-- Persisted in plugins/MAVOMobFarm/data.yml - survives restarts. /mobfarm disable|enable <mob|all>
-  only affects the pick/prices menus + guards /mobfarm current; your zips and bays untouched.
-- /mobfarm enter now auto-opens the pick menu on arrival; clicking your ACTIVE zone = FREE
-  return (same as /mobfarm current). Switching to another mob still pays (cost doubles per pick).
-
-## 5d. TAB - correct Sleeper placeholder (exact line, replace the old one)
-
-stream scoreboard line (this one ONLY):
-    - "&e🌾 &f%mavoprof_farmer%    &d😴 &f%mavoprof_sleeper% "
-
-NOT %mavoprof_sleeper_% and NOT %mavoprof_sleeper_*% (no suffix - the plain id is the
-placeholder; it prints "not started" until Sleeper is started, then Lv / progress).
-Also add to placeholder-refresh-intervals:  "%mavoprof_sleeper%": 1000
-Then /tab reload. Same line works on the grind board too.
-
-## 6. SAVE YOUR WORK FIRST (most important step)
-
-    /mobfarm savehub                    <- captures hub + walls + EVERY footpath you built
-                                           (not the 36 bay boxes) into hub-datapack.zip;
-                                           prints the full path - copy it to your PC
-    /mobfarm zombie save                <- already saved; run again if you edited the bay
-                                           since the last save
-
-Check the file panel: world/datapacks/ must show hub-datapack.zip + zombie-datapack.zip
-(and the others as you build/save them). Download both to your PC now.
-
-## 7. Optional: full reset, ONLY after step 6 (zips are safe on disk + your PC)
-
-    /mobfarm purge
-    /mobfarm clear                      <- wipes hub + paths + bays in the WORLD
-    /mobfarm setcenter                  (x2 - once per range, as before)
-    /mobfarm buildhub                   <- restores hub + walls + footpaths DIRECTLY from the
-                                           zip (no restart needed - applied in Java, no
-                                           "Unknown data pack" possible)
-    /mobfarm build zombie               <- restores the zombie bay from its zip (same, no restart)
-    /mobfarm build husk                 <- then each other bay you have completed
-
-Do NOT run /mobfarm build (no arg) here: it only writes MISSING packs (existing ones are
-kept now), but it also does not restore bays - build <mob> does that. If you really want
-the pristine plugin layouts again: /mobfarm build force (this OVERWRITES saved bay edits).
-
-## 8. Build / reapply one bay (unchanged from 2.7.x)
-
-    /mobfarm build zombie       <- only the zombie bay (clear -> 5s -> reload -> apply -> VERIFY)
-    /mobfarm rebuild <mob>      <- alias of build <mob>
-    /mobfarm zombie save        <- save YOUR current bay again after edits
-
-## 9. Hub + footpath (as often as you finish a new path)
-
-    /mobfarm savehub            <- re-save hub+paths (bay boxes excluded). It covers the whole
-                                   farm area + 50 blocks around, so paths past the farm edge
-                                   are captured too. Copy the printed path to your PC.
-    /mobfarm buildhub           <- restore hub+paths from the zip - applies it directly now
-                                   (no server restart needed, works right after savehub)
-
-## 10. Go back to your mob zone
-
-    /mobfarm current            <- teleports to the mob zone you bought this session
-                                   (no re-pay). /mobfarm enter first, /mobfarm pick to unlock.
-
-## 11. Protection
-
-Whole farm area (hub + bays + paths + 50 blocks around) is protected. Normal players can
-kill mobs, open chests, deposit/remove items - NOT break/place/bucket/ignite. Owner group
-still bypasses (so you can build paths). Use a second account to test as a normal player.
-
-## 12. NEVER delete (standing rule)
-
-plugins/EconomyShopGUI/, plugins/LuckPerms/, plugins/TAB/, any MAVO plugin's data.yml /
-homes.yml / config.yml not named above, world/datapacks/*-datapack.zip (incl. hub zip).
-
-## 13. Sleep pack rules of play (3.15)
-
-- NIGHT VOTE: opens 18:30 (chat "Sleep time!") when MORE than 4 players are online,
-  closes 19:30. Type `!sleep yes` / `!sleep no` (or `/sleeper vote yes|no`). To skip to
-  06:00 next day: more YES than NO **and** >=75% of online players voted. Vote skips give
-  NO Sleeper XP. Bed quorum still works without a vote: 1->1, 2->2, 3-4->2, 5-7->3,
-  8-9->4, 10+->5 players in bed (no beds needed for the vote).
-- TAVERN REST (100 coins, unchanged): +1 profession point to EVERY active profession
-  (and counts as 1 Sleeper sleep). Tavern paid skip and the free vote coexist.
-- SLEEPER (10th profession, no tools): +1 XP per successful bed sleep (once per day);
-  need = 50 rests to L2, +50 more each level; L10/L20/... = +1 extra heart (2 HP each)
-  and 100 Lucky Coins (reflected); L100 = SLEEPER RANK (LuckPerms commands in config).
-- BOUND BED: `/sleeper bind` looking at a bed -> right-click = sleep only (NO respawn
-  point, NO home creation; MAVOHomes may still see cancelled events - keep the bound bed
-  outside your claim if you want zero home interaction). Bound-bed rest = +2 profession
-  points to your other active professions (instead of the tavern +1).
-- /grave costs: Player Level 1 = 1000 coins / 10 Lucky Coins; each Player Level doubles
-  both (L2 = 2000/20, L3 = 4000/40 ... capped at 2^30). Costs shown in the confirm GUI.
+- MAVOCRAFT-CONTEXT-REVIVAL.md: HOTFIX 26 entry appended.
+- DISCORD-PACK-2026-09-05.md: version-log v20/v21 blocks + FEATURES blocks for all
+  seven new systems + CW3 done list + CW4 "next 10" proposals — copy from there.
