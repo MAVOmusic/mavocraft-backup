@@ -1,0 +1,15 @@
+name: MAVOSeasonal
+version: 1.0.0
+main: mavo.seasonal.Seasonal
+api-version: '1.21'
+description: Seasonal / themed events calendar - Spooky, Festive, Anniversary + candy drops (MAVOcraft)
+author: MAVO
+softdepend: [MAVODoubleXp]
+commands:
+  season:
+    description: "Seasonal events calendar (admin: toggle/reload)"
+    usage: /season [status]
+permissions:
+  mavoseason.admin:
+    description: Admin seasonal control (toggle/reload)
+    default: op

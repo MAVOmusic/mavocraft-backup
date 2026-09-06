@@ -1,0 +1,15 @@
+name: MAVODoubleXp
+version: 1.0.0
+main: mavo.doublexp.DoubleXp
+api-version: '1.21'
+description: Scheduled DOUBLE XP weekends - multiplies every profession XP grant (MAVOcraft)
+author: MAVO
+commands:
+  xpboost:
+    description: "Double XP weekend status / control"
+    usage: /xpboost [status|now <minutes> [mult]|off|reload]
+    aliases: [dblxp]
+permissions:
+  mavodoublexp.admin:
+    description: Control double XP boosts (now/off/reload)
+    default: op

@@ -1,0 +1,19 @@
+# MAVOFishComp - weekly fishing tournament
+# Each week ONE random 2h window is chosen (day + start hour), then announced.
+timezone: Europe/London
+days: [SATURDAY, SUNDAY]
+window-start-hour-min: 16        # random start between 16:00 and 20:00 server time
+window-start-hour-max: 20
+duration-minutes: 120
+
+prizes:
+  1: 15000
+  2: 8000
+  3: 5000
+participation: 500               # everyone with >= min-catches catches
+min-catches: 3
+
+points:                          # extra points per fish type (base 1 for everything)
+  SALMON: 2
+  PUFFERFISH: 3
+  TROPICAL_FISH: 4

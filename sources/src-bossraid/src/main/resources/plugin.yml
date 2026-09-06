@@ -1,0 +1,16 @@
+name: MAVOBossRaid
+version: 1.0.0
+main: mavo.bossraid.BossRaid
+api-version: '1.21'
+description: Weekly server-wide boss raid - join the queue, fight together, share the loot (MAVOcraft)
+author: MAVO
+softdepend: [Vault, MAVOLuckyCoins, MAVOCrates]
+commands:
+  boss:
+    description: "Weekly boss raid: status / join / leave (admin: setarena, now, cancel)"
+    usage: /boss [join|leave|return|status]
+    aliases: [bossraid]
+permissions:
+  mavoboss.admin:
+    description: Admin boss raid control (setarena/now/cancel/reload)
+    default: op

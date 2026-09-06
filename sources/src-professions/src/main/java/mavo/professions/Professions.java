@@ -226,7 +226,7 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             if (!disk.contains("sleep.vote-close-tick")) disk.set("sleep.vote-close-tick", 13500);
             if (!disk.contains("sleep.vote-min-online")) disk.set("sleep.vote-min-online", 5);
             if (!disk.contains("sleep.vote-turnout")) disk.set("sleep.vote-turnout", 0.75);
-            if (!disk.contains("sleep.skip-to-tick")) disk.set("sleep.skip-to-tick", 6000);
+            if (!disk.contains("sleep.skip-to-tick")) disk.set("sleep.skip-to-tick", 1000);
             if (!disk.contains("sleep.world")) disk.set("sleep.world", "world");
             if (!disk.contains("sleep.tavern-bed")) disk.set("sleep.tavern-bed", "");
             if (!disk.contains("sleep.tavern-rest-sleeper-xp")) disk.set("sleep.tavern-rest-sleeper-xp", true);
@@ -248,6 +248,15 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             disk.set("professions.gambler.xp-growth", 1.012);
             changed = true;
             getLogger().info("3.15.4: Gambler rebalanced - xp-growth " + gGrow + " -> 1.012.");
+        }
+        // 3.15.5: bedtime wake-up 12:00 (tick 6000 = Noon) -> 7:00 (tick 1000).
+        // Skipping to Noon halved each day's active time. Migrate ONLY the old
+        // built-in default; custom wake times are left alone.
+        int oldSkip = disk.getInt("sleep.skip-to-tick", -1);
+        if (oldSkip == 6000) {
+            disk.set("sleep.skip-to-tick", 1000);
+            changed = true;
+            getLogger().info("3.15.5: bedtime wake-up 12:00 -> 7:00 (sleep.skip-to-tick 6000 -> 1000).");
         }
         if (changed) {
             try { disk.save(new File(getDataFolder(), "config.yml")); }
@@ -286,7 +295,7 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             voteCloseTick = slp.getInt("vote-close-tick", 13500);     // 19:30
             voteMinOnline = Math.max(1, slp.getInt("vote-min-online", 5));
             voteTurnout = Math.max(0.1, Math.min(1.0, slp.getDouble("vote-turnout", 0.75)));
-            sleepSkipTick = Math.max(0, Math.min(23999, slp.getInt("skip-to-tick", 6000)));
+            sleepSkipTick = Math.max(0, Math.min(23999, slp.getInt("skip-to-tick", 1000)));
             sleepWorldName = slp.getString("world", "world");
             tavernSleeperXp = slp.getBoolean("tavern-rest-sleeper-xp", true);
             restBonusIncludesSleeper = slp.getBoolean("rest-bonus-includes-sleeper", false);
@@ -298,7 +307,7 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             } catch (Exception ex) { tavernBed = null; }
         } else {
             voteOpenTick = 12500; voteCloseTick = 13500; voteMinOnline = 5;
-            voteTurnout = 0.75; sleepSkipTick = 6000; sleepWorldName = "world";
+            voteTurnout = 0.75; sleepSkipTick = 1000; sleepWorldName = "world";
             tavernBed = null; tavernSleeperXp = true; restBonusIncludesSleeper = false;
         }
         rankCommands.clear();
@@ -842,6 +851,25 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
         addXp(pl, profId, amount);
     }
 
+    /** reflection handle for the MAVODoubleXP weekend multiplier (null = not installed) */
+    private static java.lang.reflect.Method xpBoostMethod;
+    private static boolean xpBoostTried = false;
+
+    /** MAVODoubleXP weekend multiplier - 1.0 when the plugin is missing or inactive. */
+    private double xpBoost() {
+        if (!xpBoostTried) {
+            xpBoostTried = true;
+            try {
+                xpBoostMethod = Class.forName("mavo.doublexp.DoubleXp").getMethod("boost");
+            } catch (Throwable ignored) { xpBoostMethod = null; }
+        }
+        if (xpBoostMethod == null) return 1.0;
+        try {
+            double b = ((Number) xpBoostMethod.invoke(null)).doubleValue();
+            return b > 1.0 ? b : 1.0;
+        } catch (Throwable t) { return 1.0; }
+    }
+
     private void addXp(Player pl, String profId, double amount) {
         if (pl.getGameMode() != org.bukkit.GameMode.SURVIVAL) return; // creative never counts
         // MobFarm sessions: scale combat XP (and any XP while in farm)
@@ -849,6 +877,9 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             amount = amount * farmScale(pl);
             if (amount <= 0) return;
         }
+        // 3.15.5: MAVODoubleXP weekends multiply every profession XP grant.
+        double boost = xpBoost();
+        if (boost > 1.0) amount *= boost;
         Prof p = profs.get(profId);
         if (p == null) return;
         UUID u = pl.getUniqueId();

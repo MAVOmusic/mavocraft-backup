@@ -1,0 +1,50 @@
+# MAVOCrates - custom reward crates + keys
+# Rewards format: "TYPE:AMOUNT:WEIGHT" - TYPE = material (DIAMOND) | coins | lucky
+# Keys: right-click any crate block with the matching key -> roll once.
+crates:
+  common:
+    display: "&a&lCOMMON CRATE"
+    key-material: TRIPWIRE_HOOK
+    key-name: "&aCommon Crate Key"
+    key-lore:
+      - "&7Right-click a &aCommon&7 crate."
+    cooldown-seconds: 60
+    rewards:
+      - "coins:2500:40"
+      - "coins:10000:10"
+      - "lucky:1:10"
+      - "COAL:16:25"
+      - "IRON_INGOT:8:20"
+      - "DIAMOND:2:20"
+      - "EMERALD:5:15"
+      - "NETHERITE_INGOT:1:5"
+  rare:
+    display: "&9&lRARE CRATE"
+    key-material: TRIPWIRE_HOOK
+    key-name: "&9Rare Crate Key"
+    key-lore:
+      - "&7Right-click a &9Rare&7 crate."
+    cooldown-seconds: 120
+    rewards:
+      - "coins:15000:30"
+      - "coins:50000:8"
+      - "lucky:2:12"
+      - "DIAMOND:8:15"
+      - "EMERALD:16:10"
+      - "NETHERITE_INGOT:2:6"
+      - "ENCHANTED_GOLDEN_APPLE:1:2"
+  mythic:
+    display: "&d&lMYTHIC CRATE"
+    key-material: TRIPWIRE_HOOK
+    key-name: "&dMythic Crate Key"
+    key-lore:
+      - "&7Right-click a &dMythic&7 crate."
+    cooldown-seconds: 300
+    rewards:
+      - "coins:100000:20"
+      - "coins:250000:5"
+      - "lucky:5:10"
+      - "NETHERITE_INGOT:8:8"
+      - "NETHERITE_BLOCK:1:2"
+      - "ENCHANTED_GOLDEN_APPLE:3:2"
+      - "ELYTRA:1:1"

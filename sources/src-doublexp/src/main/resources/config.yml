@@ -1,0 +1,11 @@
+# MAVODoubleXp - scheduled DOUBLE XP weekends
+# MAVOProfessions reads boost() on every XP grant, so no config needed there.
+timezone: Europe/London
+multiplier: 2.0            # x2 is default; 3.0 = TRIPLE XP weekend
+announce: true             # broadcast start/stop messages
+weekend:
+  enabled: true
+  start-day: FRIDAY        # MONDAY..SUNDAY
+  start: "18:00"
+  end-day: SUNDAY
+  end: "18:00"

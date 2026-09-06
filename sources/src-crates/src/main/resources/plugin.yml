@@ -1,0 +1,16 @@
+name: MAVOCrates
+version: 1.0.0
+main: mavo.crates.Crates
+api-version: '1.21'
+description: Custom reward crates + keys - place a crate, right-click it with its key (MAVOcraft)
+author: MAVO
+softdepend: [Vault, MAVOLuckyCoins]
+commands:
+  crate:
+    description: "Crates: list / info; admin: set/unset/clear/givekey"
+    usage: /crate [list|info <name>] | /crate set <name> | givekey <player> <name> [n]
+    aliases: [keys]
+permissions:
+  mavocrate.admin:
+    description: Admin crate management (set/unset/clear/givekey/reload)
+    default: op

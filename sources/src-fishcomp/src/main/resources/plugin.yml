@@ -1,0 +1,16 @@
+name: MAVOFishComp
+version: 1.0.0
+main: mavo.fishcomp.FishComp
+api-version: '1.21'
+description: Weekly fishing tournament - random 2h weekend window, leaderboard + coin prizes (MAVOcraft)
+author: MAVO
+softdepend: [Vault]
+commands:
+  fishcomp:
+    description: "Fishing tournament status + leaderboard (admin: start/end/reload)"
+    usage: /fishcomp [status|top]
+    aliases: [fishing]
+permissions:
+  mavofish.admin:
+    description: Admin fishing tournament control (start/end/reload)
+    default: op

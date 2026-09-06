@@ -1,0 +1,16 @@
+name: MAVOMail
+version: 1.0.0
+main: mavo.mail.Mail
+api-version: '1.21'
+description: Player mail - send coins and items to anyone, even offline; claim in a GUI (MAVOcraft)
+author: MAVO
+softdepend: [Vault]
+commands:
+  mail:
+    description: "Main mail box: /mail and /mail send <player> [coins] [message]"
+    usage: /mail | /mail send <player> [coins] [message...]
+    aliases: [mymail]
+permissions:
+  mavomail.admin:
+    description: Admin mail control (purge/reload)
+    default: op

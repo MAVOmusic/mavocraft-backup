@@ -1,0 +1,30 @@
+# MAVOSeasonal - seasonal / themed events calendar
+# Windows are yearly (MM-DD). Add or remove seasons freely.
+# xp-multiplier: 0 = off; otherwise forces MAVODoubleXp while the season is on
+#   (e.g. anniversary = x2 for everyone).
+timezone: Europe/London
+seasons:
+  spooky:
+    display: "&6&lSPOOKY SEASON"
+    start: "10-25"
+    end: "11-02"
+    mob-candy: true
+    candy-material: SUGAR
+    candy-chance: 0.06
+    xp-multiplier: 0
+  festive:
+    display: "&c&lFESTIVE SEASON"
+    start: "12-20"
+    end: "01-05"
+    mob-candy: true
+    candy-material: COOKIE
+    candy-chance: 0.06
+    xp-multiplier: 0
+  anniversary:
+    display: "&d&lMAVOCRAFT ANNIVERSARY"
+    start: "09-01"
+    end: "09-08"
+    mob-candy: true
+    candy-material: CAKE
+    candy-chance: 0.08
+    xp-multiplier: 2.0

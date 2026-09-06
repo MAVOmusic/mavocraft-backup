@@ -56,7 +56,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * MAVOAuctionHouse 1.0.3 - community auction house.
+ * MAVOAuctionHouse 1.1.0 - community auction house (quick-buy + bid timers).
  *
  * - fancy bedrock-box auction house with keeper villagers (same GUI)
  * - /ah /auctionhouse /auction + /inbox
@@ -77,6 +77,9 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
     private static final double COMMAND_TAX = 0.20;
     private static final double KEEPER_TAX = 0.05;
     private static final long KEEPER_TOUCH_MS = 120_000L;      // "posted at the AH" window
+    private static final long BID_AUTO_EXTEND_MS = 60_000L;      // bid inside last 60s extends
+    private static final long BID_EXTEND_MS = 300_000L;          // ...by 5 more minutes
+    private static final double BID_MIN_RAISE = 0.05;            // minimum bid raise 5%
 
     private Economy econ;
     private File dataFile;
@@ -93,6 +96,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
     private final Map<Material, Long> shopSell = new HashMap<>();
 
     private record Listing(String id, UUID seller, int slot, ItemStack item, long price,
+                           long buyNow, long bid, UUID bidder, long bidEnd,
                            long priceMoved, long end, String tier, long posted) {}
 
     /* ------------------------------------------------------------------ lifecycle */
@@ -110,7 +114,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         getServer().getPluginManager().registerEvents(this, this);
         respawnKeepers();
         startExpiryTask();
-        getLogger().info("MAVOAuctionHouse 1.0.3 enabled. shopSell=" + shopSell.size()
+        getLogger().info("MAVOAuctionHouse 1.1.0 enabled. shopSell=" + shopSell.size()
                 + " listings=" + listings.size() + " region=" + (regionCenter != null));
     }
 
@@ -137,12 +141,17 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
                 UUID seller = UUID.fromString(e.getString("seller", ""));
                 int slot = e.getInt("slot", 1);
                 long price = e.getLong("price", 0);
+                long buyNow = e.getLong("buy-now", 0);
+                long bid = e.getLong("bid", 0);
+                UUID bidder = null;
+                try { String b = e.getString("bidder", ""); if (!b.isEmpty()) bidder = UUID.fromString(b); } catch (Throwable ignored) { }
+                long bidEnd = e.getLong("bid-end", 0);
                 long end = e.getLong("end", 0);
                 String tier = e.getString("tier", "command");
                 long posted = e.getLong("posted", 0);
                 ItemStack it = loadItem(e.getConfigurationSection("item"));
                 if (it == null) continue;
-                listings.put(id, new Listing(id, seller, slot, it, price, 0, end, tier, posted));
+                listings.put(id, new Listing(id, seller, slot, it, price, buyNow, bid, bidder, bidEnd, 0, end, tier, posted));
             } catch (Throwable t) { getLogger().warning("Skip listing " + id + ": " + t.getMessage()); }
         }
     }
@@ -400,7 +409,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         return "command";
     }
 
-    private void commandPost(Player p, String what, int amount, long price, String dur) {
+    private void commandPost(Player p, String what, int amount, long price, String dur, long buyNow) {
         int hours = parseDur(dur);
         if (hours <= 0) { msg(p, "&cDuration from 1h to 48h (e.g. 12h, 90m, 2d)."); return; }
         ItemStack held = p.getInventory().getItemInMainHand();
@@ -420,7 +429,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         ItemStack rm = src.clone(); rm.setAmount(amount);
         p.getInventory().removeItem(rm);
         String tier = tierFor(p, false);
-        finishPost(p, listingItem, price, hours, slot, tier);
+        finishPost(p, listingItem, price, hours, slot, tier, buyNow);
     }
 
     private ItemStack matchMaterial(ItemStack[] inv, String what) {
@@ -446,14 +455,19 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         return null;
     }
 
-    private void finishPost(Player p, ItemStack it, long price, int hours, int slot, String tier) {
+    private void finishPost(Player p, ItemStack it, long price, int hours, int slot, String tier, long buyNow) {
         String id = newId();
         long end = System.currentTimeMillis() + hours * 3_600_000L;
-        listings.put(id, new Listing(id, p.getUniqueId(), slot, it, price, 0, end, tier, System.currentTimeMillis()));
+        buyNow = Math.max(0, buyNow);
+        long max = Math.max(1, getConfig().getLong("max-price", 1_000_000_000L));
+        if (buyNow > 0 && buyNow < price) buyNow = 0; // Buy Now must be >= start price
+        if (buyNow > max) buyNow = 0;
+        listings.put(id, new Listing(id, p.getUniqueId(), slot, it, price, buyNow, 0, null, 0, 0, end, tier, System.currentTimeMillis()));
         ConfigurationSection e = data.createSection("listings." + id);
         e.set("seller", p.getUniqueId().toString());
         e.set("slot", slot);
         e.set("price", price);
+        e.set("buy-now", buyNow > 0 ? buyNow : null);
         e.set("end", end);
         e.set("tier", tier);
         e.set("posted", System.currentTimeMillis());
@@ -462,23 +476,42 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         double tax = "keeper".equals(tier) ? KEEPER_TAX : COMMAND_TAX;
         msg(p, "&aPosted &e" + it.getAmount() + "x " + it.getType().name().toLowerCase(Locale.ROOT)
                 + " &afor &e" + fmt(price) + " coins &a(" + hours + "h)."
+                + (buyNow > 0 ? " &7Buy Now: &e" + fmt(buyNow) + " coins&7." : "")
                 + ("keeper".equals(tier) ? " &a5% tax (posted at the AH)." : " &c20% tax (posted by command)."));
         p.closeInventory();
         openMain(p, 0);
     }
 
     private void purchase(Player buyer, Listing l) {
+        purchaseAt(buyer, l, l.price(), false);
+    }
+    private void purchaseNow(Player buyer, Listing l) {
+        if (l.buyNow() <= 0) { purchase(buyer, l); return; }
+        purchaseAt(buyer, l, l.buyNow(), true);
+    }
+    private void purchaseAt(Player buyer, Listing l, long price, boolean viaBuyNow) {
         UUID u = buyer.getUniqueId();
         if (l.seller().equals(u)) { msg(buyer, "&cYou can't buy your own auction."); return; }
         if (inboxCount(u) >= INBOX_MAX) { msg(buyer, "&cYour inbox is full - collect items first."); return; }
-        double price = l.price();
+        if (price < 1) { msg(buyer, "&cInvalid price."); return; }
         EconomyResponse r = econ == null ? null : econ.withdrawPlayer(buyer, price);
-        if (r == null || !r.transactionSuccess()) { msg(buyer, "&cYou need &e" + fmt(l.price()) + " coins&c."); return; }
+        if (r == null || !r.transactionSuccess()) { msg(buyer, "&cYou need &e" + fmt(price) + " coins&c."); return; }
+        // refund the current top bidder (their money was held in escrow)
+        if (l.bid() > 0 && l.bidder() != null) {
+            Player outbid = Bukkit.getPlayer(l.bidder());
+            if (outbid != null && outbid.isOnline()) {
+                if (econ.depositPlayer(outbid, l.bid()).transactionSuccess())
+                    msg(outbid, "&eOutbid! " + fmt(l.bid()) + " coins returned (buy-now purchase).");
+            } else {
+                double pend = data.getDouble("players." + l.bidder() + ".pending", 0);
+                data.set("players." + l.bidder() + ".pending", pend + l.bid());
+            }
+        }
         double tax = "keeper".equals(l.tier()) ? KEEPER_TAX : COMMAND_TAX;
         long net = (long) Math.round(price * (1 - tax));
         ItemStack bound = bindItem(l.item(), u);
-        if (!inboxAdd(u, bound, "auction")) {
-            paySeller(buyer.getUniqueId(), (long) price);  // refund, listing untouched
+        if (!inboxAdd(u, bound, viaBuyNow ? "buy now" : "auction")) {
+            paySeller(buyer.getUniqueId(), price);  // refund, listing untouched
             msg(buyer, "&cYour inbox is full - nothing was bought.");
             return;
         }
@@ -488,7 +521,8 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         data.set("listings." + id, null);
         lockSlot(l.seller(), l.slot());
         msg(buyer, "&aBought &e" + l.item().getAmount() + "x " + l.item().getType().name().toLowerCase(Locale.ROOT)
-                + " &afor &e" + fmt(l.price()) + " coins. &7Item is in your &e/inbox&7 (tag: auction).");
+                + " &afor &e" + fmt(price) + " coins" + (viaBuyNow ? " (&7BUY NOW&a)" : "")
+                + ". &7Item is in your &e/inbox&7 (tag: " + (viaBuyNow ? "buy now" : "auction") + ").");
         saveData();
         openMain(buyer, 0);
     }
@@ -515,9 +549,65 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         }
     }
 
+    // ---------- bidding ----------
+    private void bidOn(Player p, Listing l, long amount) {
+        UUID u = p.getUniqueId();
+        if (l.seller().equals(u)) { msg(p, "&cYou can't bid on your own auction."); return; }
+        long now = System.currentTimeMillis();
+        if (l.end() <= now) { msg(p, "&cThat auction has ended."); return; }
+        if (l.buyNow() > 0 && amount >= l.buyNow()) {  // bid at/above Buy Now = instant buy
+            purchaseNow(p, l);
+            return;
+        }
+        long base = Math.max(l.price(), l.bid());
+        long minRaise = Math.max(1, (long) Math.ceil(base * BID_MIN_RAISE));
+        long minBid = l.bid() > 0 ? l.bid() + minRaise : l.price();
+        if (amount < minBid) { msg(p, "&cMinimum bid is &e" + fmt(minBid) + " coins&c."); return; }
+        if (econ == null || !econ.has(p, amount)) { msg(p, "&cYou need &e" + fmt(amount) + " coins&c."); return; }
+        EconomyResponse r = econ.withdrawPlayer(p, amount);
+        if (r == null || !r.transactionSuccess()) { msg(p, "&cPayment failed."); return; }
+        // refund the previous top bidder's escrow
+        if (l.bid() > 0 && l.bidder() != null) {
+            Player old = Bukkit.getPlayer(l.bidder());
+            if (old != null && old.isOnline()) {
+                if (econ.depositPlayer(old, l.bid()).transactionSuccess())
+                    msg(old, "&eYou were outbid on &7(" + l.id() + ")&e - " + fmt(l.bid()) + " coins returned.");
+            } else {
+                double pend = data.getDouble("players." + l.bidder() + ".pending", 0);
+                data.set("players." + l.bidder() + ".pending", pend + l.bid());
+            }
+        }
+        long bidEnd = l.bidEnd() > 0 ? l.bidEnd() : l.end();
+        boolean extended = false;
+        if (bidEnd - now < BID_AUTO_EXTEND_MS) { bidEnd = now + BID_EXTEND_MS; extended = true; }
+        Listing nl = new Listing(l.id(), l.seller(), l.slot(), l.item(), l.price(), l.buyNow(),
+                amount, u, bidEnd, l.priceMoved(), l.end(), l.tier(), l.posted());
+        listings.put(l.id(), nl);
+        data.set("listings." + l.id() + ".bid", amount);
+        data.set("listings." + l.id() + ".bidder", u.toString());
+        data.set("listings." + l.id() + ".bid-end", bidEnd);
+        saveData();
+        msg(p, "&aYou bid &e" + fmt(amount) + " coins &aon &7(" + l.id() + "). "
+                + (extended ? "&eLast-second bid - extended " + durText(bidEnd - now) + "!" : ""));
+        Player seller = Bukkit.getPlayer(l.seller());
+        if (seller != null && seller.isOnline())
+            msg(seller, "&eYour auction &7(" + l.id() + ") &ehas a new bid: &6" + fmt(amount) + " coins&e.");
+        openMain(p, 0);
+    }
+
     private void cancelListing(Player p, String id) {
         Listing l = listings.get(id);
         if (l == null || !l.seller().equals(p.getUniqueId())) { msg(p, "&cNo such listing of yours."); return; }
+        if (l.bid() > 0 && l.bidder() != null) {  // return escrow first
+            Player bidder = Bukkit.getPlayer(l.bidder());
+            if (bidder != null && bidder.isOnline()) {
+                if (econ.depositPlayer(bidder, l.bid()).transactionSuccess())
+                    msg(bidder, "&eAuction &7(" + id + ") &ewas cancelled by the seller - " + fmt(l.bid()) + " coins returned.");
+            } else {
+                double pend = data.getDouble("players." + l.bidder() + ".pending", 0);
+                data.set("players." + l.bidder() + ".pending", pend + l.bid());
+            }
+        }
         listings.remove(id);
         data.set("listings." + id, null);
         boolean ok = inboxAdd(l.seller(), l.item(), "auction cancelled");
@@ -531,15 +621,41 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         long now = System.currentTimeMillis();
         boolean changed = false;
         for (Listing l : new ArrayList<>(listings.values())) {
-            if (l.end() <= now) {
-                listings.remove(l.id());
-                data.set("listings." + l.id(), null);
-                boolean ok = inboxAdd(l.seller(), l.item(), "auction expired");
-                if (ok) { changed = true;
+            long end = l.bid() > 0 && l.bidEnd() > 0 ? l.bidEnd() : l.end();
+            if (end > now) continue;
+            if (l.bid() > 0 && l.bidder() != null) {
+                // highest bidder already paid (escrow) - complete the sale at their bid
+                double tax = "keeper".equals(l.tier()) ? KEEPER_TAX : COMMAND_TAX;
+                long net = (long) Math.round(l.bid() * (1 - tax));
+                paySeller(l.seller(), net);
+                ItemStack bound = bindItem(l.item(), l.bidder());
+                if (inboxAdd(l.bidder(), bound, "auction won")) {
+                    Player w = Bukkit.getPlayer(l.bidder());
+                    if (w != null && w.isOnline())
+                        msg(w, "&aYou WON &7(" + l.id() + ")&a - " + l.item().getAmount() + "x "
+                                + l.item().getType().name().toLowerCase(Locale.ROOT) + " for &e"
+                                + fmt(l.bid()) + " coins&a! Item in your &e/inbox&7 (tag: auction won).");
                     Player sp = Bukkit.getPlayer(l.seller());
                     if (sp != null && sp.isOnline())
-                        msg(sp, "&eYour auction &7(" + l.id() + ") &eexpired - item moved to &e/inbox&7 (tag: auction expired).&8 No tax.");
+                        msg(sp, "&aYour auction &7(" + l.id() + ") &asold for &e" + fmt(l.bid())
+                                + " coins&a (" + fmt(net) + " after tax).");
+                    listings.remove(l.id());
+                    data.set("listings." + l.id(), null);
+                    lockSlot(l.seller(), l.slot());
+                    changed = true;
+                    continue;
                 }
+                // inbox full - refund bidder, return item to seller
+                double pend = data.getDouble("players." + l.bidder() + ".pending", 0);
+                data.set("players." + l.bidder() + ".pending", pend + l.bid());
+            }
+            listings.remove(l.id());
+            data.set("listings." + l.id(), null);
+            boolean ok = inboxAdd(l.seller(), l.item(), "auction expired");
+            if (ok) { changed = true;
+                Player sp = Bukkit.getPlayer(l.seller());
+                if (sp != null && sp.isOnline())
+                    msg(sp, "&eYour auction &7(" + l.id() + ") &eexpired - item moved to &e/inbox&7 (tag: auction expired).&8 No tax.");
             }
         }
         if (changed) saveData();
@@ -842,12 +958,20 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
             lore.add("");
             lore.add(ChatColor.GRAY + "Seller: " + ChatColor.WHITE + uname(l.seller())
                     + (own ? ChatColor.YELLOW + " (you)" : ""));
-            lore.add(ChatColor.GRAY + "Price: " + ChatColor.GOLD + fmt(l.price()) + " coins");
-            lore.add(ChatColor.GRAY + "Time left: " + ChatColor.AQUA + durText(l.end() - System.currentTimeMillis()));
+            lore.add(ChatColor.GRAY + "Price: " + ChatColor.GOLD + fmt(l.price()) + " coins"
+                    + (l.buyNow() > 0 ? ChatColor.GRAY + " · Buy Now: " + ChatColor.GOLD + fmt(l.buyNow()) : ""));
+            if (l.bid() > 0) {
+                lore.add(ChatColor.GRAY + "Current bid: " + ChatColor.AQUA + fmt(l.bid()) + " coins ("
+                        + uname(l.bidder()) + ")");
+                lore.add(ChatColor.GRAY + "Bid ends: " + ChatColor.AQUA + durText(l.bidEnd() - System.currentTimeMillis()));
+            }
+            lore.add(ChatColor.GRAY + "Time left: " + ChatColor.AQUA
+                    + durText((l.bid() > 0 && l.bidEnd() > 0 ? l.bidEnd() : l.end()) - System.currentTimeMillis()));
             lore.add(ChatColor.GRAY + "Poster tax: " + ("keeper".equals(l.tier()) ? ChatColor.GREEN + "5%" : ChatColor.RED + "20%"));
             lore.add(ChatColor.DARK_GRAY + "ID: " + l.id());
             lore.add("");
-            lore.add(own ? ChatColor.YELLOW + "Click to cancel (no cost)" : ChatColor.GREEN + "Click to buy");
+            lore.add(own ? ChatColor.YELLOW + "Click to cancel (no cost)"
+                    : ChatColor.GREEN + "Click to buy / bid");
             meta.setLore(lore);
             it.setItemMeta(meta);
             h.inv.setItem(i, it);
@@ -996,6 +1120,41 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         return ChatColor.GRAY + "";
     }
 
+    private void openDetail(Player p, Listing l) {
+        Holder h = new Holder("detail", 0, l.id(), 0, 0, null, false);
+        h.inv = Bukkit.createInventory(h, 27, color("&8&l" + l.id() + " - buy or bid"));
+        ItemStack it = l.item().clone();
+        ItemMeta meta = it.getItemMeta();
+        List<String> lore = meta.getLore() == null ? new ArrayList<>() : new ArrayList<>(meta.getLore());
+        lore.add("");
+        lore.add(ChatColor.GRAY + "Price: " + ChatColor.GOLD + fmt(l.price()) + " coins");
+        if (l.buyNow() > 0) lore.add(ChatColor.GRAY + "Buy Now: " + ChatColor.GOLD + fmt(l.buyNow()) + " coins");
+        if (l.bid() > 0) lore.add(ChatColor.GRAY + "Current bid: " + ChatColor.AQUA + fmt(l.bid()) + " coins ("
+                + uname(l.bidder()) + ")");
+        lore.add(ChatColor.GRAY + "Ends in: " + ChatColor.AQUA
+                + durText((l.bid() > 0 && l.bidEnd() > 0 ? l.bidEnd() : l.end()) - System.currentTimeMillis()));
+        meta.setLore(lore);
+        it.setItemMeta(meta);
+        h.inv.setItem(13, it);
+        h.inv.setItem(11, gui(Material.LIME_DYE, "&a\u2714 Buy at " + fmt(l.price()),
+                "&7Pays the start price right now."));
+        h.inv.setItem(12, l.buyNow() > 0
+                ? gui(Material.GOLD_BLOCK, "&6\u26a1 BUY NOW - " + fmt(l.buyNow()),
+                        "&7Instant win, skips the bid war.")
+                : gui(Material.GRAY_STAINED_GLASS_PANE, "&8No Buy Now set"));
+        long base = Math.max(l.price(), l.bid());
+        long p10 = (long) Math.ceil(base * 1.10), p25 = (long) Math.ceil(base * 1.25);
+        h.inv.setItem(14, gui(Material.EXPERIENCE_BOTTLE, "&bBid +10% - " + fmt(p10),
+                "&7Bid " + fmt(p10) + " coins" + (l.bid() > 0 ? " (outbid " + uname(l.bidder()) + ")" : "")));
+        h.inv.setItem(15, gui(Material.DRAGON_BREATH, "&dBid +25% - " + fmt(p25),
+                "&7Bid " + fmt(p25) + " coins" + (l.bid() > 0 ? " (outbid " + uname(l.bidder()) + ")" : "")));
+        h.inv.setItem(16, gui(Material.BOOK, "&eCustom bid", "&f/ah bid " + l.id() + " <amount>",
+                "&7Min raise: " + (long) Math.ceil(Math.max(l.price(), l.bid()) * BID_MIN_RAISE)
+                        + " (5%). Bids in the last 60s extend +5 min."));
+        h.inv.setItem(22, gui(Material.ARROW, "&a\u25c0 Back"));
+        p.openInventory(h.inv);
+    }
+
     private void openConfirmBuy(Player p, Listing l) {
         Holder h = new Holder("buy", 0, l.id(), 0, 0, null, false);
         h.inv = Bukkit.createInventory(h, 27, color("&8&lConfirm purchase"));
@@ -1069,7 +1228,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
                     if (idx < all.size()) {
                         Listing l = all.get(idx);
                         if (l.seller().equals(p.getUniqueId())) openConfirmCancel(p, l.id());
-                        else openConfirmBuy(p, l);
+                        else openDetail(p, l);
                     }
                     return;
                 }
@@ -1117,6 +1276,19 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
                     claimAt(p, h.page * 36 + slot);
                 }
             }
+            case "detail" -> {
+                Listing l = listings.get(h.listingId);
+                if (l == null) { msg(p, "&cThat auction ended."); openMain(p, 0); return; }
+                if (slot == 11) { purchase(p, l); return; }
+                if (slot == 12) { purchaseNow(p, l); return; }
+                if (slot == 14 || slot == 15) {
+                    long base = Math.max(l.price(), l.bid());
+                    long amt = slot == 14 ? (long) Math.ceil(base * 1.10) : (long) Math.ceil(base * 1.25);
+                    bidOn(p, l, amt);
+                    return;
+                }
+                if (slot == 22) openMain(p, 0);
+            }
             case "buy" -> {
                 if (slot == 11) {
                     Listing l = listings.get(h.listingId);
@@ -1163,7 +1335,7 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
             giveBack(p, h.postItem); h.postItem = null; p.closeInventory(); return;
         }
         String tier = tierFor(p, h.viaKeeper);
-        finishPost(p, h.postItem, h.price, h.hours, slot, tier);
+        finishPost(p, h.postItem, h.price, h.hours, slot, tier, 0);
     }
 
     @EventHandler
@@ -1247,9 +1419,17 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         if (!cmd.getName().equalsIgnoreCase("ah")) return super.onTabComplete(sender, cmd, label, args);
         if (args.length == 1) {
-            List<String> out = new ArrayList<>(List.of("add", "hub", "inbox", "slots", "cancel", "help"));
+            List<String> out = new ArrayList<>(List.of("add", "hub", "inbox", "slots", "cancel", "bid", "buy", "help"));
             if (sender.hasPermission("mavoauction.admin")) out.addAll(List.of("setcenter", "build", "reload"));
             return out;
+        }
+        if ((args[0].equalsIgnoreCase("bid") || args[0].equalsIgnoreCase("buy")) && args.length == 2) {
+            List<String> ids = new ArrayList<>();
+            for (Listing l : listings.values()) {
+                if (l.seller().equals(sender) || !(sender instanceof Player)) continue;
+                ids.add(l.id());
+            }
+            return ids;
         }
         if (args[0].equalsIgnoreCase("add")) {
             if (args.length == 2) return List.of("hand");
@@ -1284,8 +1464,10 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
                 p.sendMessage(color("&6Auction House:"));
                 p.sendMessage(color("&e/ah &7- open the auction house"));
                 p.sendMessage(color("&e/ah hub &7- teleport to the auction house"));
-                p.sendMessage(color("&e/ah add hand <amount> <price> <duration> &7- post what you hold"));
-                p.sendMessage(color("&e/ah add <material> <amount> <price> <duration> &7- post from inventory"));
+                p.sendMessage(color("&e/ah add hand <amount> <price> <duration> [buy-now] &7- post what you hold"));
+                p.sendMessage(color("&e/ah add <material> <amount> <price> <duration> [buy-now] &7- post from inventory"));
+                p.sendMessage(color("&e/ah bid <id> [amount] &7- bid 10% up (last-minute bids extend +5 min)"));
+                p.sendMessage(color("&e/ah buy <id> &7- instant Buy Now (if set) or normal buy"));
                 p.sendMessage(color("&e/ah inbox &7| &e/inbox &7- collect bought/expired/cancelled items"));
                 p.sendMessage(color("&e/ah slots &7- unlock slots (50k/100 Lucky, 100k/200 ... up to 20)"));
                 p.sendMessage(color("&e/ah cancel <id> &7- withdraw a listing (no cost)"));
@@ -1312,7 +1494,33 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
                     p.sendMessage(color("&cUsage: /ah add hand <amount> <price> <duration>   or   /ah add <material> <amount> <price> <duration>"));
                     return true;
                 }
-                commandPost(p, what, amount, price, args[di]);
+                long buyNow = 0;
+                if (di + 1 < args.length) {
+                    try { buyNow = Long.parseLong(args[di + 1].replace(",", "")); }
+                    catch (Throwable ignored) { buyNow = 0; }
+                }
+                commandPost(p, what, amount, price, args[di], buyNow);
+            }
+            case "bid" -> {
+                if (args.length < 2) { p.sendMessage(color("&cUsage: /ah bid <listing id> [amount]")); return true; }
+                Listing l = listings.get(args[1].toUpperCase(Locale.ROOT));
+                if (l == null) { msg(p, "&cNo such listing."); return true; }
+                if (args.length >= 3) {
+                    long amt;
+                    try { amt = Long.parseLong(args[2].replace(",", "")); }
+                    catch (Throwable t) { msg(p, "&cAmount must be a number."); return true; }
+                    bidOn(p, l, amt);
+                } else {
+                    long base = Math.max(l.price(), l.bid());
+                    bidOn(p, l, (long) Math.ceil(base * 1.10));
+                }
+            }
+            case "buy" -> {
+                if (args.length < 2) { p.sendMessage(color("&cUsage: /ah buy <listing id>")); return true; }
+                Listing l = listings.get(args[1].toUpperCase(Locale.ROOT));
+                if (l == null) { msg(p, "&cNo such listing."); return true; }
+                if (l.buyNow() > 0) purchaseNow(p, l);
+                else purchase(p, l);
             }
             case "inbox" -> openInbox(p, 0);
             case "slots", "slot" -> openSlots(p);
