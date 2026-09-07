@@ -13,7 +13,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
-import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -151,7 +150,14 @@ public final class Enchants extends JavaPlugin implements Listener {
 
     // ---------------- effects ----------------
     private static boolean isOre(Material m) {
-        return Tag.ORES.isTagged(m) || m == Material.ANCIENT_DEBRIS;
+        return switch (m) {
+            case COAL_ORE, DEEPSLATE_COAL_ORE, IRON_ORE, DEEPSLATE_IRON_ORE, COPPER_ORE,
+                 DEEPSLATE_COPPER_ORE, GOLD_ORE, DEEPSLATE_GOLD_ORE, NETHER_GOLD_ORE,
+                 REDSTONE_ORE, DEEPSLATE_REDSTONE_ORE, LAPIS_ORE, DEEPSLATE_LAPIS_ORE,
+                 DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE, EMERALD_ORE, DEEPSLATE_EMERALD_ORE,
+                 NETHER_QUARTZ_ORE, ANCIENT_DEBRIS -> true;
+            default -> false;
+        };
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -224,7 +230,7 @@ public final class Enchants extends JavaPlugin implements Listener {
         ItemStack tool = p.getInventory().getItemInMainHand();
         int xp = tierOf("XP", tool);
         if (xp > 0) {
-            int bonus = (int) Math.max(1, Math.ceil(e.getDroppedExperience() * (xpPct * xp / 100.0)));
+            int bonus = (int) Math.max(1, Math.ceil(e.getDroppedExp() * (xpPct * xp / 100.0)));
             Location l = e.getEntity().getLocation();
             e.getEntity().getWorld().spawn(l, org.bukkit.entity.ExperienceOrb.class, orb -> orb.setExperience(bonus));
         }

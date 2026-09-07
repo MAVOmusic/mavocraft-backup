@@ -210,7 +210,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         return true;
     }
 
-    private BossDef getDef(LivingEntity en) {
+    private BossDef getDef(org.bukkit.entity.Entity en) {
         String k = en.getPersistentDataContainer().get(bossType, PersistentDataType.STRING);
         return defs.getOrDefault(k, new BossDef("&cBOSS", EntityType.WITCH, 100, 0, 0, "", 0, Material.PLAYER_HEAD));
     }

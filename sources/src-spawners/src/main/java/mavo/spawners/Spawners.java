@@ -101,8 +101,8 @@ public final class Spawners extends JavaPlugin implements Listener {
         p.sendMessage(C + "e\uD83D\uDC0E Spawner info:");
         p.sendMessage(C + "7  Mob: " + C + "a" + nice(cs.getSpawnedType()));
         p.sendMessage(C + "7  Delay: " + C + "e" + cs.getDelay() + "t" + C + "7 (resets to min/max when near)");
-        p.sendMessage(C + "7  Max nearby: " + C + "e" + cs.getMaxNearbyEntities() + C + "7 | activation range: "
-                + C + "e" + cs.getActivationRange());
+        p.sendMessage(C + "7  Max nearby: " + C + "e" + cs.getMaxNearbyEntities() + C + "7 | player range: "
+                + C + "e" + cs.getRequiredPlayerRange() + C + "7 | spawn range: " + C + "e" + cs.getSpawnRange());
         p.sendMessage(C + "8Tip: silk-touch lets you move it.");
         return true;
     }
