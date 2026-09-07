@@ -153,7 +153,7 @@ public final class Enchants extends JavaPlugin implements Listener {
         }
     }
 
-    private boolean mergeMissing(YamlConfiguration disk, YamlConfiguration def, String prefix) {
+    private boolean mergeMissing(ConfigurationSection disk, ConfigurationSection def, String prefix) {
         boolean changed = false;
         for (String key : def.getKeys(false)) {
             String path = prefix.isEmpty() ? key : prefix + "." + key;
