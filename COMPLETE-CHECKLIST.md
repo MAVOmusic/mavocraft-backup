@@ -226,6 +226,8 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | Player | `/craft` (NON-op survival) | **Opens the beginner recipe list with ALL 50 recipes** (existing configs auto-upgraded on enable) |
 | Player | `/craft` | 50 basic recipes, 45 per page, click = consumes ingredients + crafts |
 | Player | `/craft stone_pickaxe` | Opens the page with Stone Pickaxe |
+| Player | click a recipe in /craft | **GUIDE only - nothing is crafted/consumed**: opens a 3x3 preview of the REAL recipe (+result), recipe also unlocked in the vanilla recipe book (press E) |
+| Player | `/craft` (all pages) | **100 beginner recipes** (3 pages of 45), each shows ingredients on hover |
 | Player | `/crafting list` | 7 custom recipes listed |
 | Player | craft Name Tag / Saddle / Lead / Chainmail (normal table) | Custom recipes still work |
 | OP | `/crafting reload` | Reloads; recipes still craftable |
@@ -235,7 +237,7 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | Who | Test | Expected |
 |---|---|---|
 | OP | `/maenchant gem <p> VEIN 2` | Gem given to player |
-| Player | `/gemshop` | GUI: 4 gem types × tiers I-X; prices 1M→512M; lore shows charges/cooldown |
+| Player | `/gemshop` | GUI: 4 gem types × tiers I-X; prices 1M→512M; hovering shows **effect for THAT tier** (e.g. Vein V = 30 blocks), charges/cooldown + price |
 | Player | click a gem in `/gemshop` with enough coins | Gem bought, coins deducted (Vault) |
 | Player | use a gem | Charge consumed; L1 = 10 uses/10 min → L10 = unlimited (cooldown starts on first use, pool refreshes when it ends) |
 | Player | run out of charges | "recharging - M:SS left"; effect stops until cooldown ends |

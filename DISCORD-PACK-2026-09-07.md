@@ -202,6 +202,12 @@ FISHING TOURNAMENT · MAIL · SEASONAL CALENDAR · AUCTION 1.1 · Sleep 07:00.
 🪵 Still capped at 10 logs collected per tree (no dark forest mega-hauls).
 ```
 
+### 🎉 v27 — CRAFT GUIDE + GEM INFO (Hotfix 40)
+```
+📖 /craft = guide: click shows the recipe grid + unlocks it (press E) - 100 recipes.
+💎 Gem shop shows what EVERY tier gives (vein size, XP %, lifesteal, smelt bonus).
+```
+
 ---
 
 ## 3. FEATURES — paste into `✨┃features` (one short block per feature thread)

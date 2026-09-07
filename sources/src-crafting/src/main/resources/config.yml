@@ -270,3 +270,203 @@ beginner-recipes:
     result: CAMPFIRE
     count: 1
     ingredients: ["STICK:3", "COAL:1", "OAK_LOG:3"]
+  spruce_planks:
+    result: SPRUCE_PLANKS
+    count: 4
+    ingredients: ["SPRUCE_LOG:1"]
+  birch_planks:
+    result: BIRCH_PLANKS
+    count: 4
+    ingredients: ["BIRCH_LOG:1"]
+  jungle_planks:
+    result: JUNGLE_PLANKS
+    count: 4
+    ingredients: ["JUNGLE_LOG:1"]
+  acacia_planks:
+    result: ACACIA_PLANKS
+    count: 4
+    ingredients: ["ACACIA_LOG:1"]
+  dark_oak_planks:
+    result: DARK_OAK_PLANKS
+    count: 4
+    ingredients: ["DARK_OAK_LOG:1"]
+  spruce_stairs:
+    result: SPRUCE_STAIRS
+    count: 4
+    ingredients: ["SPRUCE_PLANKS:6"]
+  birch_stairs:
+    result: BIRCH_STAIRS
+    count: 4
+    ingredients: ["BIRCH_PLANKS:6"]
+  spruce_slab:
+    result: SPRUCE_SLAB
+    count: 6
+    ingredients: ["SPRUCE_PLANKS:3"]
+  birch_slab:
+    result: BIRCH_SLAB
+    count: 6
+    ingredients: ["BIRCH_PLANKS:3"]
+  spruce_door:
+    result: SPRUCE_DOOR
+    count: 3
+    ingredients: ["SPRUCE_PLANKS:6"]
+  birch_door:
+    result: BIRCH_DOOR
+    count: 3
+    ingredients: ["BIRCH_PLANKS:6"]
+  spruce_trapdoor:
+    result: SPRUCE_TRAPDOOR
+    count: 2
+    ingredients: ["SPRUCE_PLANKS:6"]
+  birch_trapdoor:
+    result: BIRCH_TRAPDOOR
+    count: 2
+    ingredients: ["BIRCH_PLANKS:6"]
+  iron_helmet:
+    result: IRON_HELMET
+    count: 1
+    ingredients: ["IRON_INGOT:5"]
+  iron_chestplate:
+    result: IRON_CHESTPLATE
+    count: 1
+    ingredients: ["IRON_INGOT:8"]
+  iron_leggings:
+    result: IRON_LEGGINGS
+    count: 1
+    ingredients: ["IRON_INGOT:7"]
+  iron_boots:
+    result: IRON_BOOTS
+    count: 1
+    ingredients: ["IRON_INGOT:4"]
+  iron_door:
+    result: IRON_DOOR
+    count: 3
+    ingredients: ["IRON_INGOT:6"]
+  iron_trapdoor:
+    result: IRON_TRAPDOOR
+    count: 4
+    ingredients: ["IRON_INGOT:4"]
+  iron_bars:
+    result: IRON_BARS
+    count: 16
+    ingredients: ["IRON_INGOT:6"]
+  cauldron:
+    result: CAULDRON
+    count: 1
+    ingredients: ["IRON_INGOT:7"]
+  shears:
+    result: SHEARS
+    count: 1
+    ingredients: ["IRON_INGOT:2"]
+  compass:
+    result: COMPASS
+    count: 1
+    ingredients: ["IRON_INGOT:4", "REDSTONE:1"]
+  clock:
+    result: CLOCK
+    count: 1
+    ingredients: ["GOLD_INGOT:4", "REDSTONE:1"]
+  empty_map:
+    result: EMPTY_MAP
+    count: 1
+    ingredients: ["PAPER:8", "COMPASS:1"]
+  painting:
+    result: PAINTING
+    count: 1
+    ingredients: ["STICK:8", "WHITE_WOOL:1"]
+  item_frame:
+    result: ITEM_FRAME
+    count: 1
+    ingredients: ["STICK:8", "LEATHER:1"]
+  flower_pot:
+    result: FLOWER_POT
+    count: 1
+    ingredients: ["BRICK:3"]
+  bricks:
+    result: BRICKS
+    count: 4
+    ingredients: ["BRICK:4"]
+  stone_bricks:
+    result: STONE_BRICKS
+    count: 4
+    ingredients: ["STONE:4"]
+  stone_slab:
+    result: STONE_SLAB
+    count: 6
+    ingredients: ["STONE:3"]
+  cobblestone_stairs:
+    result: COBBLESTONE_STAIRS
+    count: 4
+    ingredients: ["COBBLESTONE:6"]
+  cobblestone_slab:
+    result: COBBLESTONE_SLAB
+    count: 6
+    ingredients: ["COBBLESTONE:3"]
+  sandstone:
+    result: SANDSTONE
+    count: 1
+    ingredients: ["SAND:4"]
+  sandstone_stairs:
+    result: SANDSTONE_STAIRS
+    count: 4
+    ingredients: ["SANDSTONE:6"]
+  terracotta:
+    result: TERRA_COTTA
+    count: 1
+    ingredients: ["CLAY:8"]
+  lantern:
+    result: LANTERN
+    count: 1
+    ingredients: ["IRON_NUGGET:8", "TORCH:1"]
+  barrel:
+    result: BARREL
+    count: 1
+    ingredients: ["OAK_PLANKS:6", "OAK_SLAB:2"]
+  composter:
+    result: COMPOSTER
+    count: 1
+    ingredients: ["OAK_SLAB:7"]
+  lectern:
+    result: LECTERN
+    count: 1
+    ingredients: ["OAK_SLAB:4", "BOOKSHELF:1"]
+  grindstone:
+    result: GRINDSTONE
+    count: 1
+    ingredients: ["STICK:2", "STONE_SLAB:1", "OAK_PLANKS:2"]
+  stonecutter:
+    result: STONECUTTER
+    count: 1
+    ingredients: ["IRON_INGOT:1", "STONE:3"]
+  smoker:
+    result: SMOKER
+    count: 1
+    ingredients: ["FURNACE:1", "OAK_LOG:4"]
+  blast_furnace:
+    result: BLAST_FURNACE
+    count: 1
+    ingredients: ["FURNACE:1", "IRON_INGOT:5", "SMOOTH_STONE:3"]
+  brewing_stand:
+    result: BREWING_STAND
+    count: 1
+    ingredients: ["BLAZE_ROD:1", "COBBLESTONE:3"]
+  hopper:
+    result: HOPPER
+    count: 1
+    ingredients: ["IRON_INGOT:5", "CHEST:1"]
+  dispenser:
+    result: DISPENSER
+    count: 1
+    ingredients: ["COBBLESTONE:7", "BOW:1", "REDSTONE:1"]
+  note_block:
+    result: NOTE_BLOCK
+    count: 1
+    ingredients: ["OAK_PLANKS:8", "REDSTONE:1"]
+  jukebox:
+    result: JUKEBOX
+    count: 1
+    ingredients: ["OAK_PLANKS:8", "DIAMOND:1"]
+  ender_chest:
+    result: ENDER_CHEST
+    count: 1
+    ingredients: ["OBSIDIAN:8", "ENDER_EYE:1"]

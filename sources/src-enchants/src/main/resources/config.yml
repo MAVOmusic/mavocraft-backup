@@ -6,6 +6,7 @@ max-tier: 10
 vein-blocks-per-tier: 6
 lifesteal-hearts: 1
 xpboost-percent-per-tier: 50
+smelt-bonus-per-tier: 10     # % chance per tier for a BONUS smelted item (T10 = 100%)
 
 # ---- GEM CHARGES + COOLDOWN (Hotfix 37) ----
 # Every gem level has a charge pool. The cooldown starts with the FIRST use and

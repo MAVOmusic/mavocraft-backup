@@ -66,7 +66,7 @@ public final class Enchants extends JavaPlugin implements Listener {
         DESCR.put("LIFESTEAL", "Lifesteal - heals you on kill");
     }
 
-    private int maxGems = 3, maxTier = 10, veinPerTier = 6, lifestealHearts = 1, xpPct = 50;
+    private int maxGems = 3, maxTier = 10, veinPerTier = 6, lifestealHearts = 1, xpPct = 50, smeltBonus = 10;
     private Economy econ;
     private final Random rnd = new Random();
     private boolean mineEnabled = true;
@@ -101,6 +101,7 @@ public final class Enchants extends JavaPlugin implements Listener {
         veinPerTier = Math.max(1, getConfig().getInt("vein-blocks-per-tier", 6));
         lifestealHearts = Math.max(1, getConfig().getInt("lifesteal-hearts", 1));
         xpPct = Math.max(10, getConfig().getInt("xpboost-percent-per-tier", 50));
+        smeltBonus = Math.max(0, getConfig().getInt("smelt-bonus-per-tier", 10));   // HOTFIX 40: tier scaling + lore
         mineEnabled = getConfig().getBoolean("mine-gem-enabled", true);
         mineBase = Math.max(0.0, getConfig().getDouble("mine-gem-base-chance", 1.0));
         mineLevels = Math.max(1, getConfig().getInt("mine-gem-levels", 10));
@@ -255,12 +256,14 @@ public final class Enchants extends JavaPlugin implements Listener {
     private static String cc(String s) { return ChatColor.translateAlternateColorCodes('&', s); }
 
     // ---------------- gem items ----------------
-    public static ItemStack makeGem(String type, int tier) {
+    private ItemStack makeGem(String type, int tier) {
         ItemStack it = new ItemStack(Material.EMERALD);
         ItemMeta m = it.getItemMeta();
         m.setDisplayName(cc("&bGem: " + friendly(type) + " " + roman(tier)));
         List<String> lore = new ArrayList<>();
         lore.add(cc("&7" + DESCR.getOrDefault(type, "?") + "."));
+        lore.add(cc("&fEffect: &b" + effectLine(type, tier) + "."));   // HOTFIX 40: what THIS level gives
+        lore.add(cc("&7Charges: " + chargesLine(tier) + "."));
         lore.add(cc("&7Right-click with the TOOL in your offhand."));
         m.setLore(lore);
         m.getPersistentDataContainer().set(new NamespacedKey("mavoenchants", "gem"), PersistentDataType.STRING,
@@ -269,11 +272,22 @@ public final class Enchants extends JavaPlugin implements Listener {
         return it;
     }
 
+    /** HOTFIX 40: what the gem ACTUALLY does at this tier - shown on hover in the
+     *  shop (and on the gem itself) so higher levels are easy to compare. */
+    private String effectLine(String type, int tier) {
+        return switch (type.toUpperCase(Locale.ROOT)) {
+            case "VEIN" -> "Mining: up to " + (veinPerTier * tier) + " ore blocks per charge";
+            case "SMELT" -> "Mining: ores drop smelted with " + (smeltBonus * tier) + "% bonus item chance";
+            case "XP" -> "Kills: +" + (xpPct * tier) + "% extra XP orbs per charge";
+            case "LIFESTEAL" -> "Kills: heal " + (lifestealHearts * tier) + " heart" + (lifestealHearts * tier == 1 ? "" : "s") + " per charge";
+            default -> DESCR.getOrDefault(type, "?");
+        };
+    }
+
     private ItemStack shopGem(String type, int tier, double price) {
         ItemStack it = makeGem(type, tier);
         ItemMeta m = it.getItemMeta();
         List<String> lore = new ArrayList<>(m.getLore());
-        lore.add(cc("&7Charges: " + chargesLine(tier) + "."));
         lore.add("");
         lore.add(cc("&6Price: " + String.format("%,.0f", price) + " coins"));
         lore.add(cc("&7Click to buy."));
@@ -391,6 +405,7 @@ public final class Enchants extends JavaPlugin implements Listener {
                 String n = mat.name();
                 if (n.endsWith("_ORE") && (n.contains("DIAMOND") || n.contains("EMERALD")
                         || n.contains("REDSTONE") || n.contains("LAPIS"))) amount = 2;
+                if (smeltBonus > 0 && rnd.nextInt(100) < smeltBonus * sm) amount++;   // HOTFIX 40: tier bonus
                 b.getWorld().dropItemNaturally(b.getLocation(), new ItemStack(smelted, amount));
             }
         }

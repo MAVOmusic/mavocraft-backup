@@ -27,7 +27,9 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,9 +38,9 @@ import org.bukkit.plugin.java.JavaPlugin;
  *  Config-driven shaped recipes for otherwise uncraftable items register on enable
  *  (run via a normal crafting table; /crafting list names them).
  *  /craft (hijacked from Essentials workbench) is open to EVERYONE and shows a
- *  paginated list of the 50 basic recipes a new character needs - click a result
- *  and it consumes the ingredients from your inventory. It is intentionally NOT
- *  the vanilla crafting grid: the recipe list is a learn-&-craft menu. */
+ *  paginated list of 100 basic recipes a new character needs - it is a GUIDE only
+ *  (HOTFIX 40): clicking a recipe opens a 3x3 preview of the REAL recipe and unlocks
+ *  it in the vanilla recipe book (press E); it NEVER crafts or consumes items. */
 public final class Crafting extends JavaPlugin implements Listener {
 
     private static final char C = '\u00a7';
@@ -110,7 +112,7 @@ public final class Crafting extends JavaPlugin implements Listener {
     private final class CraftCommand extends Command {
         CraftCommand() {
             super("craft");
-            setDescription("Open the MAVOcraft beginner recipe list (50 basics)");
+            setDescription("Open the MAVOcraft beginner recipe list (100 basics)");
             setUsage("/craft [recipe]");
             setPermission(null);
             setPermissionMessage(null);
@@ -253,7 +255,7 @@ public final class Crafting extends JavaPlugin implements Listener {
             List<String> lore = new ArrayList<>();
             for (Ingredient ing : r.ingredients())
                 lore.add(C + "7  " + ing.amount() + "x " + pretty2(ing.mat()));
-            lore.add(C + "eClick to craft (uses ingredients from your inventory)");
+            lore.add(C + "eClick to see how to craft it (guide - no auto craft)");
             m.setLore(lore);
             m.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             m.getPersistentDataContainer().set(recipeKey, PersistentDataType.STRING, r.id().toLowerCase(Locale.ROOT));
@@ -303,11 +305,14 @@ public final class Crafting extends JavaPlugin implements Listener {
         String nav = navOf(it);
         if (nav != null) {
             e.setCancelled(true);
-            if (nav.equals("prev")) openBeginner(p, Integer.parseInt(e.getView().getTitle().replaceAll(".*page (\\d+)/.*", "$1")) - 2);
-            else if (nav.equals("next")) openBeginner(p, Integer.parseInt(e.getView().getTitle().replaceAll(".*page (\\d+)/.*", "$1")));
+            if (nav.startsWith("back:")) openBeginner(p, Integer.parseInt(nav.substring(5)));
+            else if (nav.equals("prev")) openBeginner(p, pageOf(e.getView().getTitle()) - 2);
+            else if (nav.equals("next")) openBeginner(p, pageOf(e.getView().getTitle()));
             else if (nav.equals("close")) p.closeInventory();
             return;
         }
+        // HOTFIX 40: the recipe preview is display-only - block clicks on its icons
+        if (e.getView().getTitle().contains(" - how to craft")) { e.setCancelled(true); return; }
         String id = recipeOf(it);
         if (id == null) return;
         e.setCancelled(true);
@@ -317,40 +322,87 @@ public final class Crafting extends JavaPlugin implements Listener {
         long now = System.currentTimeMillis();
         if (last != null && now - last < 300) return;   // debounce double clicks
         lastCraft.put(p.getUniqueId(), now);
-        if (craft(p, r)) p.playSound(p.getLocation(), org.bukkit.Sound.ENTITY_ITEM_PICKUP, 1f, 1.2f);
+        openRecipe(p, r, pageOf(e.getView().getTitle()));   // HOTFIX 40: GUIDE, no auto-craft
+        p.playSound(p.getLocation(), org.bukkit.Sound.ITEM_BOOK_PAGE_TURN, 1f, 1.2f);
     }
 
-    private boolean craft(Player p, RecipeDef r) {
-        for (Ingredient ing : r.ingredients()) {
-            if (count(p, ing.mat()) < ing.amount()) {
-                p.sendMessage(C + "cMissing " + (ing.amount() - count(p, ing.mat())) + "x "
-                        + pretty2(ing.mat()) + " for " + pretty(r.id()) + ".");
-                return false;
+    private static int pageOf(String title) {
+        try { return Integer.parseInt(title.replaceAll(".*page (\\d+)/.*", "$1")); }
+        catch (Throwable t) { return 0; }
+    }
+
+    /** HOTFIX 40: GUIDE mode. Clicking a recipe in /craft opens a 3x3 preview of
+     *  the REAL recipe (looked up from the server's recipe registry - same layout
+     *  as the vanilla crafting grid) and unlocks it in the player's recipe book
+     *  (press E). Nothing is crafted and nothing is consumed. */
+    private void openRecipe(Player p, RecipeDef r, int fromPage) {
+        Inventory inv = Bukkit.createInventory(null, 45, C + "1\u2692 " + pretty(r.id()) + " - how to craft");
+        ItemStack[] grid = new ItemStack[9];
+        Recipe found = null;
+        try {
+            for (Recipe rc : Bukkit.getRecipesFor(new ItemStack(r.result()))) {
+                if (rc instanceof ShapedRecipe sr) {          // exact 3x3 pattern
+                    found = rc;
+                    String[] shape = sr.getShape();
+                    for (int row = 0; row < shape.length && row < 3; row++) {
+                        String s = shape[row];
+                        for (int col = 0; col < s.length() && col < 3; col++) {
+                            char ch = s.charAt(col);
+                            if (ch == ' ') continue;
+                            ItemStack ing = sr.getIngredientMap().get(ch);
+                            if (ing != null) grid[row * 3 + col] = ing.clone();
+                        }
+                    }
+                    break;
+                } else if (rc instanceof ShapelessRecipe sl) { // any order
+                    found = rc;
+                    int i = 0;
+                    for (ItemStack ing : sl.getIngredientList())
+                        if (i < 9) grid[i++] = ing.clone();
+                    break;
+                }
             }
+        } catch (Throwable ignored) { }
+        if (found != null) {
+            try {   // unlock in the vanilla recipe book (press E to see it)
+                for (Recipe rc : Bukkit.getRecipesFor(new ItemStack(r.result())))
+                    p.discoverRecipe(rc.getKey());
+            } catch (Throwable ignored) { }
         }
-        for (Ingredient ing : r.ingredients()) remove(p, ing.mat(), ing.amount());
-        ItemStack out = new ItemStack(r.result(), r.count());
-        var left = p.getInventory().addItem(out);
-        for (ItemStack it : left.values()) p.getWorld().dropItemNaturally(p.getLocation(), it);
-        p.sendMessage(C + "aCrafted " + C + "e" + r.count() + "x " + pretty(r.id()) + C + "a!");
-        return true;
-    }
-
-    private static int count(Player p, Material m) {
-        int n = 0;
-        for (ItemStack it : p.getInventory().getContents())
-            if (it != null && it.getType() == m) n += it.getAmount();
-        return n;
-    }
-
-    private static void remove(Player p, Material m, int amount) {
-        for (ItemStack it : p.getInventory().getContents()) {
-            if (amount <= 0) break;
-            if (it == null || it.getType() != m) continue;
-            int take = Math.min(amount, it.getAmount());
-            it.setAmount(it.getAmount() - take);
-            amount -= take;
+        int[] slots = {10, 11, 12, 19, 20, 21, 28, 29, 30};   // 3x3 grid
+        for (int i = 0; i < 9; i++) {
+            ItemStack ing = grid[i];
+            if (ing == null) continue;
+            ItemMeta m = ing.getItemMeta();
+            m.setLore(List.of(C + "7" + ing.getAmount() + "x " + pretty2(ing.getType())));
+            ing.setItemMeta(m);
+            inv.setItem(slots[i], ing);
         }
+        ItemStack arrow = new ItemStack(Material.ARROW);
+        ItemMeta am = arrow.getItemMeta();
+        am.setDisplayName(C + "7Craft in a crafting table");
+        arrow.setItemMeta(am);
+        inv.setItem(24, arrow);
+        ItemStack result = new ItemStack(r.result(), r.count());
+        ItemMeta rm = result.getItemMeta();
+        rm.setDisplayName(C + "a" + pretty(r.id()) + " x" + r.count());
+        List<String> rl = new ArrayList<>();
+        if (found instanceof ShapedRecipe)
+            rl.add(C + "7Place the ingredients in this exact pattern in a crafting table.");
+        else if (found instanceof ShapelessRecipe)
+            rl.add(C + "7Throw the ingredients together in a crafting table (any order).");
+        else {
+            for (Ingredient ing : r.ingredients()) rl.add(C + "7  " + ing.amount() + "x " + pretty2(ing.mat()));
+            rl.add(C + "7Craft in a crafting table.");
+        }
+        if (found != null) rl.add(C + "8Unlocked in your recipe book too - press E to see it.");
+        rm.setLore(rl);
+        result.setItemMeta(rm);
+        inv.setItem(26, result);
+        inv.setItem(40, nav(Material.ARROW, "back:" + fromPage, "Back to recipes"));
+        inv.setItem(44, nav(Material.BOOK, "close", "Close"));
+        openGuis.put(p.getUniqueId(), inv);
+        p.openInventory(inv);
     }
 
     // ---------------- commands ----------------
@@ -381,7 +433,7 @@ public final class Crafting extends JavaPlugin implements Listener {
                 ConfigurationSection cs = getConfig().getConfigurationSection("recipes");
                 if (cs != null) for (String id : cs.getKeys(false))
                     sender.sendMessage(C + "7 - " + C + "f" + id + C + "7 -> " + C + "a" + cs.getString(id + ".result", "?"));
-                sender.sendMessage(C + "8Tip: /craft opens the beginner recipe list (50 basics) for everyone.");
+                sender.sendMessage(C + "8Tip: /craft opens the beginner recipe list (100 basics, guide only) for everyone.");
             }
             case "reload" -> {
                 if (!sender.hasPermission("mavocrafting.admin")) { sender.sendMessage("OP only."); return true; }
