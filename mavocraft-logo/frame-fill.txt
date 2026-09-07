@@ -1,0 +1,6 @@
+# MAVOCRAFT logo FRAME (Y=249) - gold border 75x23, center (-2579,-1685)
+# Check it lines up inside the ceiling, then run the full build.
+/fill -2616 249 -1696 -2542 249 -1696 minecraft:gold_block
+/fill -2616 249 -1674 -2542 249 -1674 minecraft:gold_block
+/fill -2616 249 -1695 -2616 249 -1675 minecraft:gold_block
+/fill -2542 249 -1695 -2542 249 -1675 minecraft:gold_block

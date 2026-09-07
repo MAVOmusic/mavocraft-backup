@@ -1,0 +1,7 @@
+# MAVOCRAFT logo test markers (Y=249) - 3x3 gold at the logo center + 4 corner blocks
+# They sit directly above spawn. Look up and check, then undo with /fill ... air.
+/fill -2580 249 -1686 -2578 249 -1684 minecraft:gold_block
+/fill -2616 249 -1696 -2616 249 -1696 minecraft:gold_block
+/fill -2542 249 -1696 -2542 249 -1696 minecraft:gold_block
+/fill -2616 249 -1674 -2616 249 -1674 minecraft:gold_block
+/fill -2542 249 -1674 -2542 249 -1674 minecraft:gold_block
