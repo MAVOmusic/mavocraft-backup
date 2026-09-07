@@ -11,7 +11,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-import net.kyori.adventure.text.Component;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -231,7 +230,7 @@ public final class Crates extends JavaPlugin implements Listener {
                     ? List.of(d.display, "&7Right-click to open (1 key)") : d.holo;
             StringBuilder sb = new StringBuilder();
             for (String s : lines) { if (sb.length() > 0) sb.append('\n'); sb.append(cc(s)); }
-            td.setText(Component.text(sb.toString()));
+            td.setText(sb.toString());   // legacy § codes render natively
             td.setBillboard(TextDisplay.Billboard.CENTER);
             td.setDefaultBackground(false);
             td.setShadowed(true);
