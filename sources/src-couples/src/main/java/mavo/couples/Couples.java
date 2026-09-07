@@ -94,9 +94,9 @@ public final class Couples extends JavaPlugin implements Listener {
             Player pa = Bukkit.getPlayer(a), pb = Bukkit.getPlayer(b);
             if (pa == null || pb == null || !pa.isOnline() || !pb.isOnline()) continue;
             if (pa.getWorld().equals(pb.getWorld()) && pa.getLocation().distanceSquared(pb.getLocation()) < 36) {
-                Location a = pa.getLocation(), b2 = pb.getLocation();
-                Location mid = new Location(a.getWorld(),
-                        (a.getX() + b2.getX()) / 2, (a.getY() + b2.getY()) / 2 + 2, (a.getZ() + b2.getZ()) / 2);
+                Location la = pa.getLocation(), lb = pb.getLocation();
+                Location mid = new Location(la.getWorld(),
+                        (la.getX() + lb.getX()) / 2, (la.getY() + lb.getY()) / 2 + 2, (la.getZ() + lb.getZ()) / 2);
                 pa.getWorld().spawnParticle(Particle.HEART, mid, 2, 0.4, 0.3, 0.4);
             }
         }
