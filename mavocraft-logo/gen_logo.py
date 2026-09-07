@@ -1,35 +1,37 @@
 #!/usr/bin/env python3
-"""MAVOCRAFT block logo v3 - ceiling build, absolute coordinates.
+"""MAVOCRAFT block logo v4 - ceiling build, absolute coordinates.
+
+READING ORIENTATION (from your F3):
+  You stand at spawn (-2579, 200, -1685), FACE WEST (-X) to look at the 3
+  villagers, then look straight UP. In that view:
+    screen-right = north (-Z)      screen-top = east (+X)
+  So the word runs SOUTH -> NORTH and each letter's top points EAST. The
+  3D shadow (bottom-left of the viewed image) = west + south (-2 x, +2 z).
 
 Ceiling (Y=250): X -2629..-2529 (100), Z -1735..-1635 (100), center (-2579,-1685).
 Logo is built ONE LAYER BELOW at Y=249 so the ceiling is never touched.
 
-Everything here is ABSOLUTE (no ~, no placement guessing):
-  - test-fill.txt  5 gold marker blocks (center + 4 corners) - check alignment
-  - frame-fill.txt gold border of the logo canvas (75 x 23) - check size/position
-  - fill-commands.txt full logo (black bg + gold frame + cream letters + deepslate
-    3D shadow toward the bottom-left)
-
-Orientation: a player standing under it FACING NORTH sees the letters upright
-(looking up flips the view: screen-top = south, screen-right = east).
+Files (absolute coords, no placement guessing):
+  test-fill.txt      5 gold markers: 3x3 at the center + 4 canvas corners
+  frame-fill.txt     gold border of the canvas
+  fill-commands.txt  FULL logo (starts with an undo /fill air line)
 """
 
 # ---------------- palette ----------------
 BLOCK_BG     = "black_concrete"   # background
 BLOCK_FRAME  = "gold_block"       # canvas border
 BLOCK_LETTER = "bone_block"       # cream letters (alt: cracked_stone_bricks)
-BLOCK_SHADOW = "deepslate"        # 3D shadow (bottom-left of the view)
+BLOCK_SHADOW = "deepslate"        # 3D shadow (bottom-left of the viewed image)
 
 # ---------------- layout ----------------
 SCALE = 2            # blocks per font pixel
 GAP = 1              # blocks between letters
-LM, RM = 2, 3        # canvas margins west/east (shadow needs 2 on the west)
-TM, BM = 3, 4        # canvas margins south/north (screen top = south)
-SHADOW_DX, SHADOW_DZ = -2, -2    # bottom-left of the looking-up view (west+north)
+MARGIN = 3           # border + padding around the letters
+SHADOW_DX, SHADOW_DZ = -2, 2      # bottom-left of the view = west + south
 
 CX, CZ, CY = -2579, -1685, 249   # build center (below the ceiling)
 
-# ---------------- font (X = filled; widths vary; A carries the creeper face) ----------------
+# ---------------- font (X = filled; A carries the creeper face) ----------------
 FONT = {
     "M": ["X.X", "XXX", "XXX", "X.X", "X.X", "X.X", "X.X", "X.X"],
     "A": [".XXX.", "X...X", "X.X.X", "X.X.X", "XXXXX", "XX.XX", "XXXXX", "X...X"],
@@ -43,55 +45,58 @@ FONT = {
 WORD = "MAVOCRAFT"
 
 # ---------------- geometry ----------------
-# canvas (from the player's view): screen-left = west, screen-top = south
-faceW = sum(2 * len(FONT[c][0]) for c in WORD) + GAP * (len(WORD) - 1)   # 70
+# text width along Z (word start = south / max z), text height along X (top = east)
+faceW = sum(2 * len(FONT[c][0]) for c in WORD) + GAP * (len(WORD) - 1)   # 66
 faceH = len(FONT["M"]) * SCALE                                           # 16
-CW = LM + faceW + RM                                                     # 75
-CH = TM + faceH + BM                                                     # 23
-X0, Z0 = CX - CW // 2, CZ - CH // 2      # canvas min corner (north-west)
-# letter grid, row 0 = letter TOP = south (max z)
-faceZTop = Z0 + CH - TM                  # largest z covered by row 0
-faceX = X0 + LM
+CW = faceH + 2 * MARGIN                  # canvas size along X (24)
+CH = faceW + 2 * MARGIN                  # canvas size along Z (74)
+X0 = CX - CW // 2                        # west edge   (-2591)
+Z0 = CZ - CH // 2                        # north edge  (-1722)
+XE = X0 + CW - 1                         # east edge   (-2568)
+ZS = Z0 + CH - 1                         # south edge  (-1649)
+# letter top row = east side of the interior; word starts at the south side
+xTop = XE - MARGIN                       # east edge of the interior
+zStart = ZS - MARGIN                     # south edge of the interior
 
 def face_blocks():
-    """set of (x, z) blocks covered by letters, absolute coords."""
+    """set of (x, z) blocks covered by letters."""
     out = set()
-    cur = faceX
+    cur = zStart
     for ch in WORD:
         g = FONT[ch]
         w = len(g[0]) * SCALE
         for ry, row in enumerate(g):
-            z1 = faceZTop - ry * SCALE
+            x1 = xTop - ry * SCALE            # this row's 2 blocks: x1-1, x1
             for rx, v in enumerate(row):
                 if v == "X":
                     for dx in range(SCALE):
                         for dz in range(SCALE):
-                            out.add((cur + rx * SCALE + dx, z1 - dz))
-        cur += w + GAP
+                            out.add((x1 - dx, cur - rx * SCALE - dz))
+        cur -= w + GAP
     return out
 
 def shadow_blocks(face):
     out = set()
     for (x, z) in face:
         s = (x + SHADOW_DX, z + SHADOW_DZ)
-        if s not in face and X0 <= s[0] < X0 + CW and Z0 <= s[1] < Z0 + CH:
+        if s not in face and X0 <= s[0] <= XE and Z0 <= s[1] <= ZS:
             out.add(s)
     return out
 
-def runs(blocks, axis):
-    """group blocks into runs along x for each z (or along z for each x)."""
+def runs(blocks):
+    """group into one /fill per horizontal run (same z, consecutive x)."""
     rows = {}
-    for (a, b) in blocks:
-        rows.setdefault(b, []).append(a)
+    for (x, z) in blocks:
+        rows.setdefault(z, []).append(x)
     out = []
-    for b in sorted(rows):
-        xs = sorted(rows[b])
+    for z in sorted(rows):
+        xs = sorted(rows[z])
         i = 0
         while i < len(xs):
             j = i
             while j + 1 < len(xs) and xs[j + 1] == xs[j] + 1:
                 j += 1
-            out.append((xs[i], b, xs[j], b))
+            out.append((xs[i], z, xs[j], z))
             i = j + 1
     return out
 
@@ -101,35 +106,34 @@ def f(x1, z1, x2, z2, mat):
 def write_commands():
     face = face_blocks()
     shadow = shadow_blocks(face)
-    x1, z1 = X0, Z0
-    x2, z2 = X0 + CW - 1, Z0 + CH - 1
     # ---- test markers ----
-    t = ["# MAVOCRAFT logo test markers (Y=%d) - 3x3 gold at the logo center + 4 corner blocks" % CY,
-         "# They sit directly above spawn. Look up and check, then undo with /fill ... air."]
+    t = ["# MAVOCRAFT logo test markers (Y=%d) - 3x3 gold at the logo center + 4 canvas corners" % CY,
+         "# Stand at spawn, FACE WEST (at the 3 villagers), look straight up to check.",
+         "# Undo with: " + f(CX - 4, CZ - 4, CX + 4, CZ + 4, "air")]
     t.append(f(CX - 1, CZ - 1, CX + 1, CZ + 1, BLOCK_FRAME))
-    for (cx0, cz0) in [(x1, z1), (x2, z1), (x1, z2), (x2, z2)]:
+    for (cx0, cz0) in [(X0, Z0), (XE, Z0), (X0, ZS), (XE, ZS)]:
         t.append(f(cx0, cz0, cx0, cz0, BLOCK_FRAME))
     # ---- frame ----
     fr = ["# MAVOCRAFT logo FRAME (Y=%d) - gold border %dx%d, center (%d,%d)" % (CY, CW, CH, CX, CZ),
-          "# Check it lines up inside the ceiling, then run the full build."]
-    fr.append(f(x1, z1, x2, z1, BLOCK_FRAME))
-    fr.append(f(x1, z2, x2, z2, BLOCK_FRAME))
-    fr.append(f(x1, z1 + 1, x1, z2 - 1, BLOCK_FRAME))
-    fr.append(f(x2, z1 + 1, x2, z2 - 1, BLOCK_FRAME))
+          "# Check alignment inside the ceiling, then run the full build."]
+    fr.append(f(X0, Z0, XE, Z0, BLOCK_FRAME))
+    fr.append(f(X0, ZS, XE, ZS, BLOCK_FRAME))
+    fr.append(f(X0, Z0 + 1, X0, ZS - 1, BLOCK_FRAME))
+    fr.append(f(XE, Z0 + 1, XE, ZS - 1, BLOCK_FRAME))
     # ---- full ----
     out = ["# MAVOCRAFT logo - FULL BUILD (Y=%d), canvas %dx%d centered (%d,%d)" % (CY, CW, CH, CX, CZ),
-           "# %s%s%s frame: %s / letters: %s / shadow: %s" % ("", "", "",
-               BLOCK_FRAME, BLOCK_LETTER, BLOCK_SHADOW),
-           "# Undo (ceiling is untouched at Y=250):", f(x1, z1, x2, z2, "air"), ""]
-    out.append(f(x1, z1, x2, z2, BLOCK_BG))
+           "# Read it: stand at spawn, FACE WEST at the 3 villagers, look straight up.",
+           "# Frame: %s / letters: %s / shadow: %s" % (BLOCK_FRAME, BLOCK_LETTER, BLOCK_SHADOW),
+           "# Undo (ceiling untouched at Y=250):", f(X0, Z0, XE, ZS, "air"), ""]
+    out.append(f(X0, Z0, XE, ZS, BLOCK_BG))
     out += fr[2:]
-    for (a, b, c, d) in runs(face, 0):
+    for (a, b, c, d) in runs(face):
         out.append(f(a, b, c, d, BLOCK_LETTER))
-    for (a, b, c, d) in runs(shadow, 0):
+    for (a, b, c, d) in runs(shadow):
         out.append(f(a, b, c, d, BLOCK_SHADOW))
     return t, fr, out, face, shadow
 
-# ---------------- preview (what the player sees: top = south, left = west) ----------------
+# ---------------- preview (EXACTLY what the player sees: left=south, top=east) ----------------
 def write_png(path, w, h, pixels):
     import zlib, struct
     def chunk(ty, d):
@@ -143,26 +147,25 @@ def write_png(path, w, h, pixels):
 
 def preview(path, face, shadow):
     px = 10
-    W, H = CW * px, CH * px
+    W, H = CH * px, CW * px     # image x = z (south..north), image y = x (east..west)
     col = {"b": (13, 13, 15), "f": (246, 214, 76), "l": (236, 230, 218), "s": (40, 40, 60)}
     pix = [0] * (W * H * 3)
-    def setb(x, y, c):
+    def setb(ix, iy, c):
         r, g, b = col[c]
-        for yy in range(y * px, (y + 1) * px):
-            for xx in range(x * px, (x + 1) * px):
+        for yy in range(iy * px, (iy + 1) * px):
+            for xx in range(ix * px, (ix + 1) * px):
                 i = (yy * W + xx) * 3
                 pix[i], pix[i + 1], pix[i + 2] = r, g, b
-    # imgY: canvas z max (south, screen top) at y=0
-    for i in range(CW):
-        for j in range(CH):
+    for iz in range(CH):
+        for ix in range(CW):
             c = "b"
-            if i == 0 or j == 0 or i == CW - 1 or j == CH - 1:
+            if iz == 0 or iz == CH - 1 or ix == 0 or ix == CW - 1:
                 c = "f"
-            setb(i, j, c)
+            setb(iz, ix, c)
     for (x, z) in shadow:
-        setb(x - X0, Z0 + CH - 1 - z, "s")
+        setb(ZS - z, XE - x, "s")
     for (x, z) in face:
-        setb(x - X0, Z0 + CH - 1 - z, "l")
+        setb(ZS - z, XE - x, "l")
     write_png(path, W, H, pix)
 
 if __name__ == "__main__":
@@ -171,6 +174,10 @@ if __name__ == "__main__":
     open("frame-fill.txt", "w").write("\n".join(fr) + "\n")
     open("fill-commands.txt", "w").write("\n".join(out) + "\n")
     preview("MAVOCRAFT-logo-preview.png", face, shadow)
-    print("canvas %dx%d at Y%d center (%d,%d) | face %dx%d | %d letter + %d shadow blocks"
-          % (CW, CH, CY, CX, CZ, faceW, faceH, len(face), len(shadow)))
+    print("canvas %dx%d | X %d..%d  Z %d..%d | letters %d | shadow %d"
+          % (CW, CH, X0, XE, Z0, ZS, len(face), len(shadow)))
     print("test %d / frame %d / full %d commands" % (len(t), len(fr), len(out)))
+    # safety asserts: canvas must stay well inside the 100x100 ceiling
+    assert X0 >= -2629 and XE <= -2529 and Z0 >= -1735 and ZS <= -1635, "canvas exceeds ceiling"
+    assert CW < 75 and CH <= 76, "canvas exceeds ~75% of the ceiling"
+    print("bounds OK: fits inside the ceiling with margin")

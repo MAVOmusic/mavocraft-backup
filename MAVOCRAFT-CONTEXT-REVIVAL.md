@@ -883,3 +883,9 @@ CI run 33814070963 SUCCESS. Commit chain: f6a14d7 (sources) -> 7a0c525 (ci: rebu
 - **Logo v3:** absolute coordinates everywhere (no ~ or standing/orientation). Canvas 75x23 = 75% of the 100-wide ceiling, centered (-2579,-1685), margins 13/13 (x) + 39/39 (z). Face 70x16 (2px font, GAP 1), gold_frame border, black_concrete bg, bone_block letters, deepslate shadow offset (-2 x, -2 z) = bottom-left of the looking-up view (screen-top = south, screen-right = east when facing north looking up).
 - **Files in mavocraft-logo/:** `test-fill.txt` (7 lines: 3x3 gold center + 4 corner blocks), `frame-fill.txt` (6 lines: gold border only), `fill-commands.txt` (440 lines: undo-air line + bg + frame + 616 letter + 402 shadow blocks), `MAVOCRAFT-logo-preview.png`, `gen_logo.py`, `README.md` (steps + undo command).
 - **Undo:** `/fill -2616 249 -1696 -2542 249 -1674 minecraft:air` (full canvas at Y249; ceiling Y250 untouched).
+
+## 2026-09-07 HOTFIX 29 — MAVOCRAFT logo v4 (orientation fix: read it facing west at the 3 villagers)
+- **User feedback (screenshots):** frame built at Y249 aligns, but the logo faced the wrong way. F3 showing FACING WEST (-X) when looking at the 3 villagers at spawn (-2579,200,-1685). Looking straight up from that view: screen-right = north (-Z), screen-top = east (+X).
+- **v4 rotation:** word now runs SOUTH->NORTH, letter tops point EAST (v3 ran west->east = north-facing viewer). Canvas 22 (X) x 76 (Z) = X -2590..-2569 / Z -1723..-1648, center (-2579,-1685), Y=249; margins 3, GAP 1, SCALE 2, 616 letter + 402 shadow blocks, shadow offset (-2 x, +2 z) = bottom-left of the viewed image (west+south). Fits inside the 100x100 ceiling with 39+ block margins (~75% size).
+- **Files:** test-fill.txt (8 lines), frame-fill.txt (6 lines), fill-commands.txt (178 lines), preview PNG now renders the TRUE viewing orientation (imX = Z0..ZS -> ZS-z, imY = X -> XE-x).
+- **Undo:** /fill -2590 249 -1723 -2569 249 -1648 minecraft:air.
