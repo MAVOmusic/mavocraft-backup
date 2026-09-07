@@ -1,4 +1,4 @@
-## build log Mon Sep  7 07:55:02 UTC 2026
+## build log Mon Sep  7 09:11:48 UTC 2026
 == sources/src-achievements ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -26,8 +26,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.054 s
-[INFO] Finished at: 2026-09-07T07:55:04Z
+[INFO] Total time:  1.055 s
+[INFO] Finished at: 2026-09-07T09:11:50Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-auction ==
 [INFO] Scanning for projects...
@@ -56,8 +56,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.021 s
-[INFO] Finished at: 2026-09-07T07:55:06Z
+[INFO] Total time:  1.060 s
+[INFO] Finished at: 2026-09-07T09:11:52Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-bossraid ==
 [INFO] Scanning for projects...
@@ -86,8 +86,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.009 s
-[INFO] Finished at: 2026-09-07T07:55:08Z
+[INFO] Total time:  1.038 s
+[INFO] Finished at: 2026-09-07T09:11:54Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-casino ==
 [INFO] Scanning for projects...
@@ -116,8 +116,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.037 s
-[INFO] Finished at: 2026-09-07T07:55:10Z
+[INFO] Total time:  1.053 s
+[INFO] Finished at: 2026-09-07T09:11:57Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-chestshop ==
 [INFO] Scanning for projects...
@@ -146,8 +146,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.039 s
-[INFO] Finished at: 2026-09-07T07:55:12Z
+[INFO] Total time:  1.088 s
+[INFO] Finished at: 2026-09-07T09:11:59Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-couples ==
 [INFO] Scanning for projects...
@@ -176,8 +176,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.036 s
-[INFO] Finished at: 2026-09-07T07:55:15Z
+[INFO] Total time:  1.078 s
+[INFO] Finished at: 2026-09-07T09:12:01Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-crafting ==
 [INFO] Scanning for projects...
@@ -191,35 +191,24 @@
 [INFO] Copying 2 resources from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-crafting ---
-[INFO] Recompiling the module because of changed source code.
-[INFO] Compiling 1 source file with javac [debug release 21] to target/classes
-[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crafting/src/main/java/mavo/crafting/Crafting.java: /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crafting/src/main/java/mavo/crafting/Crafting.java uses or overrides a deprecated API.
-[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crafting/src/main/java/mavo/crafting/Crafting.java: Recompile with -Xlint:deprecation for details.
-[INFO] -------------------------------------------------------------
-[ERROR] COMPILATION ERROR : 
-[INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crafting/src/main/java/mavo/crafting/Crafting.java:[369,40] cannot find symbol
-  symbol:   method getKey()
-  location: variable rc of type org.bukkit.inventory.Recipe
-[INFO] 1 error
-[INFO] -------------------------------------------------------------
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-crafting ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crafting/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-crafting ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-crafting ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-crafting ---
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
+[INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.608 s
-[INFO] Finished at: 2026-09-07T07:55:17Z
+[INFO] Total time:  1.058 s
+[INFO] Finished at: 2026-09-07T09:12:03Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (default-compile) on project mavo-crafting: Compilation failure
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crafting/src/main/java/mavo/crafting/Crafting.java:[369,40] cannot find symbol
-[ERROR]   symbol:   method getKey()
-[ERROR]   location: variable rc of type org.bukkit.inventory.Recipe
-[ERROR] -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
 == sources/src-crates ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -232,24 +221,32 @@
 [INFO] Copying 2 resources from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-crates ---
-[INFO] Nothing to compile - all classes are up to date.
-[INFO] 
-[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-crates ---
-[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crates/src/test/resources
-[INFO] 
-[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-crates ---
-[INFO] No sources to compile
-[INFO] 
-[INFO] --- surefire:3.5.4:test (default-test) @ mavo-crates ---
-[INFO] Tests are skipped.
-[INFO] 
-[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-crates ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1 source file with javac [debug release 21] to target/classes
+[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crates/src/main/java/mavo/crates/Crates.java: /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crates/src/main/java/mavo/crates/Crates.java uses or overrides a deprecated API.
+[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crates/src/main/java/mavo/crates/Crates.java: Recompile with -Xlint:deprecation for details.
+[INFO] Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crates/src/main/java/mavo/crates/Crates.java:[234,38] incompatible types: net.kyori.adventure.text.TextComponent cannot be converted to java.lang.String
+[INFO] 1 error
+[INFO] -------------------------------------------------------------
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
+[INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.051 s
-[INFO] Finished at: 2026-09-07T07:55:20Z
+[INFO] Total time:  1.784 s
+[INFO] Finished at: 2026-09-07T09:12:06Z
 [INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (default-compile) on project mavo-crates: Compilation failure
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crates/src/main/java/mavo/crates/Crates.java:[234,38] incompatible types: net.kyori.adventure.text.TextComponent cannot be converted to java.lang.String
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
 == sources/src-curator ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -277,8 +274,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  0.987 s
-[INFO] Finished at: 2026-09-07T07:55:22Z
+[INFO] Total time:  1.080 s
+[INFO] Finished at: 2026-09-07T09:12:08Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-deathchest ==
 [INFO] Scanning for projects...
@@ -308,7 +305,7 @@
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
 [INFO] Total time:  1.056 s
-[INFO] Finished at: 2026-09-07T07:55:24Z
+[INFO] Finished at: 2026-09-07T09:12:11Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-doublexp ==
 [INFO] Scanning for projects...
@@ -337,8 +334,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.015 s
-[INFO] Finished at: 2026-09-07T07:55:26Z
+[INFO] Total time:  1.065 s
+[INFO] Finished at: 2026-09-07T09:12:13Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-duels ==
 [INFO] Scanning for projects...
@@ -367,8 +364,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.018 s
-[INFO] Finished at: 2026-09-07T07:55:28Z
+[INFO] Total time:  1.080 s
+[INFO] Finished at: 2026-09-07T09:12:15Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-enchants ==
 [INFO] Scanning for projects...
@@ -397,8 +394,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.013 s
-[INFO] Finished at: 2026-09-07T07:55:30Z
+[INFO] Total time:  1.063 s
+[INFO] Finished at: 2026-09-07T09:12:17Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-events ==
 [INFO] Scanning for projects...
@@ -427,8 +424,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.030 s
-[INFO] Finished at: 2026-09-07T07:55:32Z
+[INFO] Total time:  1.110 s
+[INFO] Finished at: 2026-09-07T09:12:20Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-fishcomp ==
 [INFO] Scanning for projects...
@@ -457,8 +454,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.012 s
-[INFO] Finished at: 2026-09-07T07:55:35Z
+[INFO] Total time:  1.071 s
+[INFO] Finished at: 2026-09-07T09:12:22Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-guide ==
 [INFO] Scanning for projects...
@@ -487,8 +484,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.017 s
-[INFO] Finished at: 2026-09-07T07:55:37Z
+[INFO] Total time:  1.050 s
+[INFO] Finished at: 2026-09-07T09:12:24Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-guilds ==
 [INFO] Scanning for projects...
@@ -517,8 +514,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.009 s
-[INFO] Finished at: 2026-09-07T07:55:39Z
+[INFO] Total time:  1.059 s
+[INFO] Finished at: 2026-09-07T09:12:26Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-locks ==
 [INFO] Scanning for projects...
@@ -547,8 +544,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.009 s
-[INFO] Finished at: 2026-09-07T07:55:41Z
+[INFO] Total time:  1.074 s
+[INFO] Finished at: 2026-09-07T09:12:29Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-lucky ==
 [INFO] Scanning for projects...
@@ -577,8 +574,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.027 s
-[INFO] Finished at: 2026-09-07T07:55:43Z
+[INFO] Total time:  1.060 s
+[INFO] Finished at: 2026-09-07T09:12:31Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-mail ==
 [INFO] Scanning for projects...
@@ -607,8 +604,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.026 s
-[INFO] Finished at: 2026-09-07T07:55:45Z
+[INFO] Total time:  1.104 s
+[INFO] Finished at: 2026-09-07T09:12:33Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-miniboss ==
 [INFO] Scanning for projects...
@@ -637,8 +634,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.027 s
-[INFO] Finished at: 2026-09-07T07:55:47Z
+[INFO] Total time:  1.094 s
+[INFO] Finished at: 2026-09-07T09:12:35Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-mobfarm ==
 [INFO] Scanning for projects...
@@ -667,8 +664,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.042 s
-[INFO] Finished at: 2026-09-07T07:55:50Z
+[INFO] Total time:  1.024 s
+[INFO] Finished at: 2026-09-07T09:12:38Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-pets ==
 [INFO] Scanning for projects...
@@ -697,8 +694,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.022 s
-[INFO] Finished at: 2026-09-07T07:55:52Z
+[INFO] Total time:  1.079 s
+[INFO] Finished at: 2026-09-07T09:12:40Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-professions ==
 [INFO] Scanning for projects...
@@ -727,8 +724,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.066 s
-[INFO] Finished at: 2026-09-07T07:55:54Z
+[INFO] Total time:  1.047 s
+[INFO] Finished at: 2026-09-07T09:12:42Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-seasonal ==
 [INFO] Scanning for projects...
@@ -757,8 +754,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  0.991 s
-[INFO] Finished at: 2026-09-07T07:55:56Z
+[INFO] Total time:  1.046 s
+[INFO] Finished at: 2026-09-07T09:12:44Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-shopnpc ==
 [INFO] Scanning for projects...
@@ -787,8 +784,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.032 s
-[INFO] Finished at: 2026-09-07T07:55:58Z
+[INFO] Total time:  1.046 s
+[INFO] Finished at: 2026-09-07T09:12:46Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-spawners ==
 [INFO] Scanning for projects...
@@ -817,8 +814,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  0.980 s
-[INFO] Finished at: 2026-09-07T07:56:00Z
+[INFO] Total time:  1.043 s
+[INFO] Finished at: 2026-09-07T09:12:49Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-timber ==
 [INFO] Scanning for projects...
@@ -847,8 +844,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.018 s
-[INFO] Finished at: 2026-09-07T07:56:02Z
+[INFO] Total time:  1.058 s
+[INFO] Finished at: 2026-09-07T09:12:51Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-tpa ==
 [INFO] Scanning for projects...
@@ -877,8 +874,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.027 s
-[INFO] Finished at: 2026-09-07T07:56:05Z
+[INFO] Total time:  1.004 s
+[INFO] Finished at: 2026-09-07T09:12:53Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wanderer ==
 [INFO] Scanning for projects...
@@ -907,8 +904,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.003 s
-[INFO] Finished at: 2026-09-07T07:56:07Z
+[INFO] Total time:  1.067 s
+[INFO] Finished at: 2026-09-07T09:12:55Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-warps ==
 [INFO] Scanning for projects...
@@ -937,8 +934,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.029 s
-[INFO] Finished at: 2026-09-07T07:56:09Z
+[INFO] Total time:  1.054 s
+[INFO] Finished at: 2026-09-07T09:12:57Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wild ==
 [INFO] Scanning for projects...
@@ -967,6 +964,6 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.029 s
-[INFO] Finished at: 2026-09-07T07:56:11Z
+[INFO] Total time:  1.028 s
+[INFO] Finished at: 2026-09-07T09:13:00Z
 [INFO] ------------------------------------------------------------------------
