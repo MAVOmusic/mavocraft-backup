@@ -12,3 +12,7 @@ xp-cap-per-tree: 10          # max profession XP per tree (anti-exploit)
 # Leaves: after the trunk falls the crown decays and drops saplings/sticks.
 leaves-fall: true
 leaves-max: 750              # safety cap on leaves processed per tree
+# HOTFIX 36: fell GROWN TREES only. A cluster of logs only falls when its
+# connected component contains leaves (a real tree crown) AND no player-placed
+# logs/leaves. Shipwrecks, village houses and player log builds are never felled.
+natural-trees-only: true

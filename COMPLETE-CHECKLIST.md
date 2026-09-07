@@ -212,8 +212,11 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | Player | break bottom log with axe | Tree falls; **max 10 logs total** ("Tree felled - n logs (cap)" if capped) |
 | Player | chop a DARK FOREST giant tree | Still **max 10 logs** - no more 10-150 log hauls (exploit fixed) |
 | Player | chop a small tree (<10 logs) | Falls fully with its natural amount |
+| Player | chop a SHIPWRECK / VILLAGE HOUSE log wall | **NOT felled** - only the clicked log breaks ("not a grown tree") |
+| Player | chop a player-built log house | **NOT felled** - only the clicked log breaks |
+| Player | place logs/leaves then chop them | Never felled (player-placed wood is tracked; plant saplings instead) |
 | Player | watch after the fall | **Leaves decay** ~0.5s later, drop sticks/saplings |
-| Player | `/timber status` | ON/OFF + "max 10 logs/tree, XP cap 10 per tree" |
+| Player | `/timber status` | ON/OFF + "max 10 logs/tree, XP cap 10 per tree, grown trees only" |
 | Player | break with hand | No tree fall |
 | Player | `/timber toggle` then break | Felling off; toggle persists after relog |
 

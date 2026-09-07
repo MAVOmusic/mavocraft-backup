@@ -27,14 +27,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /** MAVOTimber 1.0.0 - tree felling (Discord CW#4 idea 13, inspired by UltimateTimber).
- *  Break the bottom log of a tree and up to `max-logs` connected logs break at once
- *  (default 10 - anti-exploit: no more 150-log dark forest hauls); drops land at the
- *  trunk; one axe durability per extra log; Lumberjack XP capped at `xp-cap-per-tree`
- *  per tree; the tree's leaves decay a tick later (drop saplings/sticks). */
+ *  Break the bottom log of a GROWN tree and up to `max-logs` connected logs break at
+ *  once (default 10 - anti-exploit: no more 150-log dark forest hauls); drops land at
+ *  the trunk; one axe durability per extra log; Lumberjack XP capped at
+ *  `xp-cap-per-tree` per tree; the tree's leaves decay a tick later.
+ *  NATURAL-TREES-ONLY (HOTFIX 36): a log cluster is only felled when its connected
+ *  component contains LEAVES (a real tree crown) and NO player-placed logs/leaves.
+ *  Shipwrecks, village houses and player log builds have no natural crown and are
+ *  never felled (placed blocks are tracked from BlockPlaceEvent). */
 public final class Timber extends JavaPlugin implements Listener {
 
     private static final char C = '\u00a7';
@@ -48,8 +53,11 @@ public final class Timber extends JavaPlugin implements Listener {
     private double xpCap = 10.0;
     private boolean leavesFall = true;
     private int leavesMax = 750;
+    private boolean naturalOnly = true;   // HOTFIX 36: fell grown trees only
+    private final Set<String> placed = new HashSet<>();   // "world,x,y,z" of player-placed logs/leaves
     private final Map<UUID, Boolean> toggles = new HashMap<>();
     private final Random rnd = new Random();
+    private boolean placedDirty = false;
     private File dataFile;
     private YamlConfiguration data;
 
@@ -60,10 +68,17 @@ public final class Timber extends JavaPlugin implements Listener {
                 || m == Material.GOLDEN_AXE || m == Material.DIAMOND_AXE || m == Material.NETHERITE_AXE;
     }
 
+    private static String key(Block b) {
+        return b.getWorld().getName() + "," + b.getX() + "," + b.getY() + "," + b.getZ();
+    }
+    private static String key(Location l) {
+        return l.getWorld().getName() + "," + l.getBlockX() + "," + l.getBlockY() + "," + l.getBlockZ();
+    }
+
     @Override public void onEnable() {
         saveDefaultConfig();
         getConfig().options().copyDefaults(true);
-        saveConfig();                       // adds new keys (max-logs, xp caps, leaves) to an existing config
+        saveConfig();                       // adds new keys (max-logs, xp caps, leaves, natural-only) to an existing config
         dataFile = new File(getDataFolder(), "data.yml");
         data = YamlConfiguration.loadConfiguration(dataFile);
         enabled = getConfig().getBoolean("enabled", true);
@@ -75,34 +90,61 @@ public final class Timber extends JavaPlugin implements Listener {
         xpCap = Math.max(0.0, getConfig().getDouble("xp-cap-per-tree", 10.0));
         leavesFall = getConfig().getBoolean("leaves-fall", true);
         leavesMax = Math.max(50, getConfig().getInt("leaves-max", 750));
+        naturalOnly = getConfig().getBoolean("natural-trees-only", true);
         ConfigurationSection t = data.getConfigurationSection("toggles");
         if (t != null) for (String k : t.getKeys(false)) toggles.put(UUID.fromString(k), t.getBoolean(k));
+        ConfigurationSection pl = data.getConfigurationSection("placed");
+        if (pl != null) placed.addAll(pl.getKeys(false));
         getServer().getPluginManager().registerEvents(this, this);
         getLogger().info("MAVOTimber v" + getDescription().getVersion() + " enabled - max "
                 + maxLogs + " logs/tree, XP cap " + xpCap + " per tree, leaves "
-                + (leavesFall ? "decay" : "stay") + ".");
+                + (leavesFall ? "decay" : "stay") + ", " + (naturalOnly ? "GROWN TREES ONLY" : "any logs")
+                + ".");
     }
 
     @Override public void onDisable() { saveData(); }
-    private void saveData() { try { data.save(dataFile); } catch (Throwable ignored) { } }
+    private void saveData() {
+        // persist the placed-block tracker so the grown-tree guard survives restarts
+        if (placedDirty) {
+            data.set("placed", null);
+            for (String k : placed) data.set("placed." + k, true);
+            placedDirty = false;
+        }
+        try { data.save(dataFile); } catch (Throwable ignored) { }
+    }
+    private void placedChanged() {
+        placedDirty = true;
+        Bukkit.getScheduler().runTaskLater(this, this::saveData, 100L);   // debounce disk writes
+    }
 
     private boolean on(UUID u) { return toggles.getOrDefault(u, true); }
 
+    // ---------------- HOTFIX 36: track player-placed logs/leaves ----------------
+    @EventHandler(ignoreCancelled = true)
+    public void onPlace(BlockPlaceEvent e) {
+        Material m = e.getBlockPlaced().getType();
+        if ((isLog(m) || isLeaves(m)) && placed.add(key(e.getBlockPlaced()))) placedChanged();
+    }
+
     private void tree(Block b, Player p) {
-        // Walk the tree: collect up to maxLogs logs (hard cap) + the connected crown
-        // leaves (so they can decay). maxBlocks is only a walk safety cap.
+        // Walk the component: collect up to maxLogs logs (hard cap) + the connected
+        // crown leaves (so they can decay). maxBlocks is only a walk safety cap.
         Set<Location> logs = new LinkedHashSet<>();
         Set<Location> leaves = new LinkedHashSet<>();
         Set<Location> visited = new HashSet<>();
         Deque<Block> queue = new ArrayDeque<>();
         queue.add(b);
         int steps = 0;
+        boolean natural = true;      // becomes false if the component contains a placed block
+        boolean hasLeaves = false;   // a grown tree must have a crown
         while (!queue.isEmpty() && steps < Math.max(200, maxBlocks + leavesMax)) {
             Block cur = queue.poll();
             Location loc = cur.getLocation();
             if (!visited.add(loc)) continue;
             steps++;
+            if (naturalOnly && placed.contains(key(cur))) { natural = false; continue; }
             if (isLeaves(cur.getType())) {
+                hasLeaves = true;
                 if (leavesFall && leaves.size() < leavesMax) leaves.add(loc);
                 else continue;                    // cap reached - stop walking this branch
             } else if (!isLog(cur.getType())) {
@@ -121,6 +163,14 @@ public final class Timber extends JavaPlugin implements Listener {
                     }
         }
         if (logs.size() <= 1) return; // single log = no tree
+        // HOTFIX 36: only fell GROWN trees - a natural tree always has a crown and
+        // no player-placed blocks. Shipwrecks/village houses/player log builds fail
+        // one of these checks and just break like vanilla (single log).
+        if (naturalOnly && (!natural || !hasLeaves)) {
+            if (!hasLeaves) p.sendMessage(C + "8That's not a grown tree - Timber only fells natural trees (no builds/shipwrecks).");
+            else p.sendMessage(C + "8Timber skips player-built wood - plant saplings for real trees.");
+            return;
+        }
         // break the other logs (the clicked one broke via the event flow)
         List<ItemStack> drops = new ArrayList<>();
         Location dropSpot = b.getLocation().clone().add(0.5, 0.4, 0.5);
@@ -128,6 +178,7 @@ public final class Timber extends JavaPlugin implements Listener {
             Block log = l.getBlock();
             if (log.equals(b)) continue;
             drops.addAll(log.getDrops());
+            if (placed.remove(key(log))) placedChanged();
             log.setType(Material.AIR, false);
         }
         if (dropAll || logs.size() > 2) {
@@ -174,6 +225,7 @@ public final class Timber extends JavaPlugin implements Listener {
                     } else if (rnd.nextDouble() < 0.02) {
                         world.dropItemNaturally(drop, new ItemStack(Material.STICK));
                     }
+                    if (placed.remove(key(l))) placedChanged();
                     l.getBlock().setType(Material.AIR, false);
                 }
                 done++;
@@ -199,6 +251,9 @@ public final class Timber extends JavaPlugin implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBreak(BlockBreakEvent e) {
+        // keep the placed-block tracker in sync however the block disappears
+        if ((isLog(e.getBlock().getType()) || isLeaves(e.getBlock().getType()))
+                && placed.remove(key(e.getBlock()))) placedChanged();
         if (!enabled || !on(e.getPlayer().getUniqueId())) return;
         if (e.getPlayer().getGameMode() != org.bukkit.GameMode.SURVIVAL) return;
         if (!isLog(e.getBlock().getType())) return;
@@ -215,7 +270,9 @@ public final class Timber extends JavaPlugin implements Listener {
         String sub = args.length == 0 ? "status" : args[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "status" -> p.sendMessage(C + "7Tree felling: " + (on(p.getUniqueId()) ? C + "aON" : C + "cOFF")
-                    + C + "8 | max " + maxLogs + " logs/tree | XP cap " + xpCap + " per tree.");
+                    + C + "8 | max " + maxLogs + " logs/tree | XP cap " + xpCap + " per tree | "
+                    + (naturalOnly ? "grown trees only" : "any logs")
+                    + C + "8 | leaves " + (leavesFall ? "fall" : "stay") + ".");
             case "toggle" -> {
                 boolean now = !on(p.getUniqueId());
                 toggles.put(p.getUniqueId(), now);

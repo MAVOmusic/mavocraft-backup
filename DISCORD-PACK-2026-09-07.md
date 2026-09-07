@@ -175,6 +175,13 @@ FISHING TOURNAMENT · MAIL · SEASONAL CALENDAR · AUCTION 1.1 · Sleep 07:00.
 🎯 /hunt gets you outside spawn, boss locations broadcast every 5 min.
 ```
 
+### 🎉 v23 — TIMBER FELLS REAL TREES ONLY (Hotfix 36)
+```
+🌳 Your axe now only fells GROWN trees.
+🚫 Shipwrecks, village houses and player log builds are safe - vanilla break.
+🌱 Plant saplings to grow trees you can fell.
+```
+
 ---
 
 ## 3. FEATURES — paste into `✨┃features` (one short block per feature thread)
@@ -367,7 +374,7 @@ Post the short block below, then `📌 more in #thread-name`.
 ```
 
 ```
-🌳 TIMBER - chop the bottom log, up to 10 logs fall; leaves decay after.
+🌳 TIMBER - chops GROWN trees only (up to 10 logs); builds are safe.
 📌 more in #timber
 ```
 

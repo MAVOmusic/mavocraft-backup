@@ -162,6 +162,8 @@ Wild range: **5,000–400,000** blocks (1,000s comma format on the portal sign),
 
 Felling: axe + break bottom log → up to **10 logs** per tree (anti-exploit; shorter trees fall fully), 1 axe durability per log, **max 10 Lumberjack XP per tree**, crown leaves decay ~0.5s later (saplings/sticks).
 
+**Grown trees only** (Hotfix 36): felling only triggers when the log cluster is a natural tree — it must have a **leaf crown** and contain **no player-placed blocks**. Shipwrecks, village houses and player-built log houses just break like vanilla (message: "That's not a grown tree"). Plant saplings to grow real trees.
+
 ---
 
 ## MAVOCrafting 1.0.0
