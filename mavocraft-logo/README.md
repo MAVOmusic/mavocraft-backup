@@ -14,8 +14,15 @@ four functions run from the server console:
 ## Viewing position
 
 Stand at spawn **(-2579, 200, -1685)**, **face WEST** at the 3 villagers,
-**look straight up** → you see `MAVOCRAFT` upright. Word runs south→north,
-letter tops point east. A's are lime green (kick logo style).
+**look straight up**. From your F3, in that view:
+**screen-right = south (+Z), screen-top = west (−X)**.
+
+- **v95 (v5)** reads `MAVOCRAFT` **upright, left→right** — it is built with the
+  word running north→south and letter tops pointing west (`flip=True`). A's are
+  lime green (kick logo style).
+- **v75 (frozen v4)** keeps its original as-built orientation (word
+  south→north, letter tops east), so from spawn it appears **180° rotated**.
+  This is intentional — the design is frozen and deliberate.
 
 ## Design A — `MAVOcraft-75-datapack` (current, unchanged)
 
@@ -29,6 +36,8 @@ letter tops point east. A's are lime green (kick logo style).
 - `sea_lantern` letters (**glowing**, brighter) · **lime `lime_concrete` A's**
 - **`glowstone` border around every letter** (no shadow) · gold frame
 - Y = 249
+- **Orientation:** flipped 180° vs. v75 (`flip=True` in `gen_logo.py`) so it
+  reads correctly from the spawn viewpoint
 
 ## Install on the server
 

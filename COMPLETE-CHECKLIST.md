@@ -322,9 +322,9 @@ Deploy **all 10 jars** at once (plus everything from any previous test run), the
 |---|---|---|
 | OP | `/datapack list enabled` | `file/MAVOcraft-75-datapack.zip` + `file/MAVOcraft-95-datapack.zip` shown (auto-enabled; if `available` use `/datapack enable "file/MAVOcraft-95-datapack.zip"` — the `.zip` is part of the ID) |
 | OP | `/function mavocraft95:logo_test` | Logo frame + letters appear at Y=249 (read at spawn, FACE WEST, look up) |
-| OP | `/function mavocraft95:logo_build` | Full 24×95 logo (sea lantern letters, glowstone borders, lime A's) |
-| OP | `/function mavocraft75:logo_test` (frozen v4) | Same layout as v4 |
-| OP | `/function mavocraft95:logo_clear` | Logo removed |
+| OP | `/function mavocraft95:logo_build` | Full 24×95 logo — **reads `MAVOCRAFT` upright left→right** (sea lantern letters, glowstone borders, lime A's) |
+| OP | `/function mavocraft75:logo_test` (frozen v4) | Same layout as v4 (appears 180° rotated from spawn on purpose — frozen design) |
+| OP | `/function mavocraft95:logo_clear` | **Whole 24×95 canvas removed** (incl. frame / black bg / glowstone borders; Y=249 only) |
 | OP | `/tab scoreboard toggle` | Sidebar hides for ceiling checks (remember to toggle back) |
 | OP | `/hud` | HUD on/off + config works |
 

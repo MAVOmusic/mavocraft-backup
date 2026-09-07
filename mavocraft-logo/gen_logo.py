@@ -15,9 +15,15 @@ Each datapack = world/datapacks/<name>.zip with functions:
   /function mavocraft75:logo_build
   /function mavocraft75:logo_clear
 
-Viewing: stand at spawn (-2579,200,-1685), FACE WEST at the 3 villagers, look up.
-(Word runs south->north, letter tops point east. /tab scoreboard toggle hides the
-sidebar while you check the build.)
+Viewing (from your F3): stand at spawn (-2579,200,-1685), FACE WEST (-X) at the
+3 villagers, then look straight UP. In that view:
+    screen-right = SOUTH (+Z)      screen-top = WEST (-X)
+  MAVOcraft-75 (frozen v4): as-built with the word running south->north and
+      letter tops pointing EAST, so it shows 180 degrees rotated from spawn.
+      DESIGN IS FROZEN - do not change it.
+  MAVOcraft-95 (v5): built with the word running north->south and letter tops
+      pointing WEST (flip=True) so it reads correctly from spawn, left -> right.
+/tab scoreboard toggle hides the sidebar while you check the build.
 
 Also writes plain fill-commands.txt per variant (paste fallback) + preview PNGs.
 """
@@ -52,7 +58,7 @@ VARIANT = {
         ns="mavocraft95", name="MAVOcraft-95-datapack", pct=95,
         gap=3, margin_e=4, margin_w=4, margin_s=5, margin_n=4,
         letter="sea_lantern", letter_a="lime_concrete", border="glowstone",
-        shadow=False, shadow_dx=0, shadow_dz=0,
+        shadow=False, shadow_dx=0, shadow_dz=0, flip=True,
         frame="gold_block", bg="black_concrete",
         desc="v5 - 24x95, glowing sea_lantern letters, lime A's, glowstone letter border"),
 }
@@ -66,26 +72,43 @@ def geometry(cfg):
     X0 = CX - CW // 2
     Z0 = CZ - CH // 2
     XE, ZS = X0 + CW - 1, Z0 + CH - 1
-    xTop = XE - cfg["margin_e"]
-    zStart = ZS - cfg["margin_s"]
+    if cfg.get("flip"):
+        # v95 (v5): letter tops point WEST, word runs north -> south (reads
+        # correctly from spawn facing west / looking up). Same block footprint
+        # as the un-flipped layout (margins preserved).
+        xTop = X0 + cfg["margin_w"]
+        zStart = Z0 + cfg["margin_n"]
+    else:
+        # v75 (frozen v4): letter tops point EAST, word runs south -> north.
+        xTop = XE - cfg["margin_e"]
+        zStart = ZS - cfg["margin_s"]
     return X0, XE, Z0, ZS, CW, CH, xTop, zStart
 
-def face_blocks(cfg):
+def _stroke(cfg, ch):
+    """Blocks of one glyph (ch) or of every letter (ch=None), honoring the
+    variant orientation so face_blocks and the A-recolour can never diverge."""
     X0, XE, Z0, ZS, CW, CH, xTop, zStart = geometry(cfg)
+    flip = cfg.get("flip", False)
     out = set()
     cur = zStart
-    for ch in WORD:
-        g = FONT[ch]
+    for c in WORD:
+        g = FONT[c]
         w = len(g[0]) * SCALE
-        for ry, row in enumerate(g):
-            x1 = xTop - ry * SCALE
-            for rx, v in enumerate(row):
-                if v == "X":
-                    for dx in range(SCALE):
-                        for dz in range(SCALE):
-                            out.add((x1 - dx, cur - rx * SCALE - dz))
-        cur -= w + cfg["gap"]
+        if ch is None or c == ch:
+            for ry, row in enumerate(g):
+                x1 = xTop + ry * SCALE if flip else xTop - ry * SCALE
+                for rx, v in enumerate(row):
+                    if v == "X":
+                        for dx in range(SCALE):
+                            for dz in range(SCALE):
+                                x = x1 + dx if flip else x1 - dx
+                                z = cur + rx * SCALE + dz if flip else cur - rx * SCALE - dz
+                                out.add((x, z))
+        cur = cur + w + cfg["gap"] if flip else cur - w - cfg["gap"]
     return out
+
+def face_blocks(cfg):
+    return _stroke(cfg, None)
 
 def border_blocks(cfg, face):
     X0, XE, Z0, ZS, CW, CH, _, _ = geometry(cfg)
@@ -156,22 +179,7 @@ def gen_texts(cfg):
     return test, frame, build, face, bor, shad
 
 def face_letter(cfg, ch):
-    X0, XE, Z0, ZS, CW, CH, xTop, zStart = geometry(cfg)
-    out = set()
-    cur = zStart
-    for c in WORD:
-        g = FONT[c]
-        w = len(g[0]) * SCALE
-        if c == ch:
-            for ry, row in enumerate(g):
-                x1 = xTop - ry * SCALE
-                for rx, v in enumerate(row):
-                    if v == "X":
-                        for dx in range(SCALE):
-                            for dz in range(SCALE):
-                                out.add((x1 - dx, cur - rx * SCALE - dz))
-        cur -= w + cfg["gap"]
-    return out
+    return _stroke(cfg, ch)
 
 def write_mcfunction(path, cmds, header):
     with open(path, "w") as f:
@@ -249,15 +257,17 @@ def preview(path, cfg, face, bor, shad, X0, XE, Z0, ZS, CW, CH):
             if iz == 0 or iz == CH - 1 or ix == 0 or ix == CW - 1:
                 c = "f"
             setb(iz, ix, c)
+    # True in-game view from spawn (stand at center, face west, look up):
+    # screen-right = south (+Z), screen-top = west (-X).
     for (x, z) in shad:
-        setb(ZS - z, XE - x, "s")
+        setb(z - Z0, x - X0, "s")
     if cfg["border"]:
         for (x, z) in bor:
-            setb(ZS - z, XE - x, "bo")
+            setb(z - Z0, x - X0, "bo")
     for (x, z) in face:
-        setb(ZS - z, XE - x, "l")
+        setb(z - Z0, x - X0, "l")
     for (x, z) in face_letter(cfg, "A"):
-        setb(ZS - z, XE - x, "a")
+        setb(z - Z0, x - X0, "a")
     write_png(path, W, H, pix)
 
 def main():
