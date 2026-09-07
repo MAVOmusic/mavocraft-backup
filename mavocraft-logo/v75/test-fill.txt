@@ -1,0 +1,6 @@
+# MAVOcraft-75-datapack test markers Y=249
+/fill -2580 249 -1686 -2578 249 -1684 minecraft:gold_block
+/fill -2590 249 -1723 -2590 249 -1723 minecraft:gold_block
+/fill -2569 249 -1723 -2569 249 -1723 minecraft:gold_block
+/fill -2590 249 -1648 -2590 249 -1648 minecraft:gold_block
+/fill -2569 249 -1648 -2569 249 -1648 minecraft:gold_block

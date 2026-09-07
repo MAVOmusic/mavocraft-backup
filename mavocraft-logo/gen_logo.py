@@ -1,37 +1,32 @@
 #!/usr/bin/env python3
-"""MAVOCRAFT block logo v4 - ceiling build, absolute coordinates.
+"""MAVOCRAFT block logo generator - datapack edition.
 
-READING ORIENTATION (from your F3):
-  You stand at spawn (-2579, 200, -1685), FACE WEST (-X) to look at the 3
-  villagers, then look straight UP. In that view:
-    screen-right = north (-Z)      screen-top = east (+X)
-  So the word runs SOUTH -> NORTH and each letter's top points EAST. The
-  3D shadow (bottom-left of the viewed image) = west + south (-2 x, +2 z).
+Builds TWO designs at Y=249 under the plaza ceiling (Y=250, center -2579,-1685):
 
-Ceiling (Y=250): X -2629..-2529 (100), Z -1735..-1635 (100), center (-2579,-1685).
-Logo is built ONE LAYER BELOW at Y=249 so the ceiling is never touched.
+  MAVOcraft-75-datapack  (frozen v4): 22 x 76 canvas (~75%), bone_block letters,
+      deepslate 3D shadow, gold frame.
+  MAVOcraft-95-datapack  (NEW):       24 x 95 canvas (~95%), sea_lantern letters
+      (glowing), the two A's in kick-lime lime_concrete, 1-block GLOWSTONE border
+      around EVERY letter (no shadow), gold frame, black background.
 
-Files (absolute coords, no placement guessing):
-  test-fill.txt      5 gold markers: 3x3 at the center + 4 canvas corners
-  frame-fill.txt     gold border of the canvas
-  fill-commands.txt  FULL logo (starts with an undo /fill air line)
+Each datapack = world/datapacks/<name>.zip with functions:
+  /function mavocraft75:logo_test   (or mavocraft95:logo_test)
+  /function mavocraft75:logo_frame
+  /function mavocraft75:logo_build
+  /function mavocraft75:logo_clear
+
+Viewing: stand at spawn (-2579,200,-1685), FACE WEST at the 3 villagers, look up.
+(Word runs south->north, letter tops point east. /tab scoreboard toggle hides the
+sidebar while you check the build.)
+
+Also writes plain fill-commands.txt per variant (paste fallback) + preview PNGs.
 """
 
-# ---------------- palette ----------------
-BLOCK_BG     = "black_concrete"   # background
-BLOCK_FRAME  = "gold_block"       # canvas border
-BLOCK_LETTER = "bone_block"       # cream letters (alt: cracked_stone_bricks)
-BLOCK_SHADOW = "deepslate"        # 3D shadow (bottom-left of the viewed image)
+import os, struct, sys, zlib
 
-# ---------------- layout ----------------
-SCALE = 2            # blocks per font pixel
-GAP = 1              # blocks between letters
-MARGIN = 3           # border + padding around the letters
-SHADOW_DX, SHADOW_DZ = -2, 2      # bottom-left of the view = west + south
+CX, CZ, CY = -2579, -1685, 249
+CEIL = (-2629, -2529, -1735, -1635)   # x1,x2,z1,z2 at Y=250
 
-CX, CZ, CY = -2579, -1685, 249   # build center (below the ceiling)
-
-# ---------------- font (X = filled; A carries the creeper face) ----------------
 FONT = {
     "M": ["X.X", "XXX", "XXX", "X.X", "X.X", "X.X", "X.X", "X.X"],
     "A": [".XXX.", "X...X", "X.X.X", "X.X.X", "XXXXX", "XX.XX", "XXXXX", "X...X"],
@@ -43,48 +38,78 @@ FONT = {
     "T": ["XXX", ".X.", ".X.", ".X.", ".X.", ".X.", ".X.", ".X."],
 }
 WORD = "MAVOCRAFT"
+SCALE = 2
 
-# ---------------- geometry ----------------
-# text width along Z (word start = south / max z), text height along X (top = east)
-faceW = sum(2 * len(FONT[c][0]) for c in WORD) + GAP * (len(WORD) - 1)   # 66
-faceH = len(FONT["M"]) * SCALE                                           # 16
-CW = faceH + 2 * MARGIN                  # canvas size along X (24)
-CH = faceW + 2 * MARGIN                  # canvas size along Z (74)
-X0 = CX - CW // 2                        # west edge   (-2591)
-Z0 = CZ - CH // 2                        # north edge  (-1722)
-XE = X0 + CW - 1                         # east edge   (-2568)
-ZS = Z0 + CH - 1                         # south edge  (-1649)
-# letter top row = east side of the interior; word starts at the south side
-xTop = XE - MARGIN                       # east edge of the interior
-zStart = ZS - MARGIN                     # south edge of the interior
+VARIANT = {
+    "75": dict(
+        ns="mavocraft75", name="MAVOcraft-75-datapack", pct=75,
+        gap=1, margin_e=3, margin_w=3, margin_s=3, margin_n=3,
+        letter="bone_block", letter_a="bone_block", border=None,
+        shadow=True, shadow_dx=-2, shadow_dz=2,
+        frame="gold_block", bg="black_concrete",
+        desc="frozen v4 - 22x76, bone letters + deepslate shadow"),
+    "95": dict(
+        ns="mavocraft95", name="MAVOcraft-95-datapack", pct=95,
+        gap=3, margin_e=4, margin_w=4, margin_s=5, margin_n=4,
+        letter="sea_lantern", letter_a="lime_concrete", border="glowstone",
+        shadow=False, shadow_dx=0, shadow_dz=0,
+        frame="gold_block", bg="black_concrete",
+        desc="v5 - 24x95, glowing sea_lantern letters, lime A's, glowstone letter border"),
+}
 
-def face_blocks():
-    """set of (x, z) blocks covered by letters."""
+def geometry(cfg):
+    face_px = sum(len(FONT[c][0]) for c in WORD)
+    faceW = face_px * SCALE + cfg["gap"] * (len(WORD) - 1)          # along Z
+    faceH = len(FONT["M"]) * SCALE                                   # along X
+    CW = faceH + cfg["margin_e"] + cfg["margin_w"]                   # along X
+    CH = faceW + cfg["margin_s"] + cfg["margin_n"]                   # along Z
+    X0 = CX - CW // 2
+    Z0 = CZ - CH // 2
+    XE, ZS = X0 + CW - 1, Z0 + CH - 1
+    xTop = XE - cfg["margin_e"]
+    zStart = ZS - cfg["margin_s"]
+    return X0, XE, Z0, ZS, CW, CH, xTop, zStart
+
+def face_blocks(cfg):
+    X0, XE, Z0, ZS, CW, CH, xTop, zStart = geometry(cfg)
     out = set()
     cur = zStart
     for ch in WORD:
         g = FONT[ch]
         w = len(g[0]) * SCALE
         for ry, row in enumerate(g):
-            x1 = xTop - ry * SCALE            # this row's 2 blocks: x1-1, x1
+            x1 = xTop - ry * SCALE
             for rx, v in enumerate(row):
                 if v == "X":
                     for dx in range(SCALE):
                         for dz in range(SCALE):
                             out.add((x1 - dx, cur - rx * SCALE - dz))
-        cur -= w + GAP
+        cur -= w + cfg["gap"]
     return out
 
-def shadow_blocks(face):
+def border_blocks(cfg, face):
+    X0, XE, Z0, ZS, CW, CH, _, _ = geometry(cfg)
     out = set()
     for (x, z) in face:
-        s = (x + SHADOW_DX, z + SHADOW_DZ)
+        for dx in (-1, 0, 1):
+            for dz in (-1, 0, 1):
+                n = (x + dx, z + dz)
+                if n not in face and X0 <= n[0] <= XE and Z0 <= n[1] <= ZS:
+                    out.add(n)
+    return out
+
+def shadow_blocks(cfg, face):
+    if not cfg["shadow"]:
+        return set()
+    X0, XE, Z0, ZS, CW, CH, _, _ = geometry(cfg)
+    out = set()
+    for (x, z) in face:
+        s = (x + cfg["shadow_dx"], z + cfg["shadow_dz"])
         if s not in face and X0 <= s[0] <= XE and Z0 <= s[1] <= ZS:
             out.add(s)
     return out
 
 def runs(blocks):
-    """group into one /fill per horizontal run (same z, consecutive x)."""
     rows = {}
     for (x, z) in blocks:
         rows.setdefault(z, []).append(x)
@@ -100,42 +125,103 @@ def runs(blocks):
             i = j + 1
     return out
 
-def f(x1, z1, x2, z2, mat):
+def fill(x1, z1, x2, z2, mat):
     return "/fill %d %d %d %d %d %d minecraft:%s" % (x1, CY, z1, x2, CY, z2, mat)
 
-def write_commands():
-    face = face_blocks()
-    shadow = shadow_blocks(face)
-    # ---- test markers ----
-    t = ["# MAVOCRAFT logo test markers (Y=%d) - 3x3 gold at the logo center + 4 canvas corners" % CY,
-         "# Stand at spawn, FACE WEST (at the 3 villagers), look straight up to check.",
-         "# Undo with: " + f(CX - 4, CZ - 4, CX + 4, CZ + 4, "air")]
-    t.append(f(CX - 1, CZ - 1, CX + 1, CZ + 1, BLOCK_FRAME))
-    for (cx0, cz0) in [(X0, Z0), (XE, Z0), (X0, ZS), (XE, ZS)]:
-        t.append(f(cx0, cz0, cx0, cz0, BLOCK_FRAME))
-    # ---- frame ----
-    fr = ["# MAVOCRAFT logo FRAME (Y=%d) - gold border %dx%d, center (%d,%d)" % (CY, CW, CH, CX, CZ),
-          "# Check alignment inside the ceiling, then run the full build."]
-    fr.append(f(X0, Z0, XE, Z0, BLOCK_FRAME))
-    fr.append(f(X0, ZS, XE, ZS, BLOCK_FRAME))
-    fr.append(f(X0, Z0 + 1, X0, ZS - 1, BLOCK_FRAME))
-    fr.append(f(XE, Z0 + 1, XE, ZS - 1, BLOCK_FRAME))
-    # ---- full ----
-    out = ["# MAVOCRAFT logo - FULL BUILD (Y=%d), canvas %dx%d centered (%d,%d)" % (CY, CW, CH, CX, CZ),
-           "# Read it: stand at spawn, FACE WEST at the 3 villagers, look straight up.",
-           "# Frame: %s / letters: %s / shadow: %s" % (BLOCK_FRAME, BLOCK_LETTER, BLOCK_SHADOW),
-           "# Undo (ceiling untouched at Y=250):", f(X0, Z0, XE, ZS, "air"), ""]
-    out.append(f(X0, Z0, XE, ZS, BLOCK_BG))
-    out += fr[2:]
-    for (a, b, c, d) in runs(face):
-        out.append(f(a, b, c, d, BLOCK_LETTER))
-    for (a, b, c, d) in runs(shadow):
-        out.append(f(a, b, c, d, BLOCK_SHADOW))
-    return t, fr, out, face, shadow
+def fn(cmd):
+    c = cmd[1:] if cmd.startswith("/") else cmd
+    return "execute in minecraft:overworld run " + c
 
-# ---------------- preview (EXACTLY what the player sees: left=south, top=east) ----------------
+def gen_texts(cfg):
+    face = face_blocks(cfg)
+    bor = border_blocks(cfg, face)
+    shad = shadow_blocks(cfg, face)
+    X0, XE, Z0, ZS, CW, CH, _, _ = geometry(cfg)
+    test = [fill(CX - 1, CZ - 1, CX + 1, CZ + 1, cfg["frame"])]
+    for p in [(X0, Z0), (XE, Z0), (X0, ZS), (XE, ZS)]:
+        test.append(fill(p[0], p[1], p[0], p[1], cfg["frame"]))
+    frame = [fill(X0, Z0, XE, Z0, cfg["frame"]), fill(X0, ZS, XE, ZS, cfg["frame"]),
+             fill(X0, Z0 + 1, X0, ZS - 1, cfg["frame"]), fill(XE, Z0 + 1, XE, ZS - 1, cfg["frame"])]
+    build = [fill(X0, Z0, XE, ZS, "air"), fill(X0, Z0, XE, ZS, cfg["bg"])] + frame
+    if cfg["border"]:
+        for (a, b, c, d) in runs(bor):
+            build.append(fill(a, b, c, d, cfg["border"]))
+    for (a, b, c, d) in runs(shad):
+        build.append(fill(a, b, c, d, "deepslate"))
+    for (a, b, c, d) in runs(face):
+        build.append(fill(a, b, c, d, cfg["letter"]))
+    # recolor A's after all letters
+    for (a, b, c, d) in runs(face_letter(cfg, "A")):
+        build.append(fill(a, b, c, d, cfg["letter_a"]))
+    return test, frame, build, face, bor, shad
+
+def face_letter(cfg, ch):
+    X0, XE, Z0, ZS, CW, CH, xTop, zStart = geometry(cfg)
+    out = set()
+    cur = zStart
+    for c in WORD:
+        g = FONT[c]
+        w = len(g[0]) * SCALE
+        if c == ch:
+            for ry, row in enumerate(g):
+                x1 = xTop - ry * SCALE
+                for rx, v in enumerate(row):
+                    if v == "X":
+                        for dx in range(SCALE):
+                            for dz in range(SCALE):
+                                out.add((x1 - dx, cur - rx * SCALE - dz))
+        cur -= w + cfg["gap"]
+    return out
+
+def write_mcfunction(path, cmds, header):
+    with open(path, "w") as f:
+        f.write("# " + header + "\n")
+        for c in cmds:
+            f.write(fn(c) + "\n")
+
+def write_datapack(cfg, test, frame, build):
+    root = os.path.join("datapacks-src", cfg["name"])
+    data = os.path.join(root, "data", cfg["ns"], "function")
+    os.makedirs(data, exist_ok=True)
+    with open(os.path.join(root, "pack.mcmeta"), "w") as f:
+        f.write('{\n  "pack": {\n    "pack_format": 48,\n'
+                '    "supported_formats": [48, 999],\n'
+                '    "description": "%s - MAVOCRAFT block logo (%d%% of ceiling, Y=%d), '
+                'functions: logo_test / logo_frame / logo_build / logo_clear / logo_info"\n'
+                '  }\n}\n' % (cfg["desc"], cfg["pct"], CY))
+    write_mcfunction(os.path.join(data, "logo_test.mcfunction"), test,
+                     "Test markers: 3x3 gold at the logo center + 4 canvas corners (Y=%d)" % CY)
+    write_mcfunction(os.path.join(data, "logo_frame.mcfunction"), frame,
+                     "Gold border of the %dx%d canvas (Y=%d)" % (*geometry(cfg)[4:6], CY))
+    write_mcfunction(os.path.join(data, "logo_build.mcfunction"), build,
+                     "FULL build: clear + background + frame + letter borders + letters")
+    write_mcfunction(os.path.join(data, "logo_clear.mcfunction"),
+                     [fill(X0, Z0, XE, ZS, "air") for (X0, XE, Z0, ZS, _, _, _, _) in [geometry(cfg)]],
+                     "Remove the whole logo canvas (Y=%d only)" % CY)
+    with open(os.path.join(data, "logo_info.mcfunction"), "w") as f:
+        f.write("# /function %s:logo_info\n" % cfg["ns"])
+        f.write('tellraw @a {"text":"[MAVOCRAFT logo] Stand at spawn, FACE WEST at the 3 villagers, look UP. Run logo_test, logo_frame, logo_build.","color":"gold"}\n')
+        f.write('tellraw @a {"text":"TIP: /tab scoreboard toggle hides the sidebar so the ceiling is clear (TAB plugin).","color":"gray"}\n')
+
+def zipdir(cfg):
+    src = os.path.join("datapacks-src", cfg["name"])
+    out = os.path.join("datapacks", cfg["name"] + ".zip")
+    os.makedirs("datapacks", exist_ok=True)
+    if os.path.exists(out):
+        os.remove(out)
+    entries = []
+    for base, _, files in os.walk(src):
+        for fn_ in files:
+            p = os.path.join(base, fn_)
+            entries.append((p, os.path.relpath(p, src)))
+    import zipfile
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+        for p, rel in entries:
+            z.write(p, rel)
+    return out
+
+# ---------------- preview ----------------
 def write_png(path, w, h, pixels):
-    import zlib, struct
     def chunk(ty, d):
         c = ty + d
         return struct.pack(">I", len(d)) + c + struct.pack(">I", zlib.crc32(c) & 0xffffffff)
@@ -145,10 +231,11 @@ def write_png(path, w, h, pixels):
     with open(path, "wb") as fh:
         fh.write(png)
 
-def preview(path, face, shadow):
+def preview(path, cfg, face, bor, shad, X0, XE, Z0, ZS, CW, CH):
     px = 10
-    W, H = CH * px, CW * px     # image x = z (south..north), image y = x (east..west)
-    col = {"b": (13, 13, 15), "f": (246, 214, 76), "l": (236, 230, 218), "s": (40, 40, 60)}
+    W, H = CH * px, CW * px
+    col = {"b": (13, 13, 15), "f": (246, 214, 76), "bo": (250, 205, 110),
+           "l": (188, 232, 224), "a": (120, 200, 40), "s": (40, 40, 60)}
     pix = [0] * (W * H * 3)
     def setb(ix, iy, c):
         r, g, b = col[c]
@@ -162,22 +249,41 @@ def preview(path, face, shadow):
             if iz == 0 or iz == CH - 1 or ix == 0 or ix == CW - 1:
                 c = "f"
             setb(iz, ix, c)
-    for (x, z) in shadow:
+    for (x, z) in shad:
         setb(ZS - z, XE - x, "s")
+    if cfg["border"]:
+        for (x, z) in bor:
+            setb(ZS - z, XE - x, "bo")
     for (x, z) in face:
         setb(ZS - z, XE - x, "l")
+    for (x, z) in face_letter(cfg, "A"):
+        setb(ZS - z, XE - x, "a")
     write_png(path, W, H, pix)
 
+def main():
+    for key, cfg in VARIANT.items():
+        test, frame, build, face, bor, shad = gen_texts(cfg)
+        X0, XE, Z0, ZS, CW, CH, _, _ = geometry(cfg)
+        # plain-text fallbacks
+        d = os.path.join("v" + key)
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, "test-fill.txt"), "w") as f:
+            f.write("# %s test markers Y=%d\n" % (cfg["name"], CY) + "\n".join(test) + "\n")
+        with open(os.path.join(d, "frame-fill.txt"), "w") as f:
+            f.write("# %s frame Y=%d (canvas %dx%d)\n" % (cfg["name"], CY, CW, CH) + "\n".join(frame) + "\n")
+        with open(os.path.join(d, "fill-commands.txt"), "w") as f:
+            f.write("# %s FULL build Y=%d - undo: %s\n\n"
+                    % (cfg["name"], CY, fill(X0, Z0, XE, ZS, "air")) + "\n".join(build) + "\n")
+        preview(os.path.join(d, "MAVOCRAFT-logo-preview.png"), cfg, face, bor, shad,
+                X0, XE, Z0, ZS, CW, CH)
+        z = write_datapack(cfg, test, frame, build)
+        zipdir(cfg)
+        z = os.path.join("datapacks", cfg["name"] + ".zip")
+        print("%s: canvas %dx%d | X %d..%d | Z %d..%d | %d letter / %d border / %d shadow blocks -> %s"
+              % (cfg["name"], CW, CH, X0, XE, Z0, ZS, len(face), len(bor), len(shad), z))
+        # safety
+        assert CEIL[0] <= X0 and XE <= CEIL[1] and CEIL[2] <= Z0 and ZS <= CEIL[3], "exceeds ceiling"
+        assert CW <= 95 and CH <= 95, "canvas over 95%"
+
 if __name__ == "__main__":
-    t, fr, out, face, shadow = write_commands()
-    open("test-fill.txt", "w").write("\n".join(t) + "\n")
-    open("frame-fill.txt", "w").write("\n".join(fr) + "\n")
-    open("fill-commands.txt", "w").write("\n".join(out) + "\n")
-    preview("MAVOCRAFT-logo-preview.png", face, shadow)
-    print("canvas %dx%d | X %d..%d  Z %d..%d | letters %d | shadow %d"
-          % (CW, CH, X0, XE, Z0, ZS, len(face), len(shadow)))
-    print("test %d / frame %d / full %d commands" % (len(t), len(fr), len(out)))
-    # safety asserts: canvas must stay well inside the 100x100 ceiling
-    assert X0 >= -2629 and XE <= -2529 and Z0 >= -1735 and ZS <= -1635, "canvas exceeds ceiling"
-    assert CW < 75 and CH <= 76, "canvas exceeds ~75% of the ceiling"
-    print("bounds OK: fits inside the ceiling with margin")
+    main()

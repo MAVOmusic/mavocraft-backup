@@ -1,0 +1,5 @@
+# MAVOcraft-75-datapack frame Y=249 (canvas 22x76)
+/fill -2590 249 -1723 -2569 249 -1723 minecraft:gold_block
+/fill -2590 249 -1648 -2569 249 -1648 minecraft:gold_block
+/fill -2590 249 -1722 -2590 249 -1649 minecraft:gold_block
+/fill -2569 249 -1722 -2569 249 -1649 minecraft:gold_block

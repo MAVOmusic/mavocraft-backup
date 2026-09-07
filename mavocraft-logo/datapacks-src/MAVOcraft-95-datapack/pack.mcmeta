@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "pack_format": 48,
+    "supported_formats": [48, 999],
+    "description": "v5 - 24x95, glowing sea_lantern letters, lime A's, glowstone letter border - MAVOCRAFT block logo (95% of ceiling, Y=249), functions: logo_test / logo_frame / logo_build / logo_clear / logo_info"
+  }
+}
