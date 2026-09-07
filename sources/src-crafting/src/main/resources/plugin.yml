@@ -6,7 +6,7 @@ description: Custom crafting recipes - craft the uncraftables (chainmail, name t
 author: MAVO
 commands:
   crafting:
-    description: List custom recipes (admin: reload)
+    description: "List custom recipes (admin: reload)"
     usage: /crafting [list|reload]
 permissions:
   mavocrafting.admin:

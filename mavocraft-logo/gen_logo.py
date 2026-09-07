@@ -184,8 +184,8 @@ def write_datapack(cfg, test, frame, build):
     data = os.path.join(root, "data", cfg["ns"], "function")
     os.makedirs(data, exist_ok=True)
     with open(os.path.join(root, "pack.mcmeta"), "w") as f:
-        f.write('{\n  "pack": {\n    "pack_format": 48,\n'
-                '    "supported_formats": [48, 999],\n'
+        f.write('{\n  "pack": {\n    "min_format": 82,\n'
+                '    "max_format": 107,\n'
                 '    "description": "%s - MAVOCRAFT block logo (%d%% of ceiling, Y=%d), '
                 'functions: logo_test / logo_frame / logo_build / logo_clear / logo_info"\n'
                 '  }\n}\n' % (cfg["desc"], cfg["pct"], CY))

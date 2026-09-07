@@ -1,7 +1,7 @@
 {
   "pack": {
-    "pack_format": 48,
-    "supported_formats": [48, 999],
+    "min_format": 82,
+    "max_format": 107,
     "description": "frozen v4 - 22x76, bone letters + deepslate shadow - MAVOCRAFT block logo (75% of ceiling, Y=249), functions: logo_test / logo_frame / logo_build / logo_clear / logo_info"
   }
 }

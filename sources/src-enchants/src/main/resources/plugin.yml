@@ -6,7 +6,7 @@ description: Custom enchant gems - Vein Miner, Auto Smelt, XP Boost, Lifesteal (
 author: MAVO
 commands:
   maenchant:
-    description: Enchants: list / inspect; admin: gem give
+    description: "Enchants: list / inspect; admin: gem give"
     usage: /maenchant [list|inspect] | /maenchant gem <player> <type> [tier]
     aliases: [customenchant]
 permissions:

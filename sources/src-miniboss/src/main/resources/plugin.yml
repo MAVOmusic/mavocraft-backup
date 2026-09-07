@@ -7,7 +7,7 @@ author: MAVO
 softdepend: [Vault, MAVOLuckyCoins, MAVOCrates]
 commands:
   miniboss:
-    description: Miniboss status (admin: spawn all, reload)
+    description: "Miniboss status (admin: spawn all, reload)"
     usage: /miniboss [status|locate]
 permissions:
   mavominiboss.admin:
