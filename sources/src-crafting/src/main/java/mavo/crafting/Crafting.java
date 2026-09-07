@@ -366,7 +366,7 @@ public final class Crafting extends JavaPlugin implements Listener {
         if (found != null) {
             try {   // unlock in the vanilla recipe book (press E to see it)
                 for (Recipe rc : Bukkit.getRecipesFor(new ItemStack(r.result())))
-                    p.discoverRecipe(rc.getKey());
+                    if (rc instanceof org.bukkit.Keyed k) p.discoverRecipe(k.getKey());
             } catch (Throwable ignored) { }
         }
         int[] slots = {10, 11, 12, 19, 20, 21, 28, 29, 30};   // 3x3 grid
