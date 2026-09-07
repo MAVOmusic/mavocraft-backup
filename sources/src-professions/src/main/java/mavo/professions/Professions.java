@@ -249,6 +249,21 @@ public final class Professions extends JavaPlugin implements Listener, TabComple
             changed = true;
             getLogger().info("3.15.4: Gambler rebalanced - xp-growth " + gGrow + " -> 1.012.");
         }
+        // HOTFIX 35: Lumberjack rebalance - Timber tree cap (10 logs/tree, XP
+        // cap 10) means the profession must need real work to level: 600 base / 1.04
+        // growth (~170 trees per early level). Migrate the old built-in 350/1.035.
+        double ljBase = disk.getDouble("professions.lumberjack.xp-base", 0);
+        double ljGrow = disk.getDouble("professions.lumberjack.xp-growth", 0);
+        if (ljBase > 0 && ljBase < 600) {
+            disk.set("professions.lumberjack.xp-base", 600);
+            changed = true;
+            getLogger().info("HOTFIX 35: Lumberjack rebalanced - xp-base " + ljBase + " -> 600 (timber exploit fix).");
+        }
+        if (ljGrow > 0 && ljGrow < 1.04) {
+            disk.set("professions.lumberjack.xp-growth", 1.04);
+            changed = true;
+            getLogger().info("HOTFIX 35: Lumberjack rebalanced - xp-growth " + ljGrow + " -> 1.04.");
+        }
         // 3.15.5: bedtime wake-up 12:00 (tick 6000 = Noon) -> 7:00 (tick 1000).
         // Skipping to Noon halved each day's active time. Migrate ONLY the old
         // built-in default; custom wake times are left alone.
