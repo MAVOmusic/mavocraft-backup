@@ -1,0 +1,14 @@
+name: MAVOTimber
+version: 1.0.0
+main: mavo.timber.Timber
+api-version: '1.21'
+description: Tree felling - chop the bottom log, the whole tree falls (MAVOcraft)
+author: MAVO
+commands:
+  timber:
+    description: Toggle player tree felling (also /timber status)
+    usage: /timber [toggle|status]
+permissions:
+  mavotimber.admin:
+    description: Admin timber control
+    default: op

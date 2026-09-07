@@ -1,0 +1,15 @@
+name: MAVOMiniboss
+version: 1.0.0
+main: mavo.miniboss.MiniBoss
+api-version: '1.21'
+description: Rare biome bosses roam the wild - kill for coins, enchants, keys, heads (MAVOcraft)
+author: MAVO
+softdepend: [Vault, MAVOLuckyCoins, MAVOCrates]
+commands:
+  miniboss:
+    description: Miniboss status (admin: spawn all, reload)
+    usage: /miniboss [status|locate]
+permissions:
+  mavominiboss.admin:
+    description: Admin miniboss control (spawn/reload)
+    default: op

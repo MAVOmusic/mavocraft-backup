@@ -1,0 +1,14 @@
+name: MAVOSpawners
+version: 1.0.0
+main: mavo.spawners.Spawners
+api-version: '1.21'
+description: Silk-touch mine spawners, place them anywhere - /spawner info (MAVOcraft)
+author: MAVO
+commands:
+  spawner:
+    description: Inspect the spawner you are looking at
+    usage: /spawner info
+permissions:
+  mavospawner.admin:
+    description: Admin spawner control (give)
+    default: op

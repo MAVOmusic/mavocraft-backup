@@ -1,0 +1,5 @@
+# MAVOTimber - tree felling
+enabled: true
+max-blocks: 200              # safety cap (won't fell a whole forest by accident)
+axe-damage: true            # use ONE axe durability break per chopped log
+drop-all: true              # false = only the broken log drops (others vanish)

@@ -1,0 +1,28 @@
+name: MAVODuels
+version: 1.0.0
+main: mavo.duels.Duels
+api-version: '1.21'
+description: Ranked 1v1 duels - /duel <player> [bet], arena, stats + leaderboard (MAVOcraft)
+author: MAVO
+softdepend: [Vault]
+commands:
+  duel:
+    description: Challenge a player to a duel
+    usage: /duel <player> [bet]
+  daccept:
+    description: Accept a duel challenge
+    usage: /daccept
+  ddeny:
+    description: Deny a duel challenge
+    usage: /ddeny
+  dstats:
+    description: Your duel record (and leaderboard)
+    usage: /dstats [top]
+  duelarena:
+    description: Set the duel arena at your position (OP)
+    usage: /duelarena
+    permission: mavoduel.admin
+permissions:
+  mavoduel.admin:
+    description: Admin duel control (arena set / reload)
+    default: op

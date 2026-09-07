@@ -1,0 +1,20 @@
+name: MAVOGuilds
+version: 1.0.0
+main: mavo.guilds.Guilds
+api-version: '1.21'
+description: Guilds and claimed territories - /guild create|invite|claim|map and more (MAVOcraft)
+author: MAVO
+softdepend: [Vault]
+commands:
+  guild:
+    description: Guild and territory commands
+    usage: /guild <create|invite|accept|decline|leave|disband|list|info|promote|demote|kick|chat|sethome|home|claim|unclaim|map|desc|reload|admin>
+    aliases: [g]
+  gchat:
+    description: Guild chat
+    usage: /gchat <message>
+    aliases: [gc]
+permissions:
+  mavoguilds.admin:
+    description: Admin guild control (reload, bypass protection)
+    default: op

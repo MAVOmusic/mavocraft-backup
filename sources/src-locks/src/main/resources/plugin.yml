@@ -1,0 +1,23 @@
+name: MAVOLocks
+version: 1.0.0
+main: mavo.locks.Locks
+api-version: '1.21'
+description: Lock chests, doors, furnaces and barrels - /lock, /unlock, /trust, /untrust (MAVOcraft)
+author: MAVO
+commands:
+  lock:
+    description: Lock the container/door you are looking at
+    usage: /lock
+  unlock:
+    description: Unlock the container/door you are looking at
+    usage: /unlock
+  trust:
+    description: Allow a player to use your locked blocks
+    usage: /trust <player>
+  untrust:
+    description: Remove a player from your trusted list
+    usage: /untrust <player>
+permissions:
+  mavolock.admin:
+    description: Admin lock bypass (open/break anything)
+    default: op

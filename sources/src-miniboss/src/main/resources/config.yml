@@ -1,0 +1,53 @@
+# MAVOMiniboss - rare biome bosses
+spawn-interval-minutes: 45
+max-alive: 3
+spawn-min-distance: 1000     # from spawn (-2579,-1685)
+spawn-max-distance: 5000
+spawn-surface: true          # only on the surface (y>50)
+
+bosses:
+  swamp_witch_lord:
+    name: "&5&lSWAMP WITCH LORD"
+    entity: WITCH
+    hp: 800
+    coins: 50000
+    lucky-coins: 3
+    crate-key: "rare"
+    crate-keys: 1
+    head: PLAYER_HEAD
+  desert_pharaoh:
+    name: "&6&lDESERT PHARAOH"
+    entity: HUSK
+    hp: 1200
+    coins: 80000
+    lucky-coins: 4
+    crate-key: "rare"
+    crate-keys: 2
+    head: ZOMBIE_HEAD
+  ice_queen:
+    name: "&b&lICE QUEEN"
+    entity: STRAY
+    hp: 1000
+    coins: 70000
+    lucky-coins: 3
+    crate-key: "mythic"
+    crate-keys: 1
+    head: SKELETON_SKULL
+  jungle_shaman:
+    name: "&a&lJUNGLE SHAMAN"
+    entity: EVOKER
+    hp: 1500
+    coins: 100000
+    lucky-coins: 5
+    crate-key: "mythic"
+    crate-keys: 2
+    head: WITHER_SKELETON_SKULL
+  nether_overlord:
+    name: "&4&lNETHER OVERLORD"
+    entity: PIGLIN_BRUTE
+    hp: 2000
+    coins: 150000
+    lucky-coins: 6
+    crate-key: "mythic"
+    crate-keys: 3
+    head: PIGLIN_HEAD

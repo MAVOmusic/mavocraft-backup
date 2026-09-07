@@ -1,0 +1,8 @@
+# MAVOEnchants - custom enchant gems
+# Apply: hold the GEM in main hand and the TOOL in offhand, right-click (uses the gem).
+# Max 1 gem per tool? No - up to 3 gems, each type once, tier 1-3.
+max-gems-per-tool: 3
+max-tier: 3
+vein-blocks-per-tier: 6
+lifesteal-hearts: 1
+xpboost-percent-per-tier: 50

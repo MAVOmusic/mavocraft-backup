@@ -1,0 +1,11 @@
+# MAVODuels - ranked 1v1 duels
+arena:
+  world: world
+  x: 0
+  y: 64
+  z: 0
+radius: 20
+default-bet: 0
+max-bet: 1000000
+house-cut: 0.10           # 10% taken from the pot (0 = off)
+restore-gamemode: true

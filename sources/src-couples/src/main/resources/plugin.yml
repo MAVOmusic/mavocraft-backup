@@ -1,0 +1,26 @@
+name: MAVOCouples
+version: 1.0.0
+main: mavo.couples.Couples
+api-version: '1.21'
+description: Couples - /marry, /accept, /couplehome, /couple, heart particles (MAVOcraft)
+author: MAVO
+commands:
+  marry:
+    description: Propose marriage to a player
+    usage: /marry <player>
+  accept:
+    description: Accept a marriage proposal
+    usage: /accept
+  deny:
+    description: Deny a marriage proposal
+    usage: /deny
+  divorce:
+    description: End your marriage
+    usage: /divorce
+  couple:
+    description: Couple info and actions
+    usage: /couple [info|spouse|home|sethome|tp]
+permissions:
+  mavocouple.admin:
+    description: Admin couple control (divorce any)
+    default: op

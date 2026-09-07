@@ -1,0 +1,61 @@
+# MAVOCrafting - custom recipes for uncraftable items.
+# shape: up to 3 rows of 3 chars. ingredients: letter -> material.
+# result: material | result-count optional.
+recipes:
+  name_tag:
+    shape:
+      - " P "
+      - " S "
+      - " S "
+    ingredients:
+      P: PAPER
+      S: STRING
+    result: NAME_TAG
+  saddle:
+    shape:
+      - "LLL"
+      - "LIL"
+      - "I I"
+    ingredients:
+      L: LEATHER
+      I: IRON_INGOT
+    result: SADDLE
+  lead:
+    shape:
+      - " S "
+      - "SBS"
+      - " S "
+    ingredients:
+      S: STRING
+      B: SLIME_BALL
+    result: LEAD
+  chainmail_helmet:
+    shape:
+      - "III"
+      - "I I"
+    ingredients:
+      I: IRON_BARS
+    result: CHAINMAIL_HELMET
+  chainmail_chestplate:
+    shape:
+      - "I I"
+      - "III"
+      - "III"
+    ingredients:
+      I: IRON_BARS
+    result: CHAINMAIL_CHESTPLATE
+  chainmail_leggings:
+    shape:
+      - "III"
+      - "I I"
+      - "I I"
+    ingredients:
+      I: IRON_BARS
+    result: CHAINMAIL_LEGGINGS
+  chainmail_boots:
+    shape:
+      - "I I"
+      - "I I"
+    ingredients:
+      I: IRON_BARS
+    result: CHAINMAIL_BOOTS

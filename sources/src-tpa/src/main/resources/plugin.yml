@@ -1,0 +1,26 @@
+name: MAVOTpa
+version: 1.0.0
+main: mavo.tpa.Tpa
+api-version: '1.21'
+description: Teleport requests - /tpa, /tpahere, /tpaccept, /tpdeny, /tpacancel (MAVOcraft)
+author: MAVO
+commands:
+  tpa:
+    description: Request to teleport to a player
+    usage: /tpa <player>
+  tpahere:
+    description: Request a player to teleport to you
+    usage: /tpahere <player>
+  tpaccept:
+    description: Accept a teleport request
+    usage: /tpaccept [player]
+  tpdeny:
+    description: Deny a teleport request
+    usage: /tpdeny [player]
+  tpacancel:
+    description: Cancel your pending teleport request
+    usage: /tpacancel
+permissions:
+  mavotpa.admin:
+    description: Admin teleport control (bypass cooldown)
+    default: op
