@@ -1,8 +1,9 @@
 # MAVOcraft — Discord Pack (2026-09-07)
 
 Paste-ready for the MAVOcraft Discord server. One block per item = hit the copy button.
+Every feature thread now has BOTH: a short announcement post for `✨┃features` and a
+DETAILED first message for the thread itself (so the thread holds the full info).
 
----
 
 ## 1. CHANNEL NAMES + FEATURE THREADS
 
@@ -18,24 +19,25 @@ Rename:
 | mc-general | `💬┃general` |
 | mc-ideas | `💡┃ideas` |
 
-**Create these feature threads inside `✨┃features`** (one per feature, paste the matching block from section 3 as the first message). Thread names:
+**Create these feature threads inside `✨┃features`** (one per feature — 41 threads). For EACH one:
+1. paste the short block (first ``` of the feature) into `✨┃features` as the announcement post,
+2. open the thread and paste the **detailed block** (second ```) as the thread's first message.
 
 ```
-🔨 guide             ✨ achievements      🎖 player-level      📋 daily-quests
-🔥 login-streaks     🪙 lucky-coins       💰 coins-and-shop    🧑🌾 villager-economy
-🐫 wandering-traders 🏡 chunk-claims      🏠 homes             🌀 wild-teleport
-⚰ death-chests      📚 museum            🎰 casino            🎆 server-events
-🎯 community-goals   🔐 vault             🌐 portal-room       🍺 tavern
-😴 sleep-vote        ⚔ mob-farm          🐶 pets              🕐 hud
-🗺 web-map           🏦 personal-vault    ⚖ auction-house     🧹 destroy
-📺 tab               ⚔ boss-raid         🎁 crates            ⚡ double-xp
-🎣 fishing-tourn     ✉ mail               🎃 seasonal          ⏰ sleep-rule
-🌳 timber            🛠 crafting          💎 enchant-gems      🎯 miniboss
+🔨 guide             ⛏ professions       ✨ achievements      🎖 player-level
+📋 daily-quests      🔥 login-streaks     🪙 lucky-coins       💰 coins-and-shop
+🧑‍🌾 villager-economy 🐫 wandering-traders 🏡 chunk-claims      🏠 homes
+🌀 wild-teleport     ⚰ death-chests      📚 museum            🎰 casino
+🎆 server-events     🎯 community-goals   🔐 vault             🌐 portal-room
+🍺 tavern            😴 sleep-vote        ⚔ mob-farm          🐶 pets
+🕐 hud               🗺 web-map           🏦 personal-vault    ⚖ auction-house
+🧹 destroy           📺 tab               ⚔ boss-raid         🎁 crates
+⚡ double-xp         🎣 fishing-tourn     ✉ mail               🎃 seasonal
+⏰ sleep-rule        🌳 timber            🛠 crafting          💎 enchant-gems
+🎯 miniboss
 ```
 
-Posting style: `📌 #thread-name` inside the feature block links to its thread.
-
----
+Posting style: the short feature post ends with `📌 more in #thread-name`, which links to its thread.
 
 ## 2. VERSION LOG — paste into `📜┃version-log`
 
@@ -210,218 +212,748 @@ FISHING TOURNAMENT · MAIL · SEASONAL CALENDAR · AUCTION 1.1 · Sleep 07:00.
 
 ---
 
-## 3. FEATURES — paste into `✨┃features` (one short block per feature thread)
 
-Post the short block below, then `📌 more in #thread-name`.
+## 3. FEATURES — 41 threads: short post (✨features) + DETAILED first message (thread)
 
+For each feature: paste the first block into `✨┃features`, then paste the second block as the **first message** of its thread (so the thread has the full details, not just the one-liner).
+
+### 🎮 THE GUIDE — `#guide`
+**Post in ✨features:**
 ```
 🎮 THE GUIDE - in-game book: /updates, /tutorial chapters, /whatsnew.
 📌 more in #guide
 ```
+**Thread first message:**
+```
+🎮 THE GUIDE (/updates, /guide, /mods, /features)
+The in-game book with everything about the server.
+• /updates - main menu + What's New
+• /tutorial - step-by-step chapters CH0 (newbie basics) -> CH15 (Mob Farm), 16 chapters
+• /whatsnew - latest update notes, newest first
+• Auto-opens once per server update so nobody misses a change
+• Menus are clickable; the reader is paged (12 lines/page) with Back/Next/Close
+• "This Guide" book is pinned in the middle of the menu
+```
 
+### ⛏ PROFESSIONS (10) — `#professions`
+**Post in ✨features:**
 ```
 ⛏ PROFESSIONS (10) - grind with bound tools, tiers at L10/25/50, up to L999.
 📌 more in #professions
 ```
+**Thread first message:**
+```
+⛏ PROFESSIONS - 10 skills, grind to level up
+• /profession (or /prof) - pick a profession, get its BOUND tool
+• ONLY actions with your bound tool give XP (creative never counts!)
+• Tools upgrade: Stone -> Iron L10 -> Diamond L25 -> Netherite L50
+• Enchant upgrades keep going to L999
+• /profession check | top <prof> | almost <prof>
+• 10th profession = SLEEPER: /prof -> Sleeper -> bound bed -> place ->
+  right-click at night (+1 XP, +2 if it is your bound bed)
+• Sleeper: 50 rests per level (50 more each level), +1 heart + 100 Lucky
+  Coins every 10 levels, Lv100 = SLEEPER RANK
+• Tavern rest = +1 XP to every active profession
+• Lumberjack XP from Timber is capped at 10 per tree
+```
 
+### 🎖 PLAYER LEVEL — `#player-level`
+**Post in ✨features:**
 ```
 🎖 PLAYER LEVEL - average of all professions + achievements, shown in TAB.
 📌 more in #player-level
 ```
+**Thread first message:**
+```
+🎖 PLAYER LEVEL - your overall progress number
+• Level = average of ALL profession levels + ALL achievement categories
+• Everyone starts at Lv 1
+• Shown in TAB: rank | name | level + % bar | coords | day | deaths
+• /sb toggles the grind scoreboard
+• Grave teleports scale with it: 1,000 coins / 10 Lucky Coins at Lv 1,
+  doubling per level (capped at 30x)
+```
 
+### ✨ ACHIEVEMENTS — `#achievements`
+**Post in ✨features:**
 ```
 ✨ ACHIEVEMENTS - 52 categories, lifetime milestones that pay pocket money.
 📌 more in #achievements
 ```
+**Thread first message:**
+```
+🎖 ACHIEVEMENTS (/ach, /achievements, /achieve)
+52 lifetime categories - milestones pay coins.
+• /ach - browse + claim rewards
+• 38 mob-kill categories - every Mob Farm mob has its own
+• Everyone starts at level 1 (never level 0)
+• kill_* milestones pay 5,000 coins each
+• /ach reload (OP) after config changes
+```
 
+### 📋 DAILY QUESTS — `#daily-quests`
+**Post in ✨features:**
 ```
 📋 DAILY QUESTS - 10 fresh quests every day, paid in coins.
 📌 more in #daily-quests
 ```
+**Thread first message:**
+```
+📋 DAILY QUESTS (/quest)
+10 new quests every Minecraft day, paid in coins.
+• /quest - open the board + claim finished quests
+• Quests reset daily - claim before the day rolls over
+• Coins are the main quest reward
+```
 
+### 🔥 LOGIN STREAKS — `#login-streaks`
+**Post in ✨features:**
 ```
 🔥 LOGIN STREAKS - daily login rewards that grow; bonus every 7th day.
 📌 more in #login-streaks
 ```
+**Thread first message:**
+```
+🔥 LOGIN STREAKS (/streak)
+Log in every day, the reward grows with your streak.
+• /streak - your current streak + reward
+• /streak top - leaderboard
+• Big bonus every 7th day
+• Miss a day = streak resets
+```
 
+### 🪙 LUCKY COINS — `#lucky-coins`
+**Post in ✨features:**
 ```
 🪙 LUCKY COINS + WELL - ~1 in 1,000 actions; toss them in the Wishing Well.
 📌 more in #lucky-coins
 ```
+**Thread first message:**
+```
+🪙 LUCKY COINS + WISHING WELL
+Special currency found by playing.
+• Drop rate ~1 in 1,000 actions (mining/killing/fishing only, max 1 per 20s)
+• Nope - never from player-placed blocks
+• Toss them in the Wishing Well at spawn with Q
+• Every well prize is shop-sellable
+• /ccollect - 1 free Lucky Coin every 10 MC days
+• Also currency for: casino bets, vault room claim, grave teleports
+```
 
+### 💰 COINS & SHOP — `#coins-and-shop`
+**Post in ✨features:**
 ```
 💰 COINS & SHOP - coins from professions/quests/ach; /shop is expensive on purpose.
 📌 more in #coins-and-shop
 ```
-
+**Thread first message:**
 ```
-🧑🌾 VILLAGER ECONOMY - farm -> trade -> cure -> trading hall -> Master Traders.
+💰 COINS & SHOP
+Coins are the main currency.
+• Earn: professions (per action), /quest, /ach rewards, /streak rewards
+• /sell hand + /shop for raw materials
+• /balance - check your balance (Essentials /bal)
+• Shop prices are expensive ON PURPOSE - trade with villagers instead
+• Netherite costs 8x diamond in the shop
+```
+
+### 🧑‍🌾 VILLAGER ECONOMY — `#villager-economy`
+**Post in ✨features:**
+```
+🧑‍🌾 VILLAGER ECONOMY - farm -> trade -> cure -> trading hall -> Master Traders.
 📌 more in #villager-economy
 ```
+**Thread first message:**
+```
+🧑‍🌾 VILLAGER ECONOMY
+Villagers are the heart of progression.
+• 1. Farm crops -> trade farmers for emeralds
+• 2. Cure zombie villagers for permanent discounts
+• 3. Build a trading hall (librarians + smiths)
+• 4. Buy gear with emeralds
+• Master Traders at spawn take emeralds for premium stock (Mending, templates)
+• Shop signs override villager prices where the server sets them
+```
 
+### 🐫 WANDERING TRADERS — `#wandering-traders`
+**Post in ✨features:**
 ```
 🐫 WANDERING TRADERS - visits a random online player every 30-60 min, no junk.
 📌 more in #wandering-traders
 ```
+**Thread first message:**
+```
+🐫 WANDERING TRADERS
+A wandering trader visits a random ONLINE player every 30-60 min.
+• Only useful offers - no junk (80+ offer pool: tools, redstone, building, farming, brewing)
+• Spawns with 2 trader llamas + a bell
+• Despawns after 10 min - don't keep him waiting
+• /wanderer - when the next visit happens
+• /wanderer spawn [player] (OP) - force one
+```
 
+### 🏡 CHUNK CLAIMS — `#chunk-claims`
+**Post in ✨features:**
 ```
 🏡 CHUNK CLAIMS - protect your base; first chunk FREE, /chunk access for friends.
 📌 more in #chunk-claims
 ```
+**Thread first message:**
+```
+🏡 CHUNK CLAIMS
+Protect your base from griefers.
+• /chunk claim - claim the chunk you stand in
+• First chunk FREE, then priced in tiers (max 51 chunks)
+  - 100, 250, 500, 1,000, then 1,500 / 2,000 / 2,500 per chunk
+• /chunk access <player> - let a friend build
+• /chunk info - who owns this chunk
+• /chunkprice - tier table + your progress
+• /borders - toggle the claim border display
+• 1-chunk buffer around claims stops edge griefing
+• Claim economy: free to claim, paid from the tier table (config)
+```
 
+### 🏠 HOMES — `#homes`
+**Post in ✨features:**
 ```
 🏠 HOMES & TELEPORTS - beds in claimed chunks; /home with 3s safety.
 📌 more in #homes
 ```
+**Thread first message:**
+```
+🏠 HOMES & TELEPORTS
+Homes are bound to beds in YOUR claimed chunks.
+• Claim a chunk, place a bed, right-click it -> that binds your /home
+• /home - teleport back | /homes - list & rename
+• /spawn - back to the sky plaza
+• Home Portal at spawn takes you to your first home
+• Every teleport: 3s stand still, moving cancels, monsters within 12 blocks block it
+```
 
+### 🌀 WILD TELEPORT — `#wild-teleport`
+**Post in ✨features:**
 ```
 🌀 WILD TELEPORT - the only way out is the Wild Portal (5k-400k blocks).
 📌 more in #wild-teleport
 ```
+**Thread first message:**
+```
+🌀 WILD TELEPORT
+The only way out of spawn is the WILD PORTAL.
+• Stand inside it 3 seconds -> flung 5,000-400,000 blocks into fresh wilderness
+• 5-min cooldown
+• The last 50 zones + a 200m radius are blacklisted so you don't land on someone
+• No /wild command - it is spawn portal only
+• Stock up at the traders first - there is NO easy way back!
+• /wild portal | /wild homeportal | /holoreset (OP) - reposition/reset
+```
 
+### ⚰ DEATH CHESTS — `#death-chests`
+**Post in ✨features:**
 ```
 ⚰ DEATH CHESTS - locked grave chest; /grave menu with coords + teleport cost.
 📌 more in #death-chests
 ```
+**Thread first message:**
+```
+⚰ DEATH CHESTS (/grave)
+Die without losing everything.
+• Your items go into a locked grave chest only YOU can open
+• /grave - menu with every grave: world, X/Y/Z, time left
+• Teleport cost scales with Player Level: 1,000 coins / 10 Lucky Coins at Lv 1,
+  doubling each level (cap 30x)
+• 3s countdown - moving or monsters within 12 blocks cancels it
+• 30 min lock, then it bursts open for anyone
+```
 
+### 📚 MUSEUM — `#museum`
+**Post in ✨features:**
 ```
 📚 MUSEUM - donate one of every item; complete sections for coins + ranks.
 📌 more in #museum
 ```
-
+**Thread first message:**
 ```
-🎰 LUCKY LOUIE'S CASINO - 10 games at the spawn villager, coin + Lucky bets.
+📚 THE MUSEUM (/museum, /curator, /collection)
+The Curator wants ONE of every item - 103 sections, 1,413 items.
+• Click a grey item in an exhibit to donate (takes 1 from you)
+• Deposit Crate: dump a haul, close it, new items register, duplicates bounce back
+• Complete a section: 1,000 coins PER ITEM in it
+• Ranks at 25 / 50 / 75 / 100% completion = coin bonus + chat title
+• /museum extras - buy ONLY what you still miss (normal shop prices, buy-only)
+• /museum shopsgen (OP) re-indexes buy prices from the real shop
+```
+
+### 🎰 CASINO — `#casino`
+**Post in ✨features:**
+```
+🎰 CASINO - 10 games at the spawn villager, coin + Lucky bets.
 📌 more in #casino
 ```
+**Thread first message:**
+```
+🎰 LUCKY LOUIE'S CASINO (/casino or right-click the villager)
+10 games of chance at spawn.
+• Pick a Cup (2.7x) | Coin Flip (2x) | Dice Duel (2.3x) | Crystal Wheel (0-10x)
+  | TNT Tiles (up to 32x) | Higher or Lower (4x) | Rocket Crash (10x)
+  | Lucky Slots (8x) | Rock Paper Scissors (2x) | Blackjack 21 (2.5x)
+• Bets: 1-1,000,000 coins or 1-50 Lucky Coins
+• 10 coin attempts + 10 Lucky Coin attempts per 10 MC days
+• Game result shows for 5 seconds
+• Hold a Gambler lucky stick: +1% win luck at L0, +15% at L1000
+```
 
+### 🎆 SERVER EVENTS — `#server-events`
+**Post in ✨features:**
 ```
 🎆 SERVER EVENTS - random event every 45-90 min while players are online.
 📌 more in #server-events
 ```
+**Thread first message:**
+```
+🎆 SERVER EVENTS (/event)
+Random events every 45-90 min while players are online (each ~15 min).
+• Lucky Hour (5x Lucky drops) | Coin Rain | Mob Hunt | Fishing Frenzy
+  | Miner's Rush | Harvest Bonus | Buildathon | Zombie Siege (night only,
+  ends at sunrise) | Gift Drop | Farm Frenzy
+• /event - what is live right now
+• /event list - all 10 events
+• /event start <name> | /event stop (OP)
+```
 
+### 🎯 COMMUNITY GOALS — `#community-goals`
+**Post in ✨features:**
 ```
 🎯 COMMUNITY GOALS - donate; when the pot fills EVERYONE gets the reward.
 📌 more in #community-goals
 ```
-
+**Thread first message:**
 ```
-🔐 THE VAULT - 96 private rooms, your key only, 15 chests each.
+🎯 COMMUNITY GOALS (/goal)
+Server-wide donation goals - when the pot fills, EVERYONE gets the reward.
+• /goal - donate (left-click: 64 items or 100 coins; right-click: everything, daily cap)
+• /donate <goal> <amount> - quick donate
+• Dirt goal -> Haste | Cobble goal -> Speed | Treasury -> PERMANENT Luck
+• Mob Farm community chest has its own goal (community spawners)
+• Multi-tier pots: bigger deposits unlock bigger rewards
+```
+
+### 🔐 VAULT — `#vault`
+**Post in ✨features:**
+```
+🔐 VAULT - 96 private rooms, your key only, 15 chests each.
 📌 more in #vault
 ```
+**Thread first message:**
+```
+🔐 THE VAULT (/vaultroom)
+96 private rooms over 6 floors - YOUR key only.
+• One-time entry gate: 50,000 coins
+• Claim a room: 5,000 coins - your key only, name on the door
+• 15 chests per room (first room's first chest free)
+• Fill all 15 to claim another room OR sneak + right-click the door to Expand Up
+  (2x price + ladder through the ceiling)
+• Door menu (owner): enter room, progress, expand, close
+• /vaultroom rebuild | fixladder | chestsigns (OP) - maintenance commands
+• /vaultroom wipeplayer <name> | wipeaccess <name> (OP) - release access
+```
 
+### 🌐 PORTAL ROOM — `#portal-room`
+**Post in ✨features:**
 ```
 🌐 PORTAL ROOM - 26 jump portals: biome jumps + danger dives (up to 5M!).
 📌 more in #portal-room
 ```
-
+**Thread first message:**
 ```
-🍺 SPAWN TAVERN + INN - skip the night safely; rest = +1 to every profession.
+🌀 PORTAL ROOM (/portalroom)
+26 jump portals - biome jumps + danger dives.
+• One-time entry gate: 25,000 coins
+• 13 biome jumps: 1,000-10,000 coins
+• 13 danger dives: 25,000-5,000,000 coins (Deep Dark = 5M!)
+• Every jump lands in a fresh far-away zone - last 50 zones never repeat
+• Structure jumps get an explorer map/torch path to the loot so you don't get lost
+```
+
+### 🍺 TAVERN — `#tavern`
+**Post in ✨features:**
+```
+🍺 TAVERN + INN - skip the night safely; rest = +1 to every profession.
 📌 more in #tavern
 ```
+**Thread first message:**
+```
+🍺 SPAWN TAVERN + INN
+Skip the night safely (no villager risk).
+• Right-click the Tavern bed: 100 coins, night only, locks until noon
+• Tavern rest = +1 experience point to EVERY active profession
+• Sleeping in your own bound bed = +2 to every profession
+• Inn: 4 beds + Innkeeper bar (soulbound food/drink, 1 each per MC day)
+• /tavern - check if your rest is available
+• /tavern unlock [player] (OP) - clear a stuck lock
+```
 
+### 😴 SLEEP VOTE — `#sleep-vote`
+**Post in ✨features:**
 ```
 😴 SLEEP VOTE - 18:30 vote, 75% turnout; beds skip too.
 📌 more in #sleep-vote
 ```
+**Thread first message:**
+```
+😴 SLEEP VOTE (18:30)
+When 5+ players are online at 18:30 a vote opens.
+• Type !sleep yes / !sleep no (or /sleeper vote yes|no)
+• Closes at 19:30 - skip needs MORE yes than no AND 75% of eligible players voted
+• Vote skips NEVER count as Sleeper XP
+• Small groups: sleeping in beds skips too (1:1, 2:2, 3-4:2, 5-7:3, 8-9:4, 10+:5)
+• The skipped night wakes everyone at 07:00
+```
 
+### ⚔ MOB FARM — `#mob-farm`
+**Post in ✨features:**
 ```
 ⚔ MOB FARM - paid spawner rooms, one bay per mob, /mobfarm enter | pick | extend.
 📌 more in #mob-farm
 ```
+**Thread first message:**
+```
+⚔ MOB FARM (/mobfarm)
+Paid spawner rooms - every mob gets its own bay (36 mobs).
+• /mobfarm enter - 10,000 coins, 10s stand still, 15 min session
+• /mobfarm pick - pick a mob: real shop price /16 (zombie ~75,000), doubles per extra pick
+• Clicking your ACTIVE mob = FREE return; another mob = pay again
+• /mobfarm extend - 25,000 coins for +15 min
+• /mobfarm buy - extra spawners on the same block (cheap first!)
+• Loot in the front chest, stand on the marked safe spot
+• /mobfarm hub | status | prices | info | order
+• Unbuilt zones are hidden - /mobfarm enable <mob> brings them back
+• Community chest goal adds spawners for everyone
+```
 
+### 🐶 PETS — `#pets`
+**Post in ✨features:**
 ```
 🐶 PETS - companions that follow, level up, carry a stack + pull XP orbs.
 📌 more in #pets
 ```
+**Thread first message:**
+```
+🐶 PETS 2.0 (/pets)
+Pets are companions now - not just decoration.
+• /pets - buy Cat / Dog (wolf) / Fox / Parrot / Axolotl / Turtle (25k-60k coins)
+• One active pet at a time
+• Each pet levels up while active (+1 XP per minute, max level 100, name shows [Lv n])
+• Abilities: pulls XP orbs to you (8-block radius) + carries ONE stack in /pet menu
+• Your pet follows you and cannot be hurt (invulnerable)
+• /pet menu | recall | xp (OP: /pet give)
+```
 
+### 🕐 HUD — `#hud`
+**Post in ✨features:**
 ```
 🕐 HUD CLOCK - XYZ, day, time above your hotbar; /hud toggles.
 📌 more in #hud
 ```
+**Thread first message:**
+```
+🕐 HUD CLOCK (/hud)
+Know where you are and when it is without opening your inventory.
+• Above your hotbar: XYZ, day number, time of day
+• Icons: sun / sunset / night (sleep!) / sunrise
+• Know when to sleep so your villagers survive the night
+• /hud - toggle on/off
+• Also feeds TAB placeholders (level, deaths, tab name, time)
+```
 
+### 🗺 WEB MAP — `#web-map`
+**Post in ✨features:**
 ```
 🗺 LIVE WEB MAP - BlueMap renders the world in 3D (link in the thread).
 📌 more in #web-map
 ```
+**Thread first message:**
+```
+🗺 LIVE WEB MAP
+BlueMap renders the world in 3D, live:
+https://mavocraft.my.pebble.host:8156
+• Full 3D view of your builds and the wild
+• Marker for the Mob Farm
+• /bluemap - status (OP)
+```
 
+### 🏦 PERSONAL VAULT — `#personal-vault`
+**Post in ✨features:**
 ```
 🏦 PERSONAL VAULT - extra private storage; slots unlock with Lucky Coins.
 📌 more in #personal-vault
 ```
+**Thread first message:**
+```
+🏦 PERSONAL VAULT (/pvault)
+Extra private storage on top of your normal inventory.
+• /pvault - open your personal vault
+• Slots unlock with Lucky Coins
+• Perfect for keeping gear safe while you clean your inventory
+```
 
+### ⚖ AUCTION HOUSE — `#auction-house`
+**Post in ✨features:**
 ```
 ⚖ AUCTION HOUSE - /ah hub; Buy Now + live bids with snipe protection.
 📌 more in #auction-house
 ```
+**Thread first message:**
+```
+⚖ AUCTION HOUSE (/ah)
+Buy and sell with other players.
+• /ah hub - browse listings
+• Sell prices pulled from the real shop (886 items indexed)
+• /ah add hand <price> <count> <hours> [buy-now] - list with optional Buy Now
+• Click a listing: buy instantly, or BID +10% / +25%
+• Bids in the last minute extend the auction +5 minutes (no sniping)
+• Highest bid wins - money is held safely in escrow
+• Keepers per player - list and sell safely
+```
 
+### 🧹 DESTROY — `#destroy`
+**Post in ✨features:**
 ```
 🧹 /DESTROY + /DESTROYALL - kill unsellable junk without losing value.
 📌 more in #destroy
 ```
+**Thread first message:**
+```
+🧹 /DESTROY + /DESTROYALL
+Kill junk without losing anything worth selling.
+• /destroy (or /destroy hand) - destroys UNSALEABLE junk only
+  (never shop-sellable items, Lucky Coins, profession tools,
+  renamed/enchanted items, or museum items)
+• /destroyall - clears your main inventory (slots 9-35)
+  keeps hotbar, offhand shield, Lucky Coins, profession tools
+```
 
+### 📺 TAB — `#tab`
+**Post in ✨features:**
 ```
 📺 TAB + SCOREBOARD - rank | name | Lv + % | coords in TAB; /sb switches.
 📌 more in #tab
 ```
+**Thread first message:**
+```
+📺 TAB + SCOREBOARD
+TAB shows what matters at a glance.
+• TAB list: rank | name | level + % | coords | day | deaths
+• /sb - switch scoreboard (stream / grind modes)
+• /tab scoreboard toggle - hide/show the sidebar
+  (handy for ceiling checks and clean screenshots)
+```
 
+### ⚔ BOSS RAID — `#boss-raid`
+**Post in ✨features:**
 ```
 ⚔ BOSS RAID - /boss join, Saturdays 20:00, HP scales with raiders, shared loot.
 📌 more in #boss-raid
 ```
+**Thread first message:**
+```
+⚔ BOSS RAID (/boss)
+One boss a week - the whole server fights it together.
+• /boss join - join the queue (opens 10 min before Sat 20:00)
+• /boss return - back to the arena if you die
+• Boss HP scales with raiders (2,000 + 100 per player)
+• Boss bar + damage tracking
+• Kill rewards: coins per participant + damage bonus, 2 Lucky Coins,
+  a trophy for top damage, and a Mythic crate key
+• /boss status | leave (players) | setarena | now | cancel | reload (OP)
+```
 
+### 🎁 CRATES — `#crates`
+**Post in ✨features:**
 ```
 🎁 CRATES + KEYS - common/rare/mythic tiers; keys from raids, quests, goals.
 📌 more in #crates
 ```
+**Thread first message:**
+```
+🎁 CRATES + KEYS (/crate)
+Weighted reward crates you open with a key.
+• Right-click a crate block with a matching key to roll
+• Tiers: COMMON / RARE / MYTHIC (bigger prizes, longer cooldowns)
+• Prizes: coins, Lucky Coins or items (even Elytra in Mythic!)
+• Keys come from: boss raid, quests, community goals, admins
+• Crate blocks are unbreakable
+• /crate list | info (players) | set | unset | clear | givekey | reload (OP)
+```
 
+### ⚡ DOUBLE XP — `#double-xp`
+**Post in ✨features:**
 ```
 ⚡ DOUBLE XP WEEKENDS - Fri 18:00 -> Sun 18:00, all profession XP x2.
 📌 more in #double-xp
 ```
+**Thread first message:**
+```
+⚡ DOUBLE XP WEEKENDS
+Every weekend your profession XP is doubled.
+• Friday 18:00 -> Sunday 18:00 (UK time)
+• Applies to ALL profession XP (mining, farming, hunting...)
+• Bossbar countdown while it is live
+• /xpboost - check when the next boost starts
+• /xpboost now <minutes> | off | reload (OP)
+```
 
+### 🎣 FISHING TOURNAMENT — `#fishing-tourn`
+**Post in ✨features:**
 ```
 🎣 FISHING TOURNAMENT - random 2h window each week; top 3 paid.
 📌 more in #fishing-tourn
 ```
+**Thread first message:**
+```
+🎣 FISHING TOURNAMENT (/fishcomp)
+A random 2-hour window every week (deterministic - same window every week).
+• Every catch = 1 point (salmon 2, pufferfish 3, tropical fish 4)
+• Top 3 win coins (15,000 / 8,000 / 5,000)
+• Everyone with 3+ catches gets a 500 coin participation reward
+• Offline payouts are queued and paid when you next join
+• /fishcomp status | top | start | end | reload (OP)
+```
 
+### ✉ MAIL — `#mail`
+**Post in ✨features:**
 ```
 ✉ MAIL - coins + items to anyone, even offline; 7 day expiry.
 📌 more in #mail
 ```
+**Thread first message:**
+```
+✉ MAIL (/mail)
+Send coins and items to anyone, even when they are offline.
+• /mail send <name> [coins] [message] - + the item in your hand (attach)
+• /mail - claim: coins go straight to your balance, items to your inventory
+• Collect All button
+• Expires after 7 days
+• Max 100 held per player (oldest dropped)
+• Join notification with unread count
+• /mail purge <player> (OP)
+```
 
+### 🎃 SEASONAL — `#seasonal`
+**Post in ✨features:**
 ```
 🎃 SEASONAL EVENTS - Spooky / Festive / Anniversary + candy & cookies.
 📌 more in #seasonal
 ```
+**Thread first message:**
+```
+🎃 SEASONAL EVENTS (/season)
+The server changes with the real calendar.
+• Spooky Season (25 Oct - 2 Nov): mobs drop sugar (candy crafting)
+• Festive Season (20 Dec - 5 Jan): mobs drop cookies
+• Anniversary (1-8 Sep): cakes drop + DOUBLE XP all week
+• /season - which season is active
+• /season toggle <id> | reload (OP) - force a season on/off
+• Broadcast + bell when a season starts
+```
 
+### ⏰ SLEEP RULE — `#sleep-rule`
+**Post in ✨features:**
 ```
 ⏰ SLEEP RULE - sleeping wakes everyone at 07:00 (days are longer!).
 📌 more in #sleep-rule
 ```
-
+**Thread first message:**
 ```
-🌳 TIMBER - chops GROWN trees only (up to 10 logs); builds are safe.
+💤 SLEEP RULE
+Sleeping now wakes everyone at 07:00 instead of 12:00.
+• A full night of active play every day - no more losing half the day
+• The !sleep vote skip also lands at 07:00
+• Sleep early or join the vote - either way you keep the day
+```
+
+### 🌳 TIMBER — `#timber`
+**Post in ✨features:**
+```
+🌳 TIMBER - chops GROWN trees only (whole tree falls, 10 logs collected).
 📌 more in #timber
 ```
-
+**Thread first message:**
 ```
-🛠 CRAFTING - /craft = 50 beginner recipes for everyone; /crafting = custom recipes.
+🌳 TIMBER (/timber)
+Break the bottom log of a grown tree and the WHOLE tree falls.
+• Axe + break the bottom log -> every log breaks, nothing floats
+• Max 10 LOGS COLLECTED per tree (anti-exploit - shorter trees give their natural amount)
+• Crown leaves decay ~0.5s later, dropping saplings/sticks
+• 1 axe durability per collected log
+• Lumberjack XP capped at 10 per tree
+• GROWN TREES ONLY: the tree needs a leaf crown and NO player-placed blocks.
+  Shipwrecks, village houses and player log builds break like vanilla.
+• /timber status | toggle (per player, persists)
+```
+
+### 🛠 CRAFTING — `#crafting`
+**Post in ✨features:**
+```
+🛠 CRAFTING - /craft = 100 beginner recipe GUIDE; /crafting = custom recipes.
 📌 more in #crafting
 ```
-
+**Thread first message:**
 ```
-💎 ENCHANT GEMS - /gemshop (1M->512M) or mine ores; gems 1-10 with charges +
-cooldowns (L10 unlimited); Vein/Smelt/XP/Lifesteal.
+🛠 CRAFTING (/craft + /crafting)
+Two different things!
+• /craft - open to EVERYONE: the beginner recipe list (100 basics, 3 pages).
+  It is a GUIDE: click a recipe and it shows the real 3x3 recipe grid + unlocks
+  it in your recipe book (press E). It NEVER crafts or takes your items.
+• /craft <recipe> - jump straight to a recipe (e.g. /craft stone_pickaxe)
+• /crafting list - the 7 custom recipes (name tag, saddle, lead, chainmail set)
+• Custom recipes craft in a normal crafting table
+• /crafting reload (OP) after config changes
+```
+
+### 💎 ENCHANT GEMS — `#enchant-gems`
+**Post in ✨features:**
+```
+💎 ENCHANT GEMS - /gemshop (1M->512M) or mine ores; gems 1-10 with charges
++ cooldowns (L10 unlimited); Vein/Smelt/XP/Lifesteal.
 📌 more in #enchant-gems
 ```
+**Thread first message:**
+```
+💎 ENCHANT GEMS (/gemshop, /maenchant)
+Custom enchants as gems - buy them or find them.
+• 4 gems: VEIN (break a whole ore vein), SMELT (ores drop smelted),
+  XP (bonus XP orbs from kills), LIFESTEAL (heal on kill)
+• Tiers I-X: /gemshop 1M / 2M / 4M / 8M ... / 512M coins
+• Hovering a gem shows the effect for THAT tier + its charges/cooldown
+  (VEIN up to 6xT blocks, SMELT +10%/tier bonus item chance,
+   XP +50%/tier, LIFESTEAL heals T hearts)
+• Charges: L1 10 uses / 10 min -> L9 50 / 2 min, L10 UNLIMITED.
+  Cooldown starts on your FIRST use; the pool refreshes when it ends.
+• /maenchant charges - your uses left + cooldown
+• Mining ores: ~1% chance a random gem drops (halves per level, 10 levels)
+• Apply: gem in MAIN hand + tool in OFFHAND, right-click. Max 3 gems per tool.
+```
 
+### 🎯 MINIBOSS — `#miniboss`
+**Post in ✨features:**
 ```
 🎯 MINIBOSSES - rare biome bosses; /hunt + 5-min location broadcast (a boss
 spawns first if none is up).
 📌 more in #miniboss
 ```
-
----
+**Thread first message:**
+```
+🎯 MINIBOSSES (/hunt, /miniboss)
+Rare biome bosses appear in the wild.
+• 5 types: Witch Lord, Desert Pharaoh, Ice Queen, Jungle Shaman, Nether Overlord
+• A boss spawns every ~45 min (max 3 alive), 1k-5k from world spawn, on the surface
+• /hunt - teleport outside spawn; if a boss is alive you land within 60 blocks (30s cooldown)
+• Boss locations broadcast every 5 min as "around x, z (+/-100)" -
+  a boss is SPAWNED first if none is up
+• Kill rewards: coins + Lucky Coins + crate key + trophy head
+• /miniboss status | locate | broadcast | reload
+```
 
 ## 4. CURRENT WORK — paste into `🛠┃current-work`
 
