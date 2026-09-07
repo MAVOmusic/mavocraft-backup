@@ -210,6 +210,14 @@ FISHING TOURNAMENT · MAIL · SEASONAL CALENDAR · AUCTION 1.1 · Sleep 07:00.
 💎 Gem shop shows what EVERY tier gives (vein size, XP %, lifesteal, smelt bonus).
 ```
 
+### 🎉 v28 — CRATES 2.0 + BOSS DROP INFO (Hotfix 42)
+```
+📦 Crates: right-click opens a GUI showing every drop + its exact % (OPEN uses 1 key).
+🔑 Keys drop from farming/mining/fishing: Common 1% · Rare 0.05% · Mythic 0.01%.
+✨ All 3 crate blocks have floating name holograms.
+🎯 Bosses announce their drop pool in % + HP on spawn; /hunt lands ~200 blocks away.
+```
+
 ---
 
 
@@ -771,19 +779,21 @@ One boss a week - the whole server fights it together.
 ### 🎁 CRATES — `#crates`
 **Post in ✨features:**
 ```
-🎁 CRATES + KEYS - common/rare/mythic tiers; keys from raids, quests, goals.
+🎁 CRATES + KEYS - right-click shows every drop + its %; keys from farm/mine/fish.
 📌 more in #crates
 ```
 **Thread first message:**
 ```
 🎁 CRATES + KEYS (/crate)
-Weighted reward crates you open with a key.
-• Right-click a crate block with a matching key to roll
+Reward crates you open with a key - and the odds are shown!
+• Right-click a crate block -> GUI with EVERY reward + its exact drop % + OPEN button
+• OPEN uses 1 key and rolls once (cooldown per crate per player)
 • Tiers: COMMON / RARE / MYTHIC (bigger prizes, longer cooldowns)
-• Prizes: coins, Lucky Coins or items (even Elytra in Mythic!)
-• Keys come from: boss raid, quests, community goals, admins
-• Crate blocks are unbreakable
-• /crate list | info (players) | set | unset | clear | givekey | reload (OP)
+• Prizes: coins, Lucky Coins, items (Elytra, totems, netherite in Mythic!)
+• KEYS DROP FROM PLAYING: farming (mature crops), mining (ores) and fishing -
+  Common 1% · Rare 0.05% · Mythic 0.01% per action
+• Every crate block has a floating name holo
+• /crate list | info (players) | set | unset | clear | givekey | resholo | reload (OP)
 ```
 
 ### ⚡ DOUBLE XP — `#double-xp`
@@ -948,10 +958,12 @@ spawns first if none is up).
 Rare biome bosses appear in the wild.
 • 5 types: Witch Lord, Desert Pharaoh, Ice Queen, Jungle Shaman, Nether Overlord
 • A boss spawns every ~45 min (max 3 alive), 1k-5k from world spawn, on the surface
-• /hunt - teleport outside spawn; if a boss is alive you land within 60 blocks (30s cooldown)
+• Spawn callout announces the DROP POOL in % (100% coins, then lucky/crate
+  chances) + the boss HP - so you know what you are hunting before you fight
+• /hunt - teleport outside spawn; ~200 blocks from a live boss (30s cooldown)
 • Boss locations broadcast every 5 min as "around x, z (+/-100)" -
   a boss is SPAWNED first if none is up
-• Kill rewards: coins + Lucky Coins + crate key + trophy head
+• Kill: coins always, Lucky Coins + crate key only if their % rolled + trophy head
 • /miniboss status | locate | broadcast | reload
 ```
 

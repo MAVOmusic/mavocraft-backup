@@ -50,7 +50,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
     private boolean huntEnabled = true;
     private int huntCooldown = 30;              // seconds
     private int huntBareMin = 500, huntBareMax = 2000;
-    private int huntBossRadius = 60;
+    private int huntBossRadius = 200;           // HOTFIX 42: land ~200 blocks from a live boss
     private boolean broadcastLocations = true;
     private int broadcastInterval = 5;          // minutes
     private int broadcastRadius = 100;
@@ -60,8 +60,10 @@ public final class MiniBoss extends JavaPlugin implements Listener {
     private final Map<UUID, String> alive = new HashMap<>();
     private final Random rnd = new Random();
 
+    // HOTFIX 42: drop chances (percent) per boss - announced on spawn, rolled on kill
     private record BossDef(String name, EntityType type, double hp, long coins,
-                           int lucky, String crate, int crateKeys, Material head) {}
+                           int lucky, int luckyChance, String crate, int crateKeys,
+                           int crateChance, Material head) {}
 
     @Override public void onEnable() {
         saveDefaultConfig();
@@ -97,7 +99,13 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         huntCooldown = Math.max(0, getConfig().getInt("hunt-cooldown-seconds", 30));
         huntBareMin = Math.max(100, getConfig().getInt("hunt-bare-min", 500));
         huntBareMax = Math.max(huntBareMin, getConfig().getInt("hunt-bare-max", 2000));
-        huntBossRadius = Math.max(10, getConfig().getInt("hunt-boss-radius", 60));
+        huntBossRadius = Math.max(10, getConfig().getInt("hunt-boss-radius", 200));
+        if (huntBossRadius > 200) {   // HOTFIX 42: old configs of 1000 made players walk too far
+            huntBossRadius = 200;
+            getConfig().set("hunt-boss-radius", 200);
+            saveConfig();
+            getLogger().info("Hotfix 42: hunt-boss-radius -> 200 (was too far to walk).");
+        }
         broadcastLocations = getConfig().getBoolean("broadcast-locations", true);
         broadcastInterval = Math.max(1, getConfig().getInt("broadcast-interval-minutes", 5));
         broadcastRadius = Math.max(10, getConfig().getInt("broadcast-radius", 100));
@@ -112,7 +120,9 @@ public final class MiniBoss extends JavaPlugin implements Listener {
             Material h = Material.matchMaterial(c.getString("head", "PLAYER_HEAD"));
             defs.put(id, new BossDef(c.getString("name", "&cBOSS"), t, Math.max(100, c.getDouble("hp", 800)),
                     Math.max(0, c.getLong("coins", 0)), Math.max(0, c.getInt("lucky-coins", 0)),
+                    Math.max(0, Math.min(100, c.getInt("lucky-chance", 50))),   // HOTFIX 42 defaults
                     c.getString("crate-key", ""), Math.max(0, c.getInt("crate-keys", 0)),
+                    Math.max(0, Math.min(100, c.getInt("crate-chance", 50))),
                     h == null ? Material.PLAYER_HEAD : h));
         }
     }
@@ -137,7 +147,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
             var en = Bukkit.getEntity(id);
             if (en == null) continue;
             Location l = en.getLocation();
-            Bukkit.broadcastMessage(C + "5\u2694 " + cc(getDef(en).name()) + C + "8 is around "
+            Bukkit.broadcastMessage(C + "5\u00bb " + cc(getDef(en).name()) + C + "8 is around "
                     + C + "e" + l.getBlockX() + " , " + l.getBlockZ()
                     + C + "8 (\u00b1" + broadcastRadius + " blocks) - " + C + "b/hunt" + C + "8 to go hunting!");
         }
@@ -164,8 +174,29 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         e.getPersistentDataContainer().set(tag, PersistentDataType.BYTE, (byte) 1);
         e.getPersistentDataContainer().set(bossType, PersistentDataType.STRING, key);
         alive.put(e.getUniqueId(), key);
-        Bukkit.broadcastMessage(C + "5\u2694 A " + cc(d.name()) + C + "5 has appeared in the wild ("
-                + C + "e" + (int) l.getX() + ", " + (int) l.getZ() + C + "5)! Go hunt it - /hunt!");
+        // HOTFIX 42: announce the drop pool (percentages) + boss difficulty before the callout
+        Bukkit.broadcastMessage(C + "5\u00bb A " + cc(d.name()) + C + "5 has appeared in the wild ("
+                + C + "e" + (int) l.getX() + ", " + (int) l.getZ() + C + "5)!"
+                + C + "8 " + dropsLine(d) + C + "8. HP " + C + "e" + (long) d.hp()
+                + C + "8 - " + C + "b/hunt" + C + "8!");
+    }
+
+    /** "Drops: 100% 50,000 coins · 60% 3x Lucky Coins · 50% 1x Rare Crate Key" */
+    private static String dropsLine(BossDef d) {
+        StringBuilder sb = new StringBuilder("Drops: ");
+        sb.append(C).append("a100% ").append(String.format("%,d", d.coins())).append(" coins");
+        if (d.lucky() > 0 && d.luckyChance() > 0)
+            sb.append(" \u00b7 ").append(C).append("a").append(d.luckyChance()).append("% ")
+                    .append(d.lucky()).append("x Lucky Coin");
+        if (d.crateKeys() > 0 && d.crateChance() > 0)
+            sb.append(" \u00b7 ").append(C).append("a").append(d.crateChance()).append("% ")
+                    .append(d.crateKeys()).append("x ").append(C + "e" + prettyCrate(d.crate()));
+        return sb.toString();
+    }
+
+    private static String prettyCrate(String crate) {
+        if (crate == null || crate.isEmpty()) return "Crate Key";
+        return Character.toUpperCase(crate.charAt(0)) + crate.substring(1).toLowerCase(Locale.ROOT) + " Crate Key";
     }
 
     private Location findSpot(World w) {
@@ -216,7 +247,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
                     huntCooldowns.put(p.getUniqueId(), now);
                     p.teleport(dest);
                     p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
-                    p.sendMessage(C + "5\u2694 Teleported near " + cc(getDef(en).name())
+                    p.sendMessage(C + "5\u00bb Teleported near " + cc(getDef(en).name())
                             + C + "5 at " + C + "e" + bl.getBlockX() + " , " + bl.getBlockZ() + C + "5. Good hunting!");
                     return true;
                 }
@@ -239,7 +270,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         huntCooldowns.put(p.getUniqueId(), now);
         p.teleport(dest);
         p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
-        p.sendMessage(C + "5\u2694 You are outside spawn at " + C + "e"
+        p.sendMessage(C + "5\u00bb You are outside spawn at " + C + "e"
                 + dest.getBlockX() + " , " + dest.getBlockZ()
                 + C + "5 - /miniboss locate shows any live bosses.");
         return true;
@@ -257,21 +288,32 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         e.getDrops().clear();
         Player killer = en.getKiller();
         String killerName = killer != null ? killer.getName() : "?";
-        Bukkit.broadcastMessage(C + "5\u2694 " + cc(d.name()) + C + "5 was slain by " + C + "a" + killerName
-                + C + "5! Loot: " + C + "e" + String.format("%,d", d.coins()) + " coins"
-                + (d.crateKeys() > 0 ? " + " + d.crateKeys() + "x " + d.crate() + " key" : "") + ".");
+        // HOTFIX 42: roll the announced drop pool - coins always, lucky/crate by chance
+        boolean gotLucky = killer != null && d.lucky() > 0 && d.luckyChance() > 0
+                && rnd.nextInt(100) < d.luckyChance();
+        boolean gotCrate = killer != null && d.crateKeys() > 0 && d.crateChance() > 0
+                && rnd.nextInt(100) < d.crateChance();
+        StringBuilder loot = new StringBuilder(C + "e" + String.format("%,d", d.coins()) + " coins");
+        if (gotLucky) loot.append(" + ").append(C).append("e").append(d.lucky()).append("x Lucky Coin");
+        if (gotCrate) loot.append(" + ").append(C).append("e").append(d.crateKeys()).append("x ")
+                .append(prettyCrate(d.crate()));
+        Bukkit.broadcastMessage(C + "5\u00bb " + cc(d.name()) + C + "5 was slain by " + C + "a" + killerName
+                + C + "5! Loot: " + loot + C + "5.");
         if (killer == null) return;
         if (econ != null && d.coins() > 0) econ.depositPlayer(killer, d.coins());
-        try {
-            org.bukkit.plugin.Plugin luck = Bukkit.getPluginManager().getPlugin("MAVOLuckyCoins");
-            if (luck != null && d.lucky() > 0)
-                luck.getClass().getMethod("giveCoins", Player.class, int.class).invoke(luck, killer, d.lucky());
-        } catch (Throwable ignored) { }
-        try {
-            if (d.crateKeys() > 0 && !d.crate().isEmpty())
+        if (gotLucky) {
+            try {
+                org.bukkit.plugin.Plugin luck = Bukkit.getPluginManager().getPlugin("MAVOLuckyCoins");
+                if (luck != null)
+                    luck.getClass().getMethod("giveCoins", Player.class, int.class).invoke(luck, killer, d.lucky());
+            } catch (Throwable ignored) { }
+        }
+        if (gotCrate) {
+            try {
                 Class.forName("mavo.crates.Crates").getMethod("giveKey", Player.class, String.class, int.class)
                         .invoke(null, killer, d.crate(), d.crateKeys());
-        } catch (Throwable ignored) { }
+            } catch (Throwable ignored) { }
+        }
         ItemStack head = new ItemStack(d.head());
         SkullMeta sm = (SkullMeta) head.getItemMeta();
         sm.setDisplayName(cc(d.name()) + C + " Trophy");
@@ -280,8 +322,12 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         var left = killer.getInventory().addItem(head);
         for (ItemStack it : left.values()) killer.getWorld().dropItemNaturally(killer.getLocation(), it);
         killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.3f);
-        killer.sendMessage(C + "aYour prize: " + C + "e" + String.format("%,d", d.coins()) + " coins"
-                + (d.lucky() > 0 ? " + " + d.lucky() + "x Lucky Coin" : "") + " + " + d.head().name().toLowerCase(Locale.ROOT).replace('_', ' ') + "!");
+        StringBuilder prize = new StringBuilder(C + "e" + String.format("%,d", d.coins()) + " coins");
+        if (gotLucky) prize.append(C + "a + ").append(C + "e").append(d.lucky()).append("x Lucky Coin");
+        if (gotCrate) prize.append(C + "a + ").append(C + "e").append(d.crateKeys()).append("x ")
+                .append(prettyCrate(d.crate()));
+        killer.sendMessage(C + "aYour prize: " + prize + C + "a + " + C + "e"
+                + d.head().name().toLowerCase(Locale.ROOT).replace('_', ' ') + C + "a!");
     }
 
     @Override public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -292,7 +338,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         String sub = args.length == 0 ? "status" : args[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "status" -> {
-                sender.sendMessage(C + "5\u2694 Minibosses: " + C + "e" + alive.size() + "/" + maxAlive
+                sender.sendMessage(C + "5\u00bb Minibosses: " + C + "e" + alive.size() + "/" + maxAlive
                         + C + "5 alive, " + C + "e" + defs.size() + C + "5 types, every " + intervalMin
                         + " min. /hunt: " + (huntEnabled ? C + "aON" : C + "cOFF")
                         + C + "5, locations broadcast every " + broadcastInterval + " min.");
@@ -326,7 +372,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
 
     private BossDef getDef(org.bukkit.entity.Entity en) {
         String k = en.getPersistentDataContainer().get(bossType, PersistentDataType.STRING);
-        return defs.getOrDefault(k, new BossDef("&cBOSS", EntityType.WITCH, 100, 0, 0, "", 0, Material.PLAYER_HEAD));
+        return defs.getOrDefault(k, new BossDef("&cBOSS", EntityType.WITCH, 100, 0, 0, 0, "", 0, 0, Material.PLAYER_HEAD));
     }
 
     private static String cc(String s) { return ChatColor.translateAlternateColorCodes('&', s == null ? "" : s); }

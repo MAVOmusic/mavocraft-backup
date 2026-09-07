@@ -5,13 +5,13 @@ spawn-min-distance: 1000     # from spawn (-2579,-1685)
 spawn-max-distance: 5000
 spawn-surface: true          # only on the surface (y>50)
 
-# ---- /hunt (Hotfix 35) ----
+# ---- /hunt (Hotfix 35 + 42) ----
 # Players can't reach the wild from spawn except the Wild Portal - /hunt teleports
-# them out (next to a live boss if one is up, otherwise to random wilderness).
+# them out. With a boss alive you land ~200 blocks from it (not 1000 - too far to walk).
 hunt-enabled: true
 hunt-cooldown-seconds: 30
-hunt-boss-radius: 60         # land within this distance of a live boss
-hunt-bare-min: 500           # no boss alive: at least this far from world spawn
+hunt-boss-radius: 200         # land within this distance of a live boss
+hunt-bare-min: 500            # no boss alive: at least this far from world spawn
 hunt-bare-max: 2000
 
 # ---- Boss location chat broadcast (Hotfix 35) ----
@@ -19,6 +19,9 @@ broadcast-locations: true
 broadcast-interval-minutes: 5
 broadcast-radius: 100        # shown in chat as "around x, z (±100 blocks)"
 
+# ---- Boss difficulty + drop pool (Hotfix 42) ----
+# Spawn broadcasts announce the drop pool in % (lucky-chance / crate-chance) and
+# the boss HP before the callout. Chances are rolled independently on kill.
 bosses:
   swamp_witch_lord:
     name: "&5&lSWAMP WITCH LORD"
@@ -26,8 +29,10 @@ bosses:
     hp: 800
     coins: 50000
     lucky-coins: 3
+    lucky-chance: 60
     crate-key: "rare"
     crate-keys: 1
+    crate-chance: 50
     head: PLAYER_HEAD
   desert_pharaoh:
     name: "&6&lDESERT PHARAOH"
@@ -35,8 +40,10 @@ bosses:
     hp: 1200
     coins: 80000
     lucky-coins: 4
+    lucky-chance: 50
     crate-key: "rare"
     crate-keys: 2
+    crate-chance: 60
     head: ZOMBIE_HEAD
   ice_queen:
     name: "&b&lICE QUEEN"
@@ -44,8 +51,10 @@ bosses:
     hp: 1000
     coins: 70000
     lucky-coins: 3
+    lucky-chance: 55
     crate-key: "rare"
     crate-keys: 2
+    crate-chance: 60
     head: SKELETON_SKULL
   jungle_shaman:
     name: "&2&lJUNGLE SHAMAN"
@@ -53,8 +62,10 @@ bosses:
     hp: 1100
     coins: 75000
     lucky-coins: 4
+    lucky-chance: 50
     crate-key: "rare"
     crate-keys: 2
+    crate-chance: 65
     head: WITHER_SKELETON_SKULL
   nether_overlord:
     name: "&4&lNETHER OVERLORD"
@@ -62,6 +73,8 @@ bosses:
     hp: 1400
     coins: 100000
     lucky-coins: 5
+    lucky-chance: 65
     crate-key: "mythic"
     crate-keys: 1
+    crate-chance: 40
     head: PIGLIN_HEAD

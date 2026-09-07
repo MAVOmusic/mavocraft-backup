@@ -196,10 +196,30 @@ Gems also drop from mining ores: **1% tier I, 0.5% II, 0.25% III**, half chance 
 ## MAVOMiniboss 1.0.0
 | Command | Who | What it does |
 |---|---|---|
-| `/hunt` | Players | Teleport **outside spawn**; next to a live boss if one is up (30s cooldown) |
+| `/hunt` | Players | Teleport **outside spawn**; ~200 blocks from a live boss if one is up (30s cooldown) |
 | `/miniboss status` | Players | Bosses alive, types, interval, /hunt + broadcast state |
 | `/miniboss locate` | Players | Exact coords of live bosses |
 | `/miniboss broadcast` | Players | Force a boss location broadcast now (**spawns a boss first if none is alive**) |
 | `/miniboss reload` | OP (`mavominiboss.admin`) | Reload boss config |
 
 Boss locations are also **broadcast every 5 min** as "around x, z (±100 blocks)".
+On spawn, chat announces the **drop pool in %** (100% coins · lucky-chance % Lucky Coins ·
+crate-chance % Crate Key) plus the boss **HP**. Those chances are rolled independently on kill
+(config: `lucky-chance`, `crate-chance` per boss).
+
+## MAVOCrates 1.0.0
+| Command | Who | What it does |
+|---|---|---|
+| `/crate list` | Players | Crate types + key drop chances (farming/mining/fishing) |
+| `/crate info <name>` | Players | Crate key, cooldown, every drop with its exact % |
+| `/crate` (right-click a crate block) | Players | **GUI**: every drop + % chance, then an OPEN button (uses 1 key) |
+| `/crate set <name>` | OP (`mavocrate.admin`) | Turn the block you look at into that crate (adds a holo) |
+| `/crate unset` | OP | Remove the crate block you look at (holo cleaned) |
+| `/crate clear <name>` | OP | Remove all blocks of that crate type |
+| `/crate givekey <p> <name> [n]` | OP | Give crate keys |
+| `/crate resholo` | OP | Rebuild all crate holograms |
+| `/crate reload` | OP | Reload pools/key-drop chances |
+
+Every crate block has a floating hologram (name + "right-click to open"). Keys drop from
+**farming (mature crops), mining (ores) and fishing**: Common 1% / Rare 0.05% / Mythic
+0.01% per action. Open GUI shows each reward's exact % (pools sum to 100).

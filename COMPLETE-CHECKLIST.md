@@ -266,13 +266,14 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | Who | Test | Expected |
 |---|---|---|
 | Player | `/hunt` (no boss alive) | Teleported OUTSIDE spawn to wild (500-2000 blocks, surface, 30s cooldown) |
-| Player | `/hunt` (boss alive) | Teleported within 60 blocks of a live boss |
+| Player | `/hunt` (boss alive) | Teleported ~200 blocks from a live boss (not 1000) |
 | Player | wait | Boss location broadcast **every 5 min** (a boss is SPAWNED first if none is alive) |
 | OP | `/miniboss broadcast` | Spawns a boss if none is alive, then broadcasts its location |
 | OP | `/miniboss status` | 0/3 alive + 5 types + 45 min + /hunt ON + broadcast 5 min |
 | OP | `/miniboss locate` | Lists alive bosses (or "none") |
 | Player | wait / hunt | Broadcast "A … appeared in the wild"; boss spawns 1k–5k from spawn, surface |
-| Player | kill a boss | Coins + Lucky Coins + crate key + trophy head; broadcast |
+| Player | wait for spawn | Chat shows the **drop pool in %** (100% coins · lucky% · crate%) + boss HP before the callout |
+| Player | kill a boss | Coins (always) + Lucky Coins (if rolled) + crate key (if rolled) + trophy head; broadcast shows what dropped |
 | OP | edit config → `/miniboss reload` | Boss list reloads |
 
 ### D-18 ⭐ MAVOSpawners 1.0.0
