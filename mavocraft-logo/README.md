@@ -33,9 +33,14 @@ letter tops point east. A's are lime green (kick logo style).
 ## Install on the server
 
 1. Put BOTH zips (or the one you want) into `world/datapacks/` (next to the
-   MobFarm datapacks).
-2. `/datapack list` → `/datapack enable "file/MAVOcraft-95-datapack"` (and the
-   75 one if uploaded).
+   MobFarm datapacks). Packs in `world/datapacks/` are **auto-enabled on the
+   first boot** — you normally do NOT need the enable command at all.
+2. Verify: `/datapack list enabled` — both packs appear as
+   `file/MAVOcraft-95-datapack.zip` (note: the ID always keeps the `.zip`).
+   Only if a pack is listed as `available` (not enabled):
+   `/datapack enable "file/MAVOcraft-95-datapack.zip"` (and the 75 one
+   if uploaded). Without `.zip` the server answers
+   `Unknown data pack 'file/MAVOcraft-95-datapack'`.
 3. Run `/function mavocraft95:logo_test` (or 75) from **console**.
 4. `/function mavocraft95:logo_frame`, then `/function mavocraft95:logo_build`.
 
@@ -47,7 +52,7 @@ covered while you check (TAB plugin command).
 ## Files
 
 - `datapacks/MAVOcraft-75-datapack.zip` + `MAVOcraft-95-datapack.zip`
-- `datapacks-src/<name>/` — sources (pack.mcmeta pack_format 48 +
-  supported_formats 48..999, same convention as MobFarm)
+- `datapacks-src/<name>/` — sources (pack.mcmeta new-schema: `min_format` 82 / `max_format` 107,
+  no `pack_format`/`supported_formats` — required for 1.21.9+, current 26.2 = data format 107)
 - `v75/` + `v95/` — plain `fill-commands.txt` / `test-fill.txt` / `frame-fill.txt`
   fallbacks + preview PNG
