@@ -190,6 +190,12 @@ FISHING TOURNAMENT · MAIL · SEASONAL CALENDAR · AUCTION 1.1 · Sleep 07:00.
 🎯 Boss hunt stays alive: a boss spawns if none is up, then the 5-min callout.
 ```
 
+### 🎉 v25 — SHIFT-CLICK FIX (Hotfix 38)
+```
+🖱 Shift-clicking is back everywhere: chests, furnaces, barrels, inventories.
+🔧 MAVOCrafting's /craft menu no longer swallows shift-clicks server-wide.
+```
+
 ---
 
 ## 3. FEATURES — paste into `✨┃features` (one short block per feature thread)

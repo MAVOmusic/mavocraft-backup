@@ -23,6 +23,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -46,6 +47,7 @@ public final class Crafting extends JavaPlugin implements Listener {
     private final NamespacedKey recipeKey = new NamespacedKey("mavocrafting", "recipe");
     private final NamespacedKey navKey = new NamespacedKey("mavocrafting", "nav");
     private final Map<UUID, Long> lastCraft = new ConcurrentHashMap<>();
+    private final Map<UUID, Inventory> openGuis = new ConcurrentHashMap<>();   // HOTFIX 38: scope clicks to OUR /craft menu only
 
     private record Ingredient(Material mat, int amount) {}
     private record RecipeDef(String id, Material result, int count, List<Ingredient> ingredients) {}
@@ -261,7 +263,15 @@ public final class Crafting extends JavaPlugin implements Listener {
         if (page > 0) inv.setItem(45, nav(Material.ARROW, "prev", "Previous page"));
         inv.setItem(49, nav(Material.BOOK, "close", "Close"));
         if (page < pages - 1) inv.setItem(53, nav(Material.ARROW, "next", "Next page"));
+        openGuis.put(p.getUniqueId(), inv);   // HOTFIX 38: remember which inventory is ours
         p.openInventory(inv);
+    }
+
+    @EventHandler
+    public void onClose(InventoryCloseEvent e) {
+        if (!(e.getPlayer() instanceof Player p)) return;
+        Inventory gui = openGuis.get(p.getUniqueId());
+        if (gui != null && gui.equals(e.getInventory())) openGuis.remove(p.getUniqueId());
     }
 
     private ItemStack nav(Material mat, String nav, String name) {
@@ -281,7 +291,12 @@ public final class Crafting extends JavaPlugin implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player p)) return;
-        if (!p.getOpenInventory().getTopInventory().equals(e.getView().getTopInventory())) return;
+        // HOTFIX 38: only touch clicks while OUR /craft beginner menu is the open
+        // inventory. The old check was always true (same view), so the shift-click
+        // cancel below was killing shift transfers in EVERY container (chests,
+        // furnaces, barrels ...) server-wide. Chests/furnaces are untouched now.
+        Inventory gui = openGuis.get(p.getUniqueId());
+        if (gui == null || !gui.equals(e.getView().getTopInventory())) return;
         if (e.getClick().isShiftClick()) e.setCancelled(true);
         ItemStack it = e.getCurrentItem();
         if (it == null || !it.hasItemMeta()) return;
