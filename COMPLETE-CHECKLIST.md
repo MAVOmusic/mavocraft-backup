@@ -210,7 +210,7 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | Who | Test | Expected |
 |---|---|---|
 | Player | break bottom log with axe | Tree falls; **max 10 logs total** ("Tree felled - n logs (cap)" if capped) |
-| Player | chop a DARK FOREST giant tree | Still **max 10 logs** - no more 10-150 log hauls (exploit fixed) |
+| Player | chop a DARK FOREST / giant spruce | **Fells 10 logs** (capped) - tall trees are recognised as natural, not refused |
 | Player | chop a small tree (<10 logs) | Falls fully with its natural amount |
 | Player | chop a SHIPWRECK / VILLAGE HOUSE log wall | **NOT felled** - only the clicked log breaks ("not a grown tree") |
 | Player | chop a player-built log house | **NOT felled** - only the clicked log breaks |
@@ -223,7 +223,7 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 ### D-14 ⭐ MAVOCrafting 1.0.0 (HOTFIX 35)
 | Who | Test | Expected |
 |---|---|---|
-| Player | `/craft` (NON-op survival) | **Opens the beginner recipe list** - no permission error, NOT the vanilla grid |
+| Player | `/craft` (NON-op survival) | **Opens the beginner recipe list with ALL 50 recipes** (existing configs auto-upgraded on enable) |
 | Player | `/craft` | 50 basic recipes, 45 per page, click = consumes ingredients + crafts |
 | Player | `/craft stone_pickaxe` | Opens the page with Stone Pickaxe |
 | Player | `/crafting list` | 7 custom recipes listed |
@@ -235,8 +235,11 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | Who | Test | Expected |
 |---|---|---|
 | OP | `/maenchant gem <p> VEIN 2` | Gem given to player |
-| Player | `/gemshop` | GUI: 4 gem types × tiers I-IV; tier prices 1M/2M/4M/8M coins |
+| Player | `/gemshop` | GUI: 4 gem types × tiers I-X; prices 1M→512M; lore shows charges/cooldown |
 | Player | click a gem in `/gemshop` with enough coins | Gem bought, coins deducted (Vault) |
+| Player | use a gem | Charge consumed; L1 = 10 uses/10 min → L10 = unlimited (cooldown starts on first use, pool refreshes when it ends) |
+| Player | run out of charges | "recharging - M:SS left"; effect stops until cooldown ends |
+| Player | `/maenchant charges` | Shows uses left + cooldown per type |
 | Player | `/gemshop` with < price | "You need X coins" |
 | Player | mine ~50 ores | ~1% chance random gem (tier I), 0.5% II, 0.25% III... |
 | Player | hold gem in main hand + pickaxe in OFFHAND, right-click | Enchant applied, gem consumed |
@@ -262,7 +265,8 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 |---|---|---|
 | Player | `/hunt` (no boss alive) | Teleported OUTSIDE spawn to wild (500-2000 blocks, surface, 30s cooldown) |
 | Player | `/hunt` (boss alive) | Teleported within 60 blocks of a live boss |
-| Player | wait | Boss location broadcast in chat **every 5 min** "around x, z (±100 blocks)" |
+| Player | wait | Boss location broadcast **every 5 min** (a boss is SPAWNED first if none is alive) |
+| OP | `/miniboss broadcast` | Spawns a boss if none is alive, then broadcasts its location |
 | OP | `/miniboss status` | 0/3 alive + 5 types + 45 min + /hunt ON + broadcast 5 min |
 | OP | `/miniboss locate` | Lists alive bosses (or "none") |
 | Player | wait / hunt | Broadcast "A … appeared in the wild"; boss spawns 1k–5k from spawn, surface |

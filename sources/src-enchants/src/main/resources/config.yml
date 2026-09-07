@@ -1,24 +1,47 @@
 # MAVOEnchants - custom enchant gems
 # Apply: hold the GEM in main hand and the TOOL in offhand, right-click (uses the gem).
-# Up to 3 gems per tool, each type once, tier 1-4 (Hotfix 35: was 3).
+# Up to 3 gems per tool, each type once, tier 1-10 (Hotfix 37).
 max-gems-per-tool: 3
-max-tier: 4
+max-tier: 10
 vein-blocks-per-tier: 6
 lifesteal-hearts: 1
 xpboost-percent-per-tier: 50
 
-# ---- GEM SHOP (/gemshop) - Hotfix 35 ----
-# Buy gems with coins (Vault). Price per tier - 1m / 2m / 4m / 8m ...
+# ---- GEM CHARGES + COOLDOWN (Hotfix 37) ----
+# Every gem level has a charge pool. The cooldown starts with the FIRST use and
+# the pool refreshes when it ends (so L1: first use starts 10 min, you keep the
+# other 9 uses, and at 10 min you are back to 10).
+# uses: 0 + cooldown-minutes: 0 = UNLIMITED (level 10).
+gem-charges:
+  1:  { uses: 10, cooldown-minutes: 10 }
+  2:  { uses: 5,  cooldown-minutes: 9 }
+  3:  { uses: 10, cooldown-minutes: 8 }
+  4:  { uses: 15, cooldown-minutes: 7 }
+  5:  { uses: 20, cooldown-minutes: 6 }
+  6:  { uses: 25, cooldown-minutes: 5 }
+  7:  { uses: 30, cooldown-minutes: 4 }
+  8:  { uses: 35, cooldown-minutes: 3 }
+  9:  { uses: 50, cooldown-minutes: 2 }
+  10: { uses: 0,  cooldown-minutes: 0 }
+
+# ---- GEM SHOP (/gemshop) ----
+# Buy gems with coins (Vault). Price per tier - 1M, 2M, 4M, 8M ... (doubling).
 shop-enabled: true
 shop-prices:
   1: 1000000
   2: 2000000
   3: 4000000
   4: 8000000
+  5: 16000000
+  6: 32000000
+  7: 64000000
+  8: 128000000
+  9: 256000000
+  10: 512000000
 
-# ---- GEM DROPS FROM MINING - Hotfix 35 ----
+# ---- GEM DROPS FROM MINING ----
 # Mining ores can drop a RANDOM gem: 1% for tier 1, 0.5% tier 2, 0.25% tier 3,
 # then half the chance on every level after (configurable below).
 mine-gem-enabled: true
 mine-gem-base-chance: 1.0    # % chance for a tier-1 gem
-mine-gem-levels: 4           # how many tiers can drop (tier never exceeds max-tier)
+mine-gem-levels: 10          # how many tiers can drop (tier never exceeds max-tier)

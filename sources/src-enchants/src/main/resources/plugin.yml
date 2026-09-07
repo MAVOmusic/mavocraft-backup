@@ -7,10 +7,10 @@ author: MAVO
 softdepend: [Vault]
 commands:
   maenchant:
-    description: "Enchant gems - list, shop, or give (admin)"
-    usage: /maenchant [list|gem <player> <type> [tier]|shop]
+    description: "Enchant gems - list, charges, shop, or give (admin)"
+    usage: /maenchant [list|charges|gem <player> <type> [tier]|shop]
   gemshop:
-    description: "Buy enchant gems with coins (tier prices in config)"
+    description: "Buy enchant gems with coins (tier 1-10, charges/cooldown in config)"
     usage: /gemshop
 permissions:
   mavoenchants.admin:

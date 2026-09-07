@@ -162,7 +162,7 @@ Wild range: **5,000–400,000** blocks (1,000s comma format on the portal sign),
 
 Felling: axe + break bottom log → up to **10 logs** per tree (anti-exploit; shorter trees fall fully), 1 axe durability per log, **max 10 Lumberjack XP per tree**, crown leaves decay ~0.5s later (saplings/sticks).
 
-**Grown trees only** (Hotfix 36): felling only triggers when the log cluster is a natural tree — it must have a **leaf crown** and contain **no player-placed blocks**. Shipwrecks, village houses and player-built log houses just break like vanilla (message: "That's not a grown tree"). Plant saplings to grow real trees.
+**Grown trees only** (Hotfix 36): felling only triggers when the log cluster is a natural tree — it must have a **leaf crown** and contain **no player-placed blocks**. Shipwrecks, village houses and player-built log houses just break like vanilla (message: "That's not a grown tree"). Plant saplings to grow real trees. **Tall trees (dark forest / giant spruce) are recognised as natural and fell their capped 10 logs** (Hotfix 37 — the crown is always checked, even past the 10-log fell cap).
 
 ---
 
@@ -181,12 +181,15 @@ Custom recipes craft in a normal crafting table. `/workbench` + `/e craft` still
 ## MAVOEnchants 1.0.0
 | Command | Who | What it does |
 |---|---|---|
-| `/gemshop` | Players | Buy enchant gems with coins — tier I/II/III/IV = 1M / 2M / 4M / 8M (configurable) |
-| `/maenchant list` | Players | List the 4 gem enchants |
+| `/gemshop` | Players | Buy enchant gems with coins — tiers I–X = 1M / 2M / 4M / 8M / 16M / 32M / 64M / 128M / 256M / 512M |
+| `/maenchant list` | Players | List the 4 gem enchants + charge table |
 | `/maenchant shop` | Players | Opens the same gem shop |
-| `/maenchant gem <p> <type> [tier 1-4]` | OP (`mavoenchants.admin`) | Give a gem |
+| `/maenchant charges` | Players | Your uses left + cooldown per gem type |
+| `/maenchant gem <p> <type> [tier 1-10]` | OP (`mavoenchants.admin`) | Give a gem |
 
-Gems also drop from mining ores: **1% tier I, 0.5% II, 0.25% III**, half chance per level after. Apply: gem in main hand + tool in offhand, right-click (max 3 gems/tool).
+**Charges & cooldown per level** (config `gem-charges`): L1 10 uses/10 min · L2 5/9 · L3 10/8 · L4 15/7 · L5 20/6 · L6 25/5 · L7 30/4 · L8 35/3 · L9 50/2 · **L10 unlimited**. The cooldown starts with the FIRST use and the pool refreshes when it ends. State persists per player (`data.yml`).
+
+Gems also drop from mining ores: **1% tier I, 0.5% II, 0.25% III**, half chance per level after (10 levels). Apply: gem in main hand + tool in offhand, right-click (max 3 gems/tool).
 
 ---
 
@@ -196,7 +199,7 @@ Gems also drop from mining ores: **1% tier I, 0.5% II, 0.25% III**, half chance 
 | `/hunt` | Players | Teleport **outside spawn**; next to a live boss if one is up (30s cooldown) |
 | `/miniboss status` | Players | Bosses alive, types, interval, /hunt + broadcast state |
 | `/miniboss locate` | Players | Exact coords of live bosses |
-| `/miniboss broadcast` | Players | Force a boss location broadcast now |
+| `/miniboss broadcast` | Players | Force a boss location broadcast now (**spawns a boss first if none is alive**) |
 | `/miniboss reload` | OP (`mavominiboss.admin`) | Reload boss config |
 
 Boss locations are also **broadcast every 5 min** as "around x, z (±100 blocks)".

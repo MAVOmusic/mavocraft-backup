@@ -146,13 +146,13 @@ public final class Timber extends JavaPlugin implements Listener {
             if (isLeaves(cur.getType())) {
                 hasLeaves = true;
                 if (leavesFall && leaves.size() < leavesMax) leaves.add(loc);
-                else continue;                    // cap reached - stop walking this branch
+                // keep walking from leaves even past the decay cap so the crown stays discoverable
             } else if (!isLog(cur.getType())) {
                 continue;
-            } else if (logs.size() >= maxLogs) {
-                continue;                         // cap reached - do not fell more logs
             } else {
-                logs.add(loc);
+                // ALWAYS expand from logs even once the FELL cap is reached - otherwise the
+                // leaf crown of a tall tree is never seen and it gets called "unnatural".
+                if (logs.size() < maxLogs) logs.add(loc);
             }
             for (int dx = -1; dx <= 1; dx++)
                 for (int dz = -1; dz <= 1; dz++)

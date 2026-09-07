@@ -182,6 +182,14 @@ FISHING TOURNAMENT · MAIL · SEASONAL CALENDAR · AUCTION 1.1 · Sleep 07:00.
 🌱 Plant saplings to grow trees you can fell.
 ```
 
+### 🎉 v24 — FIX ROUND 2 (Hotfix 37)
+```
+🛠 /craft now really shows the 50 beginner recipes (old servers auto-upgrade).
+🌳 Tall trees (dark forest/giant spruce) fell their capped 10 logs again.
+💎 Gems 1-10: charge pools + cooldowns (L10 unlimited) - /gemshop to 512M.
+🎯 Boss hunt stays alive: a boss spawns if none is up, then the 5-min callout.
+```
+
 ---
 
 ## 3. FEATURES — paste into `✨┃features` (one short block per feature thread)
@@ -384,12 +392,14 @@ Post the short block below, then `📌 more in #thread-name`.
 ```
 
 ```
-💎 ENCHANT GEMS - /gemshop (1M/2M/4M/8M) or mine ores; Vein/Smelt/XP/Lifesteal.
+💎 ENCHANT GEMS - /gemshop (1M->512M) or mine ores; gems 1-10 with charges +
+cooldowns (L10 unlimited); Vein/Smelt/XP/Lifesteal.
 📌 more in #enchant-gems
 ```
 
 ```
-🎯 MINIBOSSES - rare biome bosses in the wild; /hunt + 5-min location broadcast.
+🎯 MINIBOSSES - rare biome bosses; /hunt + 5-min location broadcast (a boss
+spawns first if none is up).
 📌 more in #miniboss
 ```
 
@@ -434,7 +444,7 @@ One block per work item so they stand out. Sentences short. `✅ = done · 🔜 
 ✓ 15 Enchants (/gemshop) ✓ 16 Couples (/marry)
 ✓ 17 Miniboss (/hunt)    ✓ 18 Spawners (/spawner)
 ✓ 19 Duels (/duel)       ✓ 20 Guilds (/guild)
-⏳ D13-D15 + D17 tested - fixes shipped (Hotfix 35)
+✓ D13-D15 + D17 fixes shipped (Hotfix 35-37)
 ⏳ D16 - needs 2+ players for couple tests
 ⏳ D18-D20 - next test round
 ```

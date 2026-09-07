@@ -118,10 +118,12 @@ public final class MiniBoss extends JavaPlugin implements Listener {
     }
 
     private void tick() {
-        // boss location broadcast every N minutes
-        if (broadcastLocations && !alive.isEmpty()) {
+        // boss location broadcast every N minutes - make sure there IS a boss to hunt,
+        // so the 5-minute callout is never an empty message (HOTFIX 37).
+        if (broadcastLocations) {
             if (++bcCounter >= broadcastInterval) {
                 bcCounter = 0;
+                if (alive.isEmpty()) spawnOne();
                 broadcastLocations();
             }
         }
@@ -309,7 +311,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
                 }
             }
             case "broadcast" -> {
-                if (alive.isEmpty()) { sender.sendMessage(C + "7No miniboss alive right now."); return true; }
+                if (alive.isEmpty()) spawnOne();     // /miniboss broadcast summons a boss if none is up
                 broadcastLocations();
             }
             case "reload" -> {

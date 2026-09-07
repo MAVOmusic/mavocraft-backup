@@ -1,5 +1,9 @@
 package mavo.crafting;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,6 +18,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -47,14 +52,53 @@ public final class Crafting extends JavaPlugin implements Listener {
 
     @Override public void onEnable() {
         saveDefaultConfig();
-        getConfig().options().copyDefaults(true);
-        saveConfig();                    // adds the beginner-recipes section to an existing config
+        mergeMissingDefaults();          // HOTFIX 37: really writes beginner-recipes into existing configs
         loadRecipes();
         loadBeginner();
         getServer().getPluginManager().registerEvents(this, this);
         stealCraftCommand();
         getLogger().info("MAVOCrafting v" + getDescription().getVersion() + " enabled - "
                 + keys.size() + " custom recipe(s), " + beginners.size() + " beginner recipe(s).");
+    }
+
+    /** copyDefaults(true)+saveConfig() does NOT write missing nested sections into an
+     *  already-existing config.yml (that's why /craft showed an empty menu on live).
+     *  Merge every key that the bundled resource has but the disk file lacks. */
+    private void mergeMissingDefaults() {
+        File f = new File(getDataFolder(), "config.yml");
+        try {
+            YamlConfiguration disk = YamlConfiguration.loadConfiguration(f);
+            InputStream in = getResource("config.yml");
+            if (in == null) return;
+            YamlConfiguration def = YamlConfiguration.loadConfiguration(
+                    new InputStreamReader(in, StandardCharsets.UTF_8));
+            if (mergeMissing(disk, def, "")) {
+                try { disk.save(f); }
+                catch (Exception ex) { getLogger().warning("could not save config.yml: " + ex.getMessage()); }
+            }
+            reloadConfig();
+        } catch (Throwable t) {
+            getLogger().warning("config merge failed: " + t.getMessage());
+        }
+    }
+
+    private boolean mergeMissing(YamlConfiguration disk, YamlConfiguration def, String prefix) {
+        boolean changed = false;
+        for (String key : def.getKeys(false)) {
+            String path = prefix.isEmpty() ? key : prefix + "." + key;
+            Object dv = def.get(path);
+            if (dv instanceof ConfigurationSection) {
+                if (!disk.isConfigurationSection(path)) {
+                    disk.createSection(path);
+                    changed = true;
+                }
+                changed |= mergeMissing(disk, ((ConfigurationSection) dv), path);
+            } else if (disk.get(path) == null) {
+                disk.set(path, dv);
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     /** EssentialsX (or another plugin) owns /craft as the op-only workbench alias.
