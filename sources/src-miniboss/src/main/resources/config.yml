@@ -5,6 +5,20 @@ spawn-min-distance: 1000     # from spawn (-2579,-1685)
 spawn-max-distance: 5000
 spawn-surface: true          # only on the surface (y>50)
 
+# ---- /hunt (Hotfix 35) ----
+# Players can't reach the wild from spawn except the Wild Portal - /hunt teleports
+# them out (next to a live boss if one is up, otherwise to random wilderness).
+hunt-enabled: true
+hunt-cooldown-seconds: 30
+hunt-boss-radius: 60         # land within this distance of a live boss
+hunt-bare-min: 500           # no boss alive: at least this far from world spawn
+hunt-bare-max: 2000
+
+# ---- Boss location chat broadcast (Hotfix 35) ----
+broadcast-locations: true
+broadcast-interval-minutes: 5
+broadcast-radius: 100        # shown in chat as "around x, z (±100 blocks)"
+
 bosses:
   swamp_witch_lord:
     name: "&5&lSWAMP WITCH LORD"
@@ -30,24 +44,24 @@ bosses:
     hp: 1000
     coins: 70000
     lucky-coins: 3
-    crate-key: "mythic"
-    crate-keys: 1
+    crate-key: "rare"
+    crate-keys: 2
     head: SKELETON_SKULL
   jungle_shaman:
-    name: "&a&lJUNGLE SHAMAN"
+    name: "&2&lJUNGLE SHAMAN"
     entity: EVOKER
-    hp: 1500
-    coins: 100000
-    lucky-coins: 5
-    crate-key: "mythic"
+    hp: 1100
+    coins: 75000
+    lucky-coins: 4
+    crate-key: "rare"
     crate-keys: 2
     head: WITHER_SKELETON_SKULL
   nether_overlord:
     name: "&4&lNETHER OVERLORD"
     entity: PIGLIN_BRUTE
-    hp: 2000
-    coins: 150000
-    lucky-coins: 6
+    hp: 1400
+    coins: 100000
+    lucky-coins: 5
     crate-key: "mythic"
-    crate-keys: 3
+    crate-keys: 1
     head: PIGLIN_HEAD

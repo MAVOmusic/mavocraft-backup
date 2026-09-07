@@ -151,3 +151,50 @@ Wild range: **5,000–400,000** blocks (1,000s comma format on the portal sign),
 | `/casino` | Players | Open Louie's menu (also right-click the villager) |
 
 10 games; 10 coin attempts + 10 Lucky Coin attempts per 10 MC days; bets 100–5,000 coins or 1–10 Lucky Coins.
+
+---
+
+## MAVOTimber 1.0.0
+| Command | Who | What it does |
+|---|---|---|
+| `/timber status` | Players | Tree felling ON/OFF + max logs/tree + XP cap |
+| `/timber toggle` | Players | Turn felling off/on (persists per player) |
+
+Felling: axe + break bottom log → up to **10 logs** per tree (anti-exploit; shorter trees fall fully), 1 axe durability per log, **max 10 Lumberjack XP per tree**, crown leaves decay ~0.5s later (saplings/sticks).
+
+---
+
+## MAVOCrafting 1.0.0
+| Command | Who | What it does |
+|---|---|---|
+| `/craft` | **Everyone** | Open the **beginner recipe list** (50 basics, 45 per page). Click a result = uses ingredients from your inventory. Replaces the op-only Essentials workbench for this label. |
+| `/craft <recipe>` | Everyone | Jump to that recipe's page (e.g. `/craft stone_pickaxe`) |
+| `/crafting list` | Everyone | Lists the 7 custom recipes (name tag, saddle, lead, chainmail set) |
+| `/crafting reload` | OP (`mavocrafting.admin`) | Re-register custom + beginner recipes |
+
+Custom recipes craft in a normal crafting table. `/workbench` + `/e craft` still exist for ops.
+
+---
+
+## MAVOEnchants 1.0.0
+| Command | Who | What it does |
+|---|---|---|
+| `/gemshop` | Players | Buy enchant gems with coins — tier I/II/III/IV = 1M / 2M / 4M / 8M (configurable) |
+| `/maenchant list` | Players | List the 4 gem enchants |
+| `/maenchant shop` | Players | Opens the same gem shop |
+| `/maenchant gem <p> <type> [tier 1-4]` | OP (`mavoenchants.admin`) | Give a gem |
+
+Gems also drop from mining ores: **1% tier I, 0.5% II, 0.25% III**, half chance per level after. Apply: gem in main hand + tool in offhand, right-click (max 3 gems/tool).
+
+---
+
+## MAVOMiniboss 1.0.0
+| Command | Who | What it does |
+|---|---|---|
+| `/hunt` | Players | Teleport **outside spawn**; next to a live boss if one is up (30s cooldown) |
+| `/miniboss status` | Players | Bosses alive, types, interval, /hunt + broadcast state |
+| `/miniboss locate` | Players | Exact coords of live bosses |
+| `/miniboss broadcast` | Players | Force a boss location broadcast now |
+| `/miniboss reload` | OP (`mavominiboss.admin`) | Reload boss config |
+
+Boss locations are also **broadcast every 5 min** as "around x, z (±100 blocks)".

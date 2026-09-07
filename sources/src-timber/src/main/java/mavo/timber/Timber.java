@@ -6,14 +6,15 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -26,23 +27,29 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /** MAVOTimber 1.0.0 - tree felling (Discord CW#4 idea 13, inspired by UltimateTimber).
- *  Break the bottom log of a tree and every connected log (up to `max-blocks`) breaks
- *  at once; drops land at the trunk; one axe durability per log; feeds Lumberjack XP.
- *  Per-player /timber toggle (on by default). */
+ *  Break the bottom log of a tree and up to `max-logs` connected logs break at once
+ *  (default 10 - anti-exploit: no more 150-log dark forest hauls); drops land at the
+ *  trunk; one axe durability per extra log; Lumberjack XP capped at `xp-cap-per-tree`
+ *  per tree; the tree's leaves decay a tick later (drop saplings/sticks). */
 public final class Timber extends JavaPlugin implements Listener {
 
     private static final char C = '\u00a7';
 
     private boolean enabled = true;
-    private int maxBlocks = 200;
+    private int maxLogs = 10;
+    private int maxBlocks = 200;      // BFS walk safety cap (crown search, not the fell cap)
     private boolean axeDamage = true;
     private boolean dropAll = true;
+    private double xpPerLog = 0.5;
+    private double xpCap = 10.0;
+    private boolean leavesFall = true;
+    private int leavesMax = 750;
     private final Map<UUID, Boolean> toggles = new HashMap<>();
+    private final Random rnd = new Random();
     private File dataFile;
     private YamlConfiguration data;
 
@@ -55,16 +62,25 @@ public final class Timber extends JavaPlugin implements Listener {
 
     @Override public void onEnable() {
         saveDefaultConfig();
+        getConfig().options().copyDefaults(true);
+        saveConfig();                       // adds new keys (max-logs, xp caps, leaves) to an existing config
         dataFile = new File(getDataFolder(), "data.yml");
         data = YamlConfiguration.loadConfiguration(dataFile);
         enabled = getConfig().getBoolean("enabled", true);
-        maxBlocks = Math.max(10, getConfig().getInt("max-blocks", 200));
+        maxLogs = Math.max(2, getConfig().getInt("max-logs", 10));   // anti-exploit hard cap
+        maxBlocks = Math.max(maxLogs, getConfig().getInt("max-blocks", 200));
         axeDamage = getConfig().getBoolean("axe-damage", true);
         dropAll = getConfig().getBoolean("drop-all", true);
+        xpPerLog = Math.max(0.0, getConfig().getDouble("xp-per-log", 0.5));
+        xpCap = Math.max(0.0, getConfig().getDouble("xp-cap-per-tree", 10.0));
+        leavesFall = getConfig().getBoolean("leaves-fall", true);
+        leavesMax = Math.max(50, getConfig().getInt("leaves-max", 750));
         ConfigurationSection t = data.getConfigurationSection("toggles");
         if (t != null) for (String k : t.getKeys(false)) toggles.put(UUID.fromString(k), t.getBoolean(k));
         getServer().getPluginManager().registerEvents(this, this);
-        getLogger().info("MAVOTimber v" + getDescription().getVersion() + " enabled - max tree " + maxBlocks + " logs.");
+        getLogger().info("MAVOTimber v" + getDescription().getVersion() + " enabled - max "
+                + maxLogs + " logs/tree, XP cap " + xpCap + " per tree, leaves "
+                + (leavesFall ? "decay" : "stay") + ".");
     }
 
     @Override public void onDisable() { saveData(); }
@@ -73,22 +89,39 @@ public final class Timber extends JavaPlugin implements Listener {
     private boolean on(UUID u) { return toggles.getOrDefault(u, true); }
 
     private void tree(Block b, Player p) {
-        // collect connected logs BFS (ignores leaves but passes through them for the crown)
-        Set<Location> logs = new HashSet<>();
+        // Walk the tree: collect up to maxLogs logs (hard cap) + the connected crown
+        // leaves (so they can decay). maxBlocks is only a walk safety cap.
+        Set<Location> logs = new LinkedHashSet<>();
+        Set<Location> leaves = new LinkedHashSet<>();
+        Set<Location> visited = new HashSet<>();
         Deque<Block> queue = new ArrayDeque<>();
         queue.add(b);
-        while (!queue.isEmpty() && logs.size() < maxBlocks) {
+        int steps = 0;
+        while (!queue.isEmpty() && steps < Math.max(200, maxBlocks + leavesMax)) {
             Block cur = queue.poll();
-            if (!isLog(cur.getType()) || !logs.add(cur.getLocation())) continue;
+            Location loc = cur.getLocation();
+            if (!visited.add(loc)) continue;
+            steps++;
+            if (isLeaves(cur.getType())) {
+                if (leavesFall && leaves.size() < leavesMax) leaves.add(loc);
+                else continue;                    // cap reached - stop walking this branch
+            } else if (!isLog(cur.getType())) {
+                continue;
+            } else if (logs.size() >= maxLogs) {
+                continue;                         // cap reached - do not fell more logs
+            } else {
+                logs.add(loc);
+            }
             for (int dx = -1; dx <= 1; dx++)
                 for (int dz = -1; dz <= 1; dz++)
                     for (int dy = -1; dy <= 1; dy++) {
+                        if (dx == 0 && dy == 0 && dz == 0) continue;
                         Block nb = cur.getRelative(dx, dy, dz);
                         if (isLog(nb.getType()) || isLeaves(nb.getType())) queue.add(nb);
                     }
         }
         if (logs.size() <= 1) return; // single log = no tree
-        // break all remaining logs (the clicked one already broke via the event flow)
+        // break the other logs (the clicked one broke via the event flow)
         List<ItemStack> drops = new ArrayList<>();
         Location dropSpot = b.getLocation().clone().add(0.5, 0.4, 0.5);
         for (Location l : logs) {
@@ -108,14 +141,60 @@ public final class Timber extends JavaPlugin implements Listener {
                 axe.setItemMeta(d);
             }
         }
-        // Lumberjack XP (best-effort reflection into MAVOProfessions)
-        try {
-            org.bukkit.plugin.Plugin prof = Bukkit.getPluginManager().getPlugin("MAVOProfessions");
-            if (prof != null) prof.getClass().getMethod("externalXp", Player.class, String.class, double.class)
-                    .invoke(prof, p, "lumberjack", logs.size() * 0.5);
-        } catch (Throwable ignored) { }
+        // Lumberjack XP (best-effort reflection into MAVOProfessions) - capped per tree
+        if (xpCap > 0 && xpPerLog > 0 && logs.size() > 1) {
+            try {
+                org.bukkit.plugin.Plugin prof = Bukkit.getPluginManager().getPlugin("MAVOProfessions");
+                if (prof != null) prof.getClass().getMethod("externalXp", Player.class, String.class, double.class)
+                        .invoke(prof, p, "lumberjack", Math.min(xpCap, (logs.size() - 1) * xpPerLog));
+            } catch (Throwable ignored) { }
+        }
+        // leaves decay shortly after the trunk falls (drops saplings/sticks)
+        if (leavesFall && !leaves.isEmpty()) decay(leaves, b.getWorld());
         p.playSound(p.getLocation(), org.bukkit.Sound.BLOCK_WOOD_BREAK, 1f, 1.1f);
-        p.sendMessage(C + "aTree felled - " + C + "e" + (logs.size() - 1) + C + "a logs.");
+        p.sendMessage(C + "aTree felled - " + C + "e" + (logs.size() - 1) + C + "a logs"
+                + (logs.size() >= maxLogs ? C + "8 (tree max " + maxLogs + ")" : "") + ".");
+    }
+
+    /** Remove crown leaves a moment after the fall, dropping sticks/saplings. */
+    private void decay(Set<Location> leaves, org.bukkit.World world) {
+        List<Location> list = new ArrayList<>(leaves);
+        final int[] i = {0};
+        final org.bukkit.scheduler.BukkitTask[] task = new org.bukkit.scheduler.BukkitTask[1];
+        task[0] = Bukkit.getScheduler().runTaskTimer(this, () -> {
+            int done = 0;
+            while (i[0] < list.size() && done < 60) {
+                Location l = list.get(i[0]++);
+                if (l.getBlock().getType() != Material.AIR && isLeaves(l.getBlock().getType())) {
+                    Material mat = l.getBlock().getType();
+                    Location drop = l.clone().add(0.5, 0.3, 0.5);
+                    if (rnd.nextDouble() < 0.05) {
+                        Material sap = saplingOf(mat);
+                        if (sap != null) world.dropItemNaturally(drop, new ItemStack(sap));
+                    } else if (rnd.nextDouble() < 0.02) {
+                        world.dropItemNaturally(drop, new ItemStack(Material.STICK));
+                    }
+                    l.getBlock().setType(Material.AIR, false);
+                }
+                done++;
+            }
+            if (i[0] >= list.size() && task[0] != null) task[0].cancel();
+        }, 10L, 1L);
+    }
+
+    private static Material saplingOf(Material leaves) {
+        return switch (leaves) {
+            case OAK_LEAVES -> Material.OAK_SAPLING;
+            case SPRUCE_LEAVES -> Material.SPRUCE_SAPLING;
+            case BIRCH_LEAVES -> Material.BIRCH_SAPLING;
+            case JUNGLE_LEAVES -> Material.JUNGLE_SAPLING;
+            case ACACIA_LEAVES -> Material.ACACIA_SAPLING;
+            case DARK_OAK_LEAVES -> Material.DARK_OAK_SAPLING;
+            case CHERRY_LEAVES -> Material.CHERRY_SAPLING;
+            case MANGROVE_LEAVES -> Material.MANGROVE_PROPAGULE;
+            case AZALEA_LEAVES, FLOWERING_AZALEA_LEAVES -> null;
+            default -> null;
+        };
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -135,7 +214,8 @@ public final class Timber extends JavaPlugin implements Listener {
         if (!(sender instanceof Player p)) { sender.sendMessage("Player command only."); return true; }
         String sub = args.length == 0 ? "status" : args[0].toLowerCase(Locale.ROOT);
         switch (sub) {
-            case "status" -> p.sendMessage(C + "7Tree felling: " + (on(p.getUniqueId()) ? C + "aON" : C + "cOFF"));
+            case "status" -> p.sendMessage(C + "7Tree felling: " + (on(p.getUniqueId()) ? C + "aON" : C + "cOFF")
+                    + C + "8 | max " + maxLogs + " logs/tree | XP cap " + xpCap + " per tree.");
             case "toggle" -> {
                 boolean now = !on(p.getUniqueId());
                 toggles.put(p.getUniqueId(), now);

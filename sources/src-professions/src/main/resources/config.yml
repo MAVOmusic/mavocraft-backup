@@ -54,8 +54,10 @@ professions:
     action: "logs chopped"
     icon: OAK_LOG
     # REBALANCE 3.14: ~4-5x slower early. 12h play ~Lv8-12 not 30+.
-    xp-base: 350
-    xp-growth: 1.035
+    # HOTFIX 35 (timber exploit fix): harder again - 600 base / 1.04 growth
+    # (~170 trees per early level with the 10-log tree cap).
+    xp-base: 600
+    xp-growth: 1.04
     max-level: 999
     coin-bonus: 0.25
     enchant-pool: [efficiency, unbreaking, fortune, silk_touch]

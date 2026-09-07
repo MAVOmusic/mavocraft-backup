@@ -31,12 +31,13 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 
 /** MAVOMiniboss 1.0.0 - ambient biome bosses (Discord CW#4 idea 17, inspired by MythicMobs/Elitemobs).
  *  Every 45 min a random boss spawns in the wild (surface, 1-5k from spawn, up to 3 alive).
  *  Bosses are tagged, hit harder (config HP), and drop coins + Lucky Coins + crate keys +
- *  a trophy head to the killer (Vault / reflection into MAVOLuckyCoins + MAVOCrates). */
+ *  a trophy head to the killer (Vault / reflection into MAVOLuckyCoins + MAVOCrates).
+ *  Hotfix 35: /hunt teleports you out of spawn (next to a live boss if one is up - 30s
+ *  cooldown) and boss locations are broadcast to chat every 5 minutes. */
 public final class MiniBoss extends JavaPlugin implements Listener {
 
     private static final char C = '\u00a7';
@@ -46,6 +47,15 @@ public final class MiniBoss extends JavaPlugin implements Listener {
     private Economy econ;
     private int intervalMin = 45, maxAlive = 3, spawnMin = 1000, spawnMax = 5000;
     private boolean surfaceOnly = true;
+    private boolean huntEnabled = true;
+    private int huntCooldown = 30;              // seconds
+    private int huntBareMin = 500, huntBareMax = 2000;
+    private int huntBossRadius = 60;
+    private boolean broadcastLocations = true;
+    private int broadcastInterval = 5;          // minutes
+    private int broadcastRadius = 100;
+    private int bcCounter = 0;                  // minutes since last location broadcast
+    private final Map<UUID, Long> huntCooldowns = new HashMap<>();
     private final Map<String, BossDef> defs = new HashMap<>();
     private final Map<UUID, String> alive = new HashMap<>();
     private final Random rnd = new Random();
@@ -55,14 +65,17 @@ public final class MiniBoss extends JavaPlugin implements Listener {
 
     @Override public void onEnable() {
         saveDefaultConfig();
+        getConfig().options().copyDefaults(true);
+        saveConfig();                          // adds /hunt + broadcast keys to existing configs
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp != null) econ = rsp.getProvider();
         load();
         Bukkit.getPluginManager().registerEvents(this, this);
-        Bukkit.getScheduler().runTaskTimer(this, this::tick, 200L, 1200L);
+        Bukkit.getScheduler().runTaskTimer(this, this::tick, 200L, 1200L);   // once a minute
         tick();
         getLogger().info("MAVOMiniboss v" + getDescription().getVersion() + " enabled - " + defs.size()
-                + " boss type(s).");
+                + " boss type(s), /hunt " + (huntEnabled ? "on" : "off") + ", location broadcast every "
+                + broadcastInterval + " min.");
     }
 
     @Override public void onDisable() {
@@ -80,6 +93,14 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         spawnMin = Math.max(100, getConfig().getInt("spawn-min-distance", 1000));
         spawnMax = Math.max(spawnMin, getConfig().getInt("spawn-max-distance", 5000));
         surfaceOnly = getConfig().getBoolean("spawn-surface", true);
+        huntEnabled = getConfig().getBoolean("hunt-enabled", true);
+        huntCooldown = Math.max(0, getConfig().getInt("hunt-cooldown-seconds", 30));
+        huntBareMin = Math.max(100, getConfig().getInt("hunt-bare-min", 500));
+        huntBareMax = Math.max(huntBareMin, getConfig().getInt("hunt-bare-max", 2000));
+        huntBossRadius = Math.max(10, getConfig().getInt("hunt-boss-radius", 60));
+        broadcastLocations = getConfig().getBoolean("broadcast-locations", true);
+        broadcastInterval = Math.max(1, getConfig().getInt("broadcast-interval-minutes", 5));
+        broadcastRadius = Math.max(10, getConfig().getInt("broadcast-radius", 100));
         ConfigurationSection cs = getConfig().getConfigurationSection("bosses");
         if (cs == null) return;
         for (String id : cs.getKeys(false)) {
@@ -97,9 +118,27 @@ public final class MiniBoss extends JavaPlugin implements Listener {
     }
 
     private void tick() {
+        // boss location broadcast every N minutes
+        if (broadcastLocations && !alive.isEmpty()) {
+            if (++bcCounter >= broadcastInterval) {
+                bcCounter = 0;
+                broadcastLocations();
+            }
+        }
         if (alive.size() >= maxAlive) return;
         if (rnd.nextInt(intervalMin) != 0) return; // ~once per interval
         spawnOne();
+    }
+
+    private void broadcastLocations() {
+        for (UUID id : alive.keySet()) {
+            var en = Bukkit.getEntity(id);
+            if (en == null) continue;
+            Location l = en.getLocation();
+            Bukkit.broadcastMessage(C + "5\u2694 " + cc(getDef(en).name()) + C + "8 is around "
+                    + C + "e" + l.getBlockX() + " , " + l.getBlockZ()
+                    + C + "8 (\u00b1" + broadcastRadius + " blocks) - " + C + "b/hunt" + C + "8 to go hunting!");
+        }
     }
 
     private void spawnOne() {
@@ -124,7 +163,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         e.getPersistentDataContainer().set(bossType, PersistentDataType.STRING, key);
         alive.put(e.getUniqueId(), key);
         Bukkit.broadcastMessage(C + "5\u2694 A " + cc(d.name()) + C + "5 has appeared in the wild ("
-                + C + "e" + (int) l.getX() + ", " + (int) l.getZ() + C + "5)! Go hunt it!");
+                + C + "e" + (int) l.getX() + ", " + (int) l.getZ() + C + "5)! Go hunt it - /hunt!");
     }
 
     private Location findSpot(World w) {
@@ -139,6 +178,69 @@ public final class MiniBoss extends JavaPlugin implements Listener {
             return new Location(w, x + 0.5, y + 1, z + 0.5);
         }
         return null;
+    }
+
+    // ---------------- /hunt ----------------
+    private boolean hunt(Player p) {
+        if (!huntEnabled) { p.sendMessage(C + "c/hunt is disabled."); return true; }
+        Long last = huntCooldowns.get(p.getUniqueId());
+        long now = System.currentTimeMillis();
+        if (last != null && now - last < huntCooldown * 1000L && huntCooldown > 0) {
+            long left = (huntCooldown * 1000L - (now - last)) / 1000L + 1;
+            p.sendMessage(C + "cWait " + left + "s - hunt cooldown (" + huntCooldown + "s).");
+            return true;
+        }
+        World w = Bukkit.getWorlds().get(0);
+        Location dest = null;
+        // a boss is alive -> teleport near it
+        List<UUID> live = new ArrayList<>(alive.keySet());
+        if (!live.isEmpty()) {
+            UUID id = live.get(rnd.nextInt(live.size()));
+            var en = Bukkit.getEntity(id);
+            if (en != null) {
+                Location bl = en.getLocation();
+                for (int tries = 0; tries < 30 && dest == null; tries++) {
+                    double ang = rnd.nextDouble() * Math.PI * 2;
+                    int dist = 8 + rnd.nextInt(Math.max(1, huntBossRadius - 8));
+                    int x = bl.getBlockX() + (int) (Math.cos(ang) * dist);
+                    int z = bl.getBlockZ() + (int) (Math.sin(ang) * dist);
+                    int y = w.getHighestBlockYAt(x, z);
+                    if (y < 50) continue;
+                    if (w.getBlockAt(x, y, z).getType() == Material.WATER
+                            || w.getBlockAt(x, y, z).getType() == Material.LAVA) continue;
+                    dest = new Location(w, x + 0.5, y + 1, z + 0.5);
+                }
+                if (dest != null) {
+                    huntCooldowns.put(p.getUniqueId(), now);
+                    p.teleport(dest);
+                    p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
+                    p.sendMessage(C + "5\u2694 Teleported near " + cc(getDef(en).name())
+                            + C + "5 at " + C + "e" + bl.getBlockX() + " , " + bl.getBlockZ() + C + "5. Good hunting!");
+                    return true;
+                }
+            }
+        }
+        // no boss -> just get out of spawn into the wild
+        int sx = w.getSpawnLocation().getBlockX(), sz = w.getSpawnLocation().getBlockZ();
+        for (int tries = 0; tries < 50 && dest == null; tries++) {
+            double ang = rnd.nextDouble() * Math.PI * 2;
+            int dist = huntBareMin + rnd.nextInt(Math.max(1, huntBareMax - huntBareMin));
+            int x = sx + (int) (Math.cos(ang) * dist);
+            int z = sz + (int) (Math.sin(ang) * dist);
+            int y = w.getHighestBlockYAt(x, z);
+            if (y < 50) continue;
+            if (w.getBlockAt(x, y, z).getType() == Material.WATER
+                    || w.getBlockAt(x, y, z).getType() == Material.LAVA) continue;
+            dest = new Location(w, x + 0.5, y + 1, z + 0.5);
+        }
+        if (dest == null) { p.sendMessage(C + "cNo safe spot found - try again."); return true; }
+        huntCooldowns.put(p.getUniqueId(), now);
+        p.teleport(dest);
+        p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
+        p.sendMessage(C + "5\u2694 You are outside spawn at " + C + "e"
+                + dest.getBlockX() + " , " + dest.getBlockZ()
+                + C + "5 - /miniboss locate shows any live bosses.");
+        return true;
     }
 
     @EventHandler
@@ -181,11 +283,17 @@ public final class MiniBoss extends JavaPlugin implements Listener {
     }
 
     @Override public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (cmd.getName().equalsIgnoreCase("hunt")) {
+            if (!(sender instanceof Player p)) { sender.sendMessage("Player command only."); return true; }
+            return hunt(p);
+        }
         String sub = args.length == 0 ? "status" : args[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "status" -> {
                 sender.sendMessage(C + "5\u2694 Minibosses: " + C + "e" + alive.size() + "/" + maxAlive
-                        + C + "5 alive, " + C + "e" + defs.size() + C + "5 types, every " + intervalMin + " min.");
+                        + C + "5 alive, " + C + "e" + defs.size() + C + "5 types, every " + intervalMin
+                        + " min. /hunt: " + (huntEnabled ? C + "aON" : C + "cOFF")
+                        + C + "5, locations broadcast every " + broadcastInterval + " min.");
                 for (UUID id : alive.keySet()) {
                     var en = Bukkit.getEntity(id);
                     if (en != null) sender.sendMessage(C + "7 - " + cc(getDef(en).name()) + C + "7 at "
@@ -200,12 +308,16 @@ public final class MiniBoss extends JavaPlugin implements Listener {
                             + en.getLocation().getBlockX() + " " + en.getLocation().getBlockZ());
                 }
             }
+            case "broadcast" -> {
+                if (alive.isEmpty()) { sender.sendMessage(C + "7No miniboss alive right now."); return true; }
+                broadcastLocations();
+            }
             case "reload" -> {
                 if (!sender.hasPermission("mavominiboss.admin")) { sender.sendMessage("OP only."); return true; }
                 reloadConfig(); load();
                 sender.sendMessage(C + "aReloaded " + defs.size() + " boss types.");
             }
-            default -> sender.sendMessage(C + "7/miniboss status | locate (OP: reload)");
+            default -> sender.sendMessage(C + "7/hunt | /miniboss status | locate | broadcast (OP: reload)");
         }
         return true;
     }

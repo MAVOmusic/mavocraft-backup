@@ -2,14 +2,17 @@ name: MAVOEnchants
 version: 1.0.0
 main: mavo.enchants.Enchants
 api-version: '1.21'
-description: Custom enchant gems - Vein Miner, Auto Smelt, XP Boost, Lifesteal (MAVOcraft)
+description: "Enchants: list / inspect; admin: gem give; gems buyable in /gemshop"
 author: MAVO
+softdepend: [Vault]
 commands:
   maenchant:
-    description: "Enchants: list / inspect; admin: gem give"
-    usage: /maenchant [list|inspect] | /maenchant gem <player> <type> [tier]
-    aliases: [customenchant]
+    description: "Enchant gems - list, shop, or give (admin)"
+    usage: /maenchant [list|gem <player> <type> [tier]|shop]
+  gemshop:
+    description: "Buy enchant gems with coins (tier prices in config)"
+    usage: /gemshop
 permissions:
   mavoenchants.admin:
-    description: Admin gem control (gem/reload)
+    description: Admin gem control (give gems)
     default: op

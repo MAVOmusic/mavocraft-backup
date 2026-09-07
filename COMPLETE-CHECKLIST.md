@@ -206,36 +206,41 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | OP | blast a locked chest (TNT) | Explosion does NOT break locked blocks (`protect-from-explosion`) |
 | Player | `/lock` more than 50 | "Lock limit reached" |
 
-### D-13 ⭐ MAVOTimber 1.0.0
+### D-13 ⭐ MAVOTimber 1.0.0 (HOTFIX 35)
 | Who | Test | Expected |
 |---|---|---|
-| Player | break bottom log with axe | Whole tree falls; message "Tree felled - n logs." |
+| Player | break bottom log with axe | Tree falls; **max 10 logs total** ("Tree felled - n logs (cap)" if capped) |
+| Player | chop a DARK FOREST giant tree | Still **max 10 logs** - no more 10-150 log hauls (exploit fixed) |
+| Player | chop a small tree (<10 logs) | Falls fully with its natural amount |
+| Player | watch after the fall | **Leaves decay** ~0.5s later, drop sticks/saplings |
+| Player | `/timber status` | ON/OFF + "max 10 logs/tree, XP cap 10 per tree" |
 | Player | break with hand | No tree fall |
 | Player | `/timber toggle` then break | Felling off; toggle persists after relog |
-| Player | `/timber status` | ON/OFF + config |
-| Player | tree >200 logs | Stops at cap (safe) |
 
-### D-14 ⭐ MAVOCrafting 1.0.0
+### D-14 ⭐ MAVOCrafting 1.0.0 (HOTFIX 35)
 | Who | Test | Expected |
 |---|---|---|
-| Player | craft Name Tag (paper + 2 string, vertical) | Name Tag crafted |
-| Player | craft Saddle (leather+iron pattern) | Saddle crafted |
-| Player | craft Lead (string + slime ball) | Lead crafted |
-| Player | craft Chainmail helmet/chest/legs/boots | Chainmail set craftable |
-| Player | `/crafting list` | 7 recipes listed |
+| Player | `/craft` (NON-op survival) | **Opens the beginner recipe list** - no permission error, NOT the vanilla grid |
+| Player | `/craft` | 50 basic recipes, 45 per page, click = consumes ingredients + crafts |
+| Player | `/craft stone_pickaxe` | Opens the page with Stone Pickaxe |
+| Player | `/crafting list` | 7 custom recipes listed |
+| Player | craft Name Tag / Saddle / Lead / Chainmail (normal table) | Custom recipes still work |
 | OP | `/crafting reload` | Reloads; recipes still craftable |
+| OP | `/workbench` (or `/e craft`) | Essentials workbench still works for ops |
 
-### D-15 ⭐ MAVOEnchants 1.0.0
+### D-15 ⭐ MAVOEnchants 1.0.0 (HOTFIX 35)
 | Who | Test | Expected |
 |---|---|---|
 | OP | `/maenchant gem <p> VEIN 2` | Gem given to player |
+| Player | `/gemshop` | GUI: 4 gem types × tiers I-IV; tier prices 1M/2M/4M/8M coins |
+| Player | click a gem in `/gemshop` with enough coins | Gem bought, coins deducted (Vault) |
+| Player | `/gemshop` with < price | "You need X coins" |
+| Player | mine ~50 ores | ~1% chance random gem (tier I), 0.5% II, 0.25% III... |
 | Player | hold gem in main hand + pickaxe in OFFHAND, right-click | Enchant applied, gem consumed |
-| Player | break an ore vein with VEIN pickaxe | Whole vein breaks (tier 2 = up to 12) |
+| Player | break an ore vein with VEIN pickaxe | Whole vein breaks |
 | Player | mine ores with SMELT pick | Ores drop as ingots |
-| Player | kill mobs with XP pick | Bonus XP orbs |
-| Player | kill with LIFESTEAL sword | Heal +"+n hearts" message |
+| Player | kill mobs with XP pick / LIFESTEAL sword | Bonus XP orbs / heal message |
 | Player | apply 4th gem | "Tool gem limit reached" |
-| Player | `/maenchant list` | Enchant list shows |
 
 ### D-16 ⭐ MAVOCouples 1.0.0
 | Who | Test | Expected |
@@ -249,10 +254,13 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | Player | `/divorce` | Un-married; home cleared |
 | Player | propose a married player | "They are already married" |
 
-### D-17 ⭐ MAVOMiniboss 1.0.0
+### D-17 ⭐ MAVOMiniboss 1.0.0 (HOTFIX 35)
 | Who | Test | Expected |
 |---|---|---|
-| OP | `/miniboss status` | 0/3 alive + 5 types + 45 min info |
+| Player | `/hunt` (no boss alive) | Teleported OUTSIDE spawn to wild (500-2000 blocks, surface, 30s cooldown) |
+| Player | `/hunt` (boss alive) | Teleported within 60 blocks of a live boss |
+| Player | wait | Boss location broadcast in chat **every 5 min** "around x, z (±100 blocks)" |
+| OP | `/miniboss status` | 0/3 alive + 5 types + 45 min + /hunt ON + broadcast 5 min |
 | OP | `/miniboss locate` | Lists alive bosses (or "none") |
 | Player | wait / hunt | Broadcast "A … appeared in the wild"; boss spawns 1k–5k from spawn, surface |
 | Player | kill a boss | Coins + Lucky Coins + crate key + trophy head; broadcast |
