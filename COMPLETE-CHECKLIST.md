@@ -206,11 +206,11 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | OP | blast a locked chest (TNT) | Explosion does NOT break locked blocks (`protect-from-explosion`) |
 | Player | `/lock` more than 50 | "Lock limit reached" |
 
-### D-13 ⭐ MAVOTimber 1.0.0 (HOTFIX 35)
+### D-13 ⭐ MAVOTimber 1.0.0 (HOTFIX 35 + 39)
 | Who | Test | Expected |
 |---|---|---|
-| Player | break bottom log with axe | Tree falls; **max 10 logs total** ("Tree felled - n logs (cap)" if capped) |
-| Player | chop a DARK FOREST / giant spruce | **Fells 10 logs** (capped) - tall trees are recognised as natural, not refused |
+| Player | break bottom log with axe | Whole tree falls; **max 10 logs collected** ("whole tree - 10 collected, cap 10/tree" if capped) |
+| Player | chop a DARK FOREST tall dark oak / giant spruce (>10 logs) | **WHOLE tree falls** - no floating trunk stub; **10 logs collected** (capped) |
 | Player | chop a small tree (<10 logs) | Falls fully with its natural amount |
 | Player | chop a SHIPWRECK / VILLAGE HOUSE log wall | **NOT felled** - only the clicked log breaks ("not a grown tree") |
 | Player | chop a player-built log house | **NOT felled** - only the clicked log breaks |

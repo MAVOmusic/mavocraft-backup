@@ -32,10 +32,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /** MAVOTimber 1.0.0 - tree felling (Discord CW#4 idea 13, inspired by UltimateTimber).
- *  Break the bottom log of a GROWN tree and up to `max-logs` connected logs break at
- *  once (default 10 - anti-exploit: no more 150-log dark forest hauls); drops land at
- *  the trunk; one axe durability per extra log; Lumberjack XP capped at
- *  `xp-cap-per-tree` per tree; the tree's leaves decay a tick later.
+ *  Break the bottom log of a GROWN tree and the WHOLE connected tree falls at once
+ *  (HOTFIX 39: no floating trunk stubs). The harvest is capped at `max-logs` (default
+ *  10 - anti-exploit: no more 150-log dark forest hauls); drops land at the trunk;
+ *  one axe durability per collected log; Lumberjack XP capped at `xp-cap-per-tree`;
+ *  the tree's leaves decay a tick later.
  *  NATURAL-TREES-ONLY (HOTFIX 36): a log cluster is only felled when its connected
  *  component contains LEAVES (a real tree crown) and NO player-placed logs/leaves.
  *  Shipwrecks, village houses and player log builds have no natural crown and are
@@ -127,8 +128,10 @@ public final class Timber extends JavaPlugin implements Listener {
     }
 
     private void tree(Block b, Player p) {
-        // Walk the component: collect up to maxLogs logs (hard cap) + the connected
-        // crown leaves (so they can decay). maxBlocks is only a walk safety cap.
+        // Walk the component: collect EVERY log of the tree (whole trunk must fall,
+        // nothing may stay floating) + the connected crown leaves (so they decay).
+        // maxBlocks / leaves-max are only walk safety caps; the anti-exploit harvest
+        // cap of max-logs is applied to the DROPS below.
         Set<Location> logs = new LinkedHashSet<>();
         Set<Location> leaves = new LinkedHashSet<>();
         Set<Location> visited = new HashSet<>();
@@ -150,9 +153,10 @@ public final class Timber extends JavaPlugin implements Listener {
             } else if (!isLog(cur.getType())) {
                 continue;
             } else {
-                // ALWAYS expand from logs even once the FELL cap is reached - otherwise the
-                // leaf crown of a tall tree is never seen and it gets called "unnatural".
-                if (logs.size() < maxLogs) logs.add(loc);
+                // HOTFIX 39: collect EVERY log - the whole tree falls. The old code
+                // stopped collecting at max-logs, so tall spruce/dark-oak trunks were
+                // chopped into a floating stub (only ~10 logs near the base broke).
+                logs.add(loc);
             }
             for (int dx = -1; dx <= 1; dx++)
                 for (int dz = -1; dz <= 1; dz++)
@@ -171,40 +175,46 @@ public final class Timber extends JavaPlugin implements Listener {
             else p.sendMessage(C + "8Timber skips player-built wood - plant saplings for real trees.");
             return;
         }
-        // break the other logs (the clicked one broke via the event flow)
+        // break the other logs (the clicked one broke via the event flow) - the WHOLE
+        // tree is removed, but only max-logs of harvest drops are given (the clicked
+        // log's drop comes from vanilla, so collect max-logs-1 of the rest)
+        int extra = Math.max(0, logs.size() - 1);
+        int collect = Math.min(extra, Math.max(0, maxLogs - 1));
         List<ItemStack> drops = new ArrayList<>();
         Location dropSpot = b.getLocation().clone().add(0.5, 0.4, 0.5);
+        int given = 0;
         for (Location l : logs) {
             Block log = l.getBlock();
             if (log.equals(b)) continue;
-            drops.addAll(log.getDrops());
+            for (ItemStack it : log.getDrops())
+                if (given < collect) { drops.add(it); given++; }
             if (placed.remove(key(log))) placedChanged();
             log.setType(Material.AIR, false);
         }
         if (dropAll || logs.size() > 2) {
             for (ItemStack it : drops) b.getWorld().dropItemNaturally(dropSpot, it);
         }
-        // durability: one point per extra log
-        if (axeDamage) {
+        // durability: one point per collected log (capped with the harvest)
+        if (axeDamage && collect > 0) {
             ItemStack axe = p.getInventory().getItemInMainHand();
             if (isAxe(axe.getType()) && axe.getItemMeta() instanceof org.bukkit.inventory.meta.Damageable d) {
-                d.setDamage(d.getDamage() + Math.max(0, logs.size() - 1));
+                d.setDamage(d.getDamage() + collect);
                 axe.setItemMeta(d);
             }
         }
         // Lumberjack XP (best-effort reflection into MAVOProfessions) - capped per tree
-        if (xpCap > 0 && xpPerLog > 0 && logs.size() > 1) {
+        if (xpCap > 0 && xpPerLog > 0 && collect > 0) {
             try {
                 org.bukkit.plugin.Plugin prof = Bukkit.getPluginManager().getPlugin("MAVOProfessions");
                 if (prof != null) prof.getClass().getMethod("externalXp", Player.class, String.class, double.class)
-                        .invoke(prof, p, "lumberjack", Math.min(xpCap, (logs.size() - 1) * xpPerLog));
+                        .invoke(prof, p, "lumberjack", Math.min(xpCap, collect * xpPerLog));
             } catch (Throwable ignored) { }
         }
         // leaves decay shortly after the trunk falls (drops saplings/sticks)
         if (leavesFall && !leaves.isEmpty()) decay(leaves, b.getWorld());
         p.playSound(p.getLocation(), org.bukkit.Sound.BLOCK_WOOD_BREAK, 1f, 1.1f);
-        p.sendMessage(C + "aTree felled - " + C + "e" + (logs.size() - 1) + C + "a logs"
-                + (logs.size() >= maxLogs ? C + "8 (tree max " + maxLogs + ")" : "") + ".");
+        p.sendMessage(C + "aTree felled - " + C + "e" + extra + C + "a logs"
+                + (collect < extra ? C + "8 (whole tree - " + (collect + 1) + " collected, cap " + maxLogs + "/tree)" : "") + ".");
     }
 
     /** Remove crown leaves a moment after the fall, dropping sticks/saplings. */

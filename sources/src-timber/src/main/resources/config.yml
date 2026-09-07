@@ -1,13 +1,14 @@
 # MAVOTimber - tree felling
 enabled: true
-# HOTFIX 35: anti-exploit. A tree can now give at most 10 logs (was 200).
-# Trees shorter than the cap still fall completely.
-max-logs: 10                 # hard cap of logs felled per tree (incl. the one you broke)
-max-blocks: 200              # safety cap for the crown walk (does NOT fell more than max-logs)
-axe-damage: true             # use ONE axe durability break per chopped log
+# HOTFIX 35 + 39: anti-exploit + whole-tree fall. The WHOLE tree falls (no floating
+# trunk stubs - tall spruce/dark-oak included), but at most max-logs are collected:
+# trees shorter than the cap give their natural amount.
+max-logs: 10                 # max logs DROPPED per tree (incl. the one you broke)
+max-blocks: 200              # safety cap for the crown walk (whole tree still falls up to it)
+axe-damage: true             # use ONE axe durability break per collected log (capped)
 drop-all: true               # false = only the broken log drops (others vanish)
 # Lumberjack profession XP (via MAVOProfessions reflection), capped per tree.
-xp-per-log: 0.5              # XP per felled log
+xp-per-log: 0.5              # XP per collected log
 xp-cap-per-tree: 10          # max profession XP per tree (anti-exploit)
 # Leaves: after the trunk falls the crown decays and drops saplings/sticks.
 leaves-fall: true

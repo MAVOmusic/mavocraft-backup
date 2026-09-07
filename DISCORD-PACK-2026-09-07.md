@@ -196,6 +196,12 @@ FISHING TOURNAMENT · MAIL · SEASONAL CALENDAR · AUCTION 1.1 · Sleep 07:00.
 🔧 MAVOCrafting's /craft menu no longer swallows shift-clicks server-wide.
 ```
 
+### 🎉 v26 — WHOLE TREES FALL (Hotfix 39)
+```
+🌳 Tall dark oaks / giant spruce now fall COMPLETELY - no floating trunks.
+🪵 Still capped at 10 logs collected per tree (no dark forest mega-hauls).
+```
+
 ---
 
 ## 3. FEATURES — paste into `✨┃features` (one short block per feature thread)
