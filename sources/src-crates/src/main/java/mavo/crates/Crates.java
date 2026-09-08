@@ -497,15 +497,16 @@ public final class Crates extends JavaPlugin implements Listener {
         long c = countKeys(target, "common"), r = countKeys(target, "rare"), m = countKeys(target, "mythic");
         long ec = countKeys(target, null, false);   // ender chest only (inv=false skips the player inventory)
         inv.setItem(45, actionItem(Material.BARRIER, C + "cTAKE ALL KEYS", "take:*",
-                "Removes every MAVOCrate key from", target.getName() + "'s inventory + ender chest."));
+                List.of("Removes every MAVOCrate key from",
+                        target.getName() + "'s inventory + ender chest.")));
         inv.setItem(47, infoItem(Material.PAPER, C + "7Keys found: common " + C + "e" + c
                 + C + "7, rare " + C + "e" + r + C + "7, mythic " + C + "e" + m
                 + C + "7" + (ec > 0 ? " (+" + ec + " in ender chest)" : "")));
         inv.setItem(48, takeBtn("common", KeyMat("common"), C + "eTake COMMON keys"));
         inv.setItem(49, takeBtn("rare", KeyMat("rare"), C + "eTake RARE keys"));
         inv.setItem(50, takeBtn("mythic", KeyMat("mythic"), C + "eTake MYTHIC keys"));
-        inv.setItem(51, actionItem(Material.BOOK, C + "eClose", "close", "Close the inspection."));
-        inv.setItem(52, actionItem(Material.COMPASS, C + "eRefresh", "refresh", "Re-read the live inventory."));
+        inv.setItem(51, actionItem(Material.BOOK, C + "eClose", "close", List.of("Close the inspection.")));
+        inv.setItem(52, actionItem(Material.COMPASS, C + "eRefresh", "refresh", List.of("Re-read the live inventory.")));
         inspects.put(admin.getUniqueId(), new InspectState(target.getUniqueId(), inv));
         admin.openInventory(inv);
     }
