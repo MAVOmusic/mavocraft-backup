@@ -32,8 +32,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -57,21 +60,38 @@ public final class Enchants extends JavaPlugin implements Listener {
     private final NamespacedKey gemKey = new NamespacedKey("mavoenchants", "gem");
     private final NamespacedKey toolKey = new NamespacedKey("mavoenchants", "enchants");
     private final NamespacedKey buyKey = new NamespacedKey("mavoenchants", "buy");
+    private final NamespacedKey navKey = new NamespacedKey("mavoenchants", "nav");
 
     private static final Map<String, String> DESCR = new LinkedHashMap<>();
+    private static final Map<String, String> SLOT = new LinkedHashMap<>();   // type -> slot
+    private static final Map<String, Material> COLOR = new LinkedHashMap<>(); // type -> gem item color
     static {
         DESCR.put("VEIN", "Vein Miner - breaks a vein of the same ore");
         DESCR.put("SMELT", "Auto Smelt - ores drop smelted");
         DESCR.put("XP", "XP Boost - extra XP orbs from kills");
         DESCR.put("LIFESTEAL", "Lifesteal - heals you on kill");
+        DESCR.put("AQUA", "Diving - no drowning damage");
+        DESCR.put("AEGIS", "Aegis - chance to halve incoming damage");
+        DESCR.put("MIGHT", "Might - chance to boost melee damage");
+        DESCR.put("FEATHER", "Featherfall - no fall damage");
+        SLOT.put("VEIN", "tool"); SLOT.put("SMELT", "tool"); SLOT.put("XP", "tool"); SLOT.put("LIFESTEAL", "tool");
+        SLOT.put("AQUA", "helmet"); SLOT.put("AEGIS", "chest"); SLOT.put("MIGHT", "legs"); SLOT.put("FEATHER", "boots");
+        COLOR.put("VEIN", Material.EMERALD);  COLOR.put("SMELT", Material.EMERALD);
+        COLOR.put("XP", Material.EMERALD);    COLOR.put("LIFESTEAL", Material.EMERALD);
+        COLOR.put("AQUA", Material.LAPIS_LAZULI);       // blue - helmet
+        COLOR.put("AEGIS", Material.DIAMOND);           // cyan - chestplate
+        COLOR.put("MIGHT", Material.AMETHYST_SHARD);    // purple - leggings
+        COLOR.put("FEATHER", Material.QUARTZ);          // white - boots
     }
+    private static final List<String> TOOL_TYPES = List.of("VEIN", "SMELT", "XP", "LIFESTEAL");
+    private static final List<String> ARMOR_TYPES = List.of("AQUA", "AEGIS", "MIGHT", "FEATHER");
 
     private int maxGems = 3, maxTier = 10, veinPerTier = 6, lifestealHearts = 1, xpPct = 50, smeltBonus = 10;
     private Economy econ;
     private final Random rnd = new Random();
     private boolean mineEnabled = true;
-    private double mineBase = 1.0;              // % chance for tier I
-    private int mineLevels = 10;
+    private int mineMaxTier = 3;                                        // HOTFIX 43: ores drop tiers 1-3 only
+    private final Map<Integer, Double> mineChances = new LinkedHashMap<>(); // tier -> % per action (0.1/0.05/0.01)
     private boolean shopEnabled = true;
     private final Map<Integer, Double> shopPrices = new LinkedHashMap<>();
     private final Map<Integer, int[]> chargesCfg = new LinkedHashMap<>();   // tier -> {uses, cooldownMinutes}
@@ -80,6 +100,7 @@ public final class Enchants extends JavaPlugin implements Listener {
     private static final class Charge { int tier; int uses; long cdUntil; }
     private final Map<UUID, Map<String, Charge>> charges = new HashMap<>();
     private final Map<UUID, Long> lastMsg = new HashMap<>();
+    private final Map<UUID, Inventory> shopGuis = new HashMap<>();   // HOTFIX 43: exact shop scope
     private File dataFile;
     private YamlConfiguration data;
     private boolean dataDirty = false;
@@ -103,13 +124,12 @@ public final class Enchants extends JavaPlugin implements Listener {
         xpPct = Math.max(10, getConfig().getInt("xpboost-percent-per-tier", 50));
         smeltBonus = Math.max(0, getConfig().getInt("smelt-bonus-per-tier", 10));   // HOTFIX 40: tier scaling + lore
         mineEnabled = getConfig().getBoolean("mine-gem-enabled", true);
-        mineBase = Math.max(0.0, getConfig().getDouble("mine-gem-base-chance", 1.0));
-        mineLevels = Math.max(1, getConfig().getInt("mine-gem-levels", 10));
-        if (mineLevels < 10) {
-            getConfig().set("mine-gem-levels", 10);
-            saveConfig();
-            mineLevels = 10;
-        }
+        mineMaxTier = Math.min(3, Math.max(1, getConfig().getInt("mine-gem-max-tier", 3)));   // HOTFIX 43: 1-3
+        mineChances.clear();
+        ConfigurationSection mc = getConfig().getConfigurationSection("mine-gem-chances");
+        if (mc != null) for (String k : mc.getKeys(false))
+            try { mineChances.put(Integer.parseInt(k), Math.max(0.0, mc.getDouble(k))); }
+            catch (Throwable ignored) { }
         shopEnabled = getConfig().getBoolean("shop-enabled", true);
         shopPrices.clear();
         ConfigurationSection sp = getConfig().getConfigurationSection("shop-prices");
@@ -130,9 +150,19 @@ public final class Enchants extends JavaPlugin implements Listener {
         loadData();
         getServer().getPluginManager().registerEvents(this, this);
         getLogger().info("MAVOEnchants v" + getDescription().getVersion() + " enabled - " + DESCR.size()
-                + " enchants, max tier " + maxTier + ", gem shop " + (shopEnabled && econ != null ? "ON" : "off")
-                + ", mining drop " + (mineEnabled ? mineBase + "% base" : "off") + ", charge table "
+                + " enchants (" + TOOL_TYPES.size() + " tool + " + ARMOR_TYPES.size() + " armor), max tier "
+                + maxTier + ", gem shop " + (shopEnabled && econ != null ? "ON" : "off")
+                + ", mining drop " + (mineEnabled ? mineDropLine() : "off") + " (tiers 1-" + mineMaxTier + "), charge table "
                 + chargesCfg.size() + " levels.");
+    }
+
+    private String mineDropLine() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<Integer, Double> e : mineChances.entrySet()) {
+            if (sb.length() > 0) sb.append('/');
+            sb.append(e.getKey()).append("=").append(e.getValue()).append("%");
+        }
+        return sb.length() == 0 ? "off" : sb.toString();
     }
 
     // ---------------- config merge (writes missing sections into existing config.yml) ----------------
@@ -147,6 +177,21 @@ public final class Enchants extends JavaPlugin implements Listener {
             if (mergeMissing(disk, def, "")) {
                 try { disk.save(f); }
                 catch (Exception ex) { getLogger().warning("could not save config.yml: " + ex.getMessage()); }
+            }
+            // HOTFIX 43: exact mining drop rates (0.1% / 0.05% / 0.01%, tiers 1-3 only).
+            // Existing configs have the old 1% base + 10 levels - those MUST be replaced,
+            // not just merged, so bump drop-version and rewrite the section.
+            if (disk.getInt("drop-version", 0) < 2) {
+                disk.set("drop-version", 2);
+                disk.set("mine-gem-max-tier", def.getInt("mine-gem-max-tier", 3));
+                ConfigurationSection ch = disk.createSection("mine-gem-chances");
+                ConfigurationSection dch = def.getConfigurationSection("mine-gem-chances");
+                if (dch != null) for (String k : dch.getKeys(false)) ch.set(k, dch.get(k));
+                disk.set("mine-gem-base-chance", null);
+                disk.set("mine-gem-levels", null);
+                try { disk.save(f); }
+                catch (Exception ex) { getLogger().warning("could not save drop upgrade: " + ex.getMessage()); }
+                getLogger().info("Hotfix 43: gem drops -> 0.1% / 0.05% / 0.01% (tiers 1-3 only).");
             }
             reloadConfig();
         } catch (Throwable t) {
@@ -257,22 +302,24 @@ public final class Enchants extends JavaPlugin implements Listener {
 
     // ---------------- gem items ----------------
     private ItemStack makeGem(String type, int tier) {
-        ItemStack it = new ItemStack(Material.EMERALD);
+        ItemStack it = new ItemStack(COLOR.getOrDefault(type, Material.EMERALD));
         ItemMeta m = it.getItemMeta();
         m.setDisplayName(cc("&bGem: " + friendly(type) + " " + roman(tier)));
         List<String> lore = new ArrayList<>();
         lore.add(cc("&7" + DESCR.getOrDefault(type, "?") + "."));
         lore.add(cc("&fEffect: &b" + effectLine(type, tier) + "."));   // HOTFIX 40: what THIS level gives
         lore.add(cc("&7Charges: " + chargesLine(tier) + "."));
-        lore.add(cc("&7Right-click with the TOOL in your offhand."));
+        lore.add(cc("&7Goes on: " + slotName(type) + "."));
+        lore.add(cc("&7Right-click with that item in your offhand."));
         m.setLore(lore);
+        m.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         m.getPersistentDataContainer().set(new NamespacedKey("mavoenchants", "gem"), PersistentDataType.STRING,
                 type + ":" + tier);
         it.setItemMeta(m);
         return it;
     }
 
-    /** HOTFIX 40: what the gem ACTUALLY does at this tier - shown on hover in the
+    /** HOTFIX 40/43: what the gem ACTUALLY does at this tier - shown on hover in the
      *  shop (and on the gem itself) so higher levels are easy to compare. */
     private String effectLine(String type, int tier) {
         return switch (type.toUpperCase(Locale.ROOT)) {
@@ -280,7 +327,24 @@ public final class Enchants extends JavaPlugin implements Listener {
             case "SMELT" -> "Mining: ores drop smelted with " + (smeltBonus * tier) + "% bonus item chance";
             case "XP" -> "Kills: +" + (xpPct * tier) + "% extra XP orbs per charge";
             case "LIFESTEAL" -> "Kills: heal " + (lifestealHearts * tier) + " heart" + (lifestealHearts * tier == 1 ? "" : "s") + " per charge";
+            case "AQUA" -> "Helmet: no drowning damage (1 charge per trigger)";
+            case "AEGIS" -> "Chestplate: " + (aegisChance(tier)) + "% chance to halve damage (1 charge)";
+            case "MIGHT" -> "Leggings: " + (mightChance(tier)) + "% chance your melee hits deal +50% (1 charge)";
+            case "FEATHER" -> "Boots: no fall damage (1 charge per trigger)";
             default -> DESCR.getOrDefault(type, "?");
+        };
+    }
+
+    private static int aegisChance(int tier) { return Math.min(50, tier * 4); }
+    private static int mightChance(int tier) { return Math.min(25, tier * 2); }
+
+    private static String slotName(String type) {
+        return switch (SLOT.getOrDefault(type, "tool")) {
+            case "helmet" -> "HELMET";
+            case "chest" -> "CHESTPLATE";
+            case "legs" -> "LEGGINGS";
+            case "boots" -> "BOOTS";
+            default -> "TOOL (pickaxe/axe/shovel/hoe/sword/shears)";
         };
     }
 
@@ -333,37 +397,44 @@ public final class Enchants extends JavaPlugin implements Listener {
         Player p = e.getPlayer();
         String[] gem = gemOf(p.getInventory().getItemInMainHand());
         if (gem == null) return;
-        ItemStack tool = p.getInventory().getItemInOffHand();
-        if (tool == null || tool.getType() == Material.AIR || !isTool(tool.getType())) {
-            p.sendMessage(C + "cPut the TOOL in your offhand, then right-click with the gem.");
+        ItemStack target = p.getInventory().getItemInOffHand();
+        if (target == null || target.getType() == Material.AIR) {
+            p.sendMessage(C + "cPut the item you want to enchant in your offhand, then right-click with the gem.");
+            return;
+        }
+        String type = gem[0].toUpperCase(Locale.ROOT);
+        if (!DESCR.containsKey(type)) { p.sendMessage(C + "cThat gem is corrupted."); return; }
+        String want = SLOT.getOrDefault(type, "tool");
+        String have = "tool".equals(want) ? (isTool(target.getType()) ? "tool" : null) : armorSlotOf(target.getType());
+        if (have == null || !want.equals(have)) {
+            p.sendMessage(C + "cThat gem goes on a " + slotName(type) + " - you are holding a "
+                    + target.getType().name().toLowerCase(Locale.ROOT).replace('_', ' ') + ".");
             return;
         }
         e.setCancelled(true);
-        String type = gem[0].toUpperCase(Locale.ROOT);
         int tier;
         try { tier = Math.max(1, Math.min(maxTier, Integer.parseInt(gem[1]))); }
         catch (Throwable ex) { p.sendMessage(C + "cThat gem is corrupted."); return; }
-        if (!DESCR.containsKey(type)) { p.sendMessage(C + "cThat gem is corrupted."); return; }
-        int cur = tierOf(type, tool);
-        if (cur >= tier) { p.sendMessage(C + "cThat tool already has " + friendly(type) + " " + roman(cur) + "."); return; }
-        int count = enchantsOf(tool).isEmpty() ? 0 : enchantsOf(tool).split(",").length;
-        if (count >= maxGems) { p.sendMessage(C + "cTool gem limit reached (" + maxGems + ")."); return; }
+        int cur = tierOf(type, target);
+        if (cur >= tier) { p.sendMessage(C + "cThat item already has " + friendly(type) + " " + roman(cur) + "."); return; }
+        int count = enchantsOf(target).isEmpty() ? 0 : enchantsOf(target).split(",").length;
+        if (count >= maxGems) { p.sendMessage(C + "cItem gem limit reached (" + maxGems + ")."); return; }
         // consume one gem
         ItemStack gemItem = p.getInventory().getItemInMainHand();
         if (gemItem.getAmount() > 1) gemItem.setAmount(gemItem.getAmount() - 1);
         else p.getInventory().setItemInMainHand(null);
         // write enchant
         StringBuilder sb = new StringBuilder();
-        for (String part : enchantsOf(tool).split(",")) {
+        for (String part : enchantsOf(target).split(",")) {
             if (part.isEmpty() || part.startsWith(type + ":")) continue;
             if (sb.length() > 0) sb.append(',');
             sb.append(part);
         }
         if (sb.length() > 0) sb.append(',');
         sb.append(type).append(':').append(tier);
-        setEnchants(tool, sb.toString());
+        setEnchants(target, sb.toString());
         p.sendMessage(C + "aApplied " + CC2(type) + " " + roman(tier) + C + "a to your "
-                + tool.getType().name().toLowerCase(Locale.ROOT).replace('_', ' ') + "! ("
+                + target.getType().name().toLowerCase(Locale.ROOT).replace('_', ' ') + "! ("
                 + chargesLine(tier) + ")");
         p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1f, 1f);
     }
@@ -372,6 +443,16 @@ public final class Enchants extends JavaPlugin implements Listener {
         String n = m.name();
         return n.endsWith("_PICKAXE") || n.endsWith("_AXE") || n.endsWith("_SHOVEL")
                 || n.endsWith("_HOE") || n.endsWith("_SWORD") || n == "SHEARS";
+    }
+
+    /** HOTFIX 43: which armor slot a material belongs to (null if not armor). */
+    private static String armorSlotOf(Material m) {
+        String n = m.name();
+        if (n.endsWith("_HELMET")) return "helmet";
+        if (n.endsWith("_CHESTPLATE")) return "chest";
+        if (n.endsWith("_LEGGINGS")) return "legs";
+        if (n.endsWith("_BOOTS")) return "boots";
+        return null;
     }
 
     // ---------------- effects ----------------
@@ -412,22 +493,26 @@ public final class Enchants extends JavaPlugin implements Listener {
         tryMineGem(p, e.getBlock());
     }
 
-    /** Mining ores: 1% random gem (tier I), 0.5% tier II, 0.25% tier III, half per level after. */
+    /** HOTFIX 43 - mining gem drops, EXACT odds per ore mined (each is its own action):
+     *  tier 1 = 0.1% (1 in 1,000) · tier 2 = 0.05% (1 in 2,000) · tier 3 = 0.01% (1 in 10,000).
+     *  Only tiers 1-3 drop (config mine-gem-chances + mine-gem-max-tier). One gem max per ore. */
     private void tryMineGem(Player p, Block b) {
         if (!mineEnabled || !isOre(b.getType())) return;
-        double ch = mineBase;
-        for (int level = 1; level <= mineLevels; level++) {
-            if (rnd.nextDouble() * 100.0 < ch) {
-                int tier = Math.min(level, maxTier);
+        if (p.getGameMode() != org.bukkit.GameMode.SURVIVAL) return;
+        for (int level = 1; level <= mineMaxTier; level++) {
+            double ch = mineChances.getOrDefault(level, 0.0);
+            if (ch <= 0) continue;
+            if (rnd.nextDouble() * 100.0 < ch) {   // exactly 1-in-(100/ch) per action
+                int tier = Math.min(level, mineMaxTier);
                 String type = new ArrayList<>(DESCR.keySet()).get(rnd.nextInt(DESCR.size()));
                 ItemStack gem = makeGem(type, tier);
                 var left = p.getInventory().addItem(gem);
                 for (ItemStack it : left.values()) p.getWorld().dropItemNaturally(b.getLocation(), it);
-                p.sendMessage(C + "b\u2726 A " + friendly(type) + " " + roman(tier) + " gem dropped from the ore!");
+                p.sendMessage(C + "b\u2726 A " + friendly(type) + " " + roman(tier)
+                        + " gem dropped from the ore! (" + ch + "% chance)");
                 p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
                 return;
             }
-            ch /= 2.0;
         }
     }
 
@@ -471,6 +556,54 @@ public final class Enchants extends JavaPlugin implements Listener {
         if (broke > 0) p.sendMessage(C + "aVein mined " + C + "e" + broke + C + "a blocks.");
     }
 
+    // ---------------- armor gems (Hotfix 43) ----------------
+    /** Worn-armor gem effects. Charges are spent ONLY when the effect procs; if the
+     *  pool is recharging the gem does nothing (same rule as tool gems). */
+    @EventHandler(ignoreCancelled = true)
+    public void onDamage(EntityDamageEvent e) {
+        if (!(e.getEntity() instanceof Player p)) return;
+        if (e.getCause() == EntityDamageEvent.DamageCause.DROWNING) {
+            int t = tierOf("AQUA", p.getInventory().getHelmet());
+            if (t > 0 && useCharge(p, "AQUA", t)) {
+                e.setCancelled(true);
+                p.setRemainingAir(p.getMaximumAir());
+                p.sendMessage(C + "b\u2726 Diving saved you! (1 charge used)");
+            }
+        } else if (e.getCause() == EntityDamageEvent.DamageCause.FALL) {
+            int t = tierOf("FEATHER", p.getInventory().getBoots());
+            if (t > 0 && useCharge(p, "FEATHER", t)) {
+                e.setCancelled(true);
+                p.playSound(p.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1f, 1.2f);
+            }
+        } else if (isAegisDamage(e.getCause())) {
+            int t = tierOf("AEGIS", p.getInventory().getChestplate());
+            if (t > 0 && rnd.nextInt(100) < aegisChance(t) && useCharge(p, "AEGIS", t)) {
+                e.setDamage(e.getDamage() / 2.0);
+                p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_LAND, 0.6f, 1.5f);
+            }
+        }
+    }
+
+    /** Only direct combat damage procs Aegis - environmental ticks (fire, suffocation,
+     *  etc.) would otherwise drain the charge pool. */
+    private static boolean isAegisDamage(EntityDamageEvent.DamageCause c) {
+        return switch (c) {
+            case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK, PROJECTILE, MAGIC, CUSTOM -> true;
+            default -> false;
+        };
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onHit(EntityDamageByEntityEvent e) {
+        if (!(e.getDamager() instanceof Player p)) return;
+        if (!(e.getEntity() instanceof org.bukkit.entity.LivingEntity)) return;
+        int t = tierOf("MIGHT", p.getInventory().getLeggings());
+        if (t > 0 && rnd.nextInt(100) < mightChance(t) && useCharge(p, "MIGHT", t)) {
+            e.setDamage(e.getDamage() * 1.5);
+            p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 0.9f, 1.4f);
+        }
+    }
+
     @EventHandler
     public void onKill(EntityDeathEvent e) {
         if (!(e.getEntity().getKiller() instanceof Player p)) return;
@@ -490,47 +623,84 @@ public final class Enchants extends JavaPlugin implements Listener {
         }
     }
 
-    // ---------------- gem shop ----------------
+    // ---------------- gem shop (HOTFIX 43: page 1 = tool gems, page 2 = armor gems) ----------------
     private void openShop(Player p) {
+        openShop(p, 0);
+    }
+
+    private void openShop(Player p, int page) {
         if (!shopEnabled) { p.sendMessage(C + "cThe gem shop is disabled."); return; }
         if (econ == null) { p.sendMessage(C + "cVault economy not available - the gem shop needs it."); return; }
-        Inventory inv = Bukkit.createInventory(null, 54, C + "1\u2726 Gem Shop");
+        List<String> types = page == 0 ? TOOL_TYPES : ARMOR_TYPES;
+        Inventory inv = Bukkit.createInventory(null, 54, C + "1\u2726 Gem Shop ("
+                + (page == 0 ? "TOOLS" : "ARMOR") + ", " + (page + 1) + "/2)");
         int slot = 0;
         for (int tier = 1; tier <= maxTier; tier++) {
             double price = shopPrices.getOrDefault(tier, -1.0);
             if (price < 0) continue;
-            for (String type : DESCR.keySet()) {
+            for (String type : types) {
                 if (slot >= 44) break;
                 inv.setItem(slot++, shopGem(type, tier, price));
             }
         }
         while (slot < 44) inv.setItem(slot++, new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-        ItemStack close = new ItemStack(Material.BOOK);
-        ItemMeta cm = close.getItemMeta();
-        cm.setDisplayName(C + "eClose");
-        close.setItemMeta(cm);
-        inv.setItem(45, close);
+        inv.setItem(45, page == 0 ? glass() : navItem("prev", "Prev - tool gems"));
+        inv.setItem(49, navItem("close", "Close"));
+        inv.setItem(50, glass());
         ItemStack bal = new ItemStack(Material.GOLD_NUGGET);
         ItemMeta m = bal.getItemMeta();
         m.setDisplayName(C + "6Your balance: " + String.format("%,.0f", econ.getBalance(p)) + " coins");
         bal.setItemMeta(m);
-        inv.setItem(49, bal);
+        inv.setItem(48, bal);
+        if (page == 0) inv.setItem(53, navItem("next", "Next - armor gems"));
+        shopGuis.put(p.getUniqueId(), inv);
         p.openInventory(inv);
+    }
+
+    private ItemStack glass() {
+        ItemStack it = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta m = it.getItemMeta();
+        m.setDisplayName(" ");
+        it.setItemMeta(m);
+        return it;
+    }
+
+    private ItemStack navItem(String nav, String name) {
+        ItemStack it = new ItemStack(Material.ARROW);
+        ItemMeta m = it.getItemMeta();
+        m.setDisplayName(C + "e" + name);
+        m.getPersistentDataContainer().set(navKey, PersistentDataType.STRING, nav);
+        it.setItemMeta(m);
+        return it;
+    }
+
+    @EventHandler
+    public void onShopClose(InventoryCloseEvent e) {
+        if (!(e.getPlayer() instanceof Player p)) return;
+        // Only drop the mapping when the CLOSED inventory is the tracked one - switching
+        // pages fires a close for the old view but stores the new one first.
+        Inventory gui = shopGuis.get(p.getUniqueId());
+        if (gui != null && gui.equals(e.getView().getTopInventory())) shopGuis.remove(p.getUniqueId());
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onShopClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player p)) return;
-        if (e.getView().getTopInventory().getHolder() != null) return; // only our server-less GUI
+        // HOTFIX 38 pattern: only touch clicks inside OUR tracked shop inventory
+        Inventory gui = shopGuis.get(p.getUniqueId());
+        if (gui == null || !gui.equals(e.getView().getTopInventory())) return;
+        e.setCancelled(true);
         ItemStack it = e.getCurrentItem();
         if (it == null || !it.hasItemMeta()) return;
-        String buy = it.getItemMeta().getPersistentDataContainer().get(buyKey, PersistentDataType.STRING);
-        if (buy == null) {
-            String nm = it.getItemMeta().getDisplayName();
-            if (nm != null && nm.contains("Close")) e.setCancelled(true);
+        String nav = it.getItemMeta().getPersistentDataContainer().get(navKey, PersistentDataType.STRING);
+        if (nav != null) {
+            if (nav.equals("next")) openShop(p, 1);
+            else if (nav.equals("prev")) openShop(p, 0);
+            else if (nav.equals("close")) p.closeInventory();
             return;
         }
-        e.setCancelled(true);
+        String buy = it.getItemMeta().getPersistentDataContainer().get(buyKey, PersistentDataType.STRING);
+        if (buy == null) return;
         String[] parts = buy.split(":");
         if (parts.length < 2 || econ == null) return;
         int tier;
@@ -567,12 +737,19 @@ public final class Enchants extends JavaPlugin implements Listener {
         String sub = args.length == 0 ? "list" : args[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "list" -> {
-                sender.sendMessage(C + "b\u2726 Custom enchants:");
-                for (Map.Entry<String, String> en : DESCR.entrySet())
-                    sender.sendMessage(C + "7 - " + CC2(en.getKey()) + C + "7: " + en.getValue());
-                sender.sendMessage(C + "8Hold gem in main hand + tool in offhand, right-click to apply.");
-                sender.sendMessage(C + "8Gems: /gemshop (coins) or mine ores (rare drops).");
-                sender.sendMessage(C + "8Charges L1-10: 10/5min -> 10/5/10/15/20/25/30/35/50/∞ uses, "
+                sender.sendMessage(C + "b\u2726 Custom enchants (TOOL gems):");
+                for (String type : TOOL_TYPES)
+                    sender.sendMessage(C + "7 - " + CC2(type) + C + "7: " + DESCR.get(type));
+                sender.sendMessage(C + "b\u2726 Custom enchants (ARMOR gems - colored):");
+                for (String type : ARMOR_TYPES)
+                    sender.sendMessage(C + "7 - " + CC2(type) + C + "7: " + DESCR.get(type)
+                            + C + "8 (" + slotName(type) + ")");
+                sender.sendMessage(C + "8Hold gem in main hand + the item in your offhand, right-click to apply.");
+                sender.sendMessage(C + "8Gems: /gemshop (coins, page 2 = armor) or mine ores - tiers 1-3 only:");
+                for (Map.Entry<Integer, Double> e2 : mineChances.entrySet())
+                    sender.sendMessage(C + "8   tier " + e2.getKey() + " = " + e2.getValue() + "% per ore (1 in "
+                            + Math.round(100.0 / e2.getValue()) + ")");
+                sender.sendMessage(C + "8Charges L1-10: 10/5/10/15/20/25/30/35/50/∞ uses, "
                         + "10->2 min cooldowns (L10 unlimited); see /maenchant charges.");
             }
             case "shop" -> {
@@ -624,6 +801,10 @@ public final class Enchants extends JavaPlugin implements Listener {
             case "SMELT" -> "Auto Smelt";
             case "XP" -> "XP Boost";
             case "LIFESTEAL" -> "Lifesteal";
+            case "AQUA" -> "Diving";
+            case "AEGIS" -> "Aegis";
+            case "MIGHT" -> "Might";
+            case "FEATHER" -> "Featherfall";
             default -> t;
         };
     }
@@ -633,6 +814,10 @@ public final class Enchants extends JavaPlugin implements Listener {
             case "SMELT" -> C + "6Auto Smelt";
             case "XP" -> C + "aXP Boost";
             case "LIFESTEAL" -> C + "cLifesteal";
+            case "AQUA" -> C + "9Diving";
+            case "AEGIS" -> C + "bAegis";
+            case "MIGHT" -> C + "dMight";
+            case "FEATHER" -> C + "fFeatherfall";
             default -> C + "e" + t;
         };
     }

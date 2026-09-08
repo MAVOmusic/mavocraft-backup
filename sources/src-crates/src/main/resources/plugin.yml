@@ -7,10 +7,10 @@ author: MAVO
 softdepend: [Vault, MAVOLuckyCoins]
 commands:
   crate:
-    description: "Crates: list / info; admin: set/unset/clear/givekey"
-    usage: /crate [list|info <name>] | /crate set <name> | givekey <player> <name> [n]
+    description: "Crates: list / info; admin: set/unset/clear/givekey/inspect"
+    usage: /crate [list|info <name>] | /crate set <name> | givekey <player> <name> [n] | inspect <player>
     aliases: [keys]
 permissions:
   mavocrate.admin:
-    description: Admin crate management (set/unset/clear/givekey/reload)
+    description: Admin crate management (set/unset/clear/givekey/inspect/reload)
     default: op

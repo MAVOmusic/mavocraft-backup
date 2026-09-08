@@ -169,7 +169,7 @@ Felling: axe + break bottom log → up to **10 logs** per tree (anti-exploit; sh
 ## MAVOCrafting 1.0.0
 | Command | Who | What it does |
 |---|---|---|
-| `/craft` | **Everyone** | Open the **beginner recipe list** (50 basics, 45 per page). Click a result = uses ingredients from your inventory. Replaces the op-only Essentials workbench for this label. |
+| `/craft` | **Everyone** | Open the **beginner recipe GUIDE** (100 basics, 45 per page). Click a recipe = **display-only 3×3 preview** of the real recipe + unlocks it in your vanilla recipe book (press E) — nothing is auto-crafted or consumed. Replaces the op-only Essentials workbench for this label. |
 | `/craft <recipe>` | Everyone | Jump to that recipe's page (e.g. `/craft stone_pickaxe`) |
 | `/crafting list` | Everyone | Lists the 7 custom recipes (name tag, saddle, lead, chainmail set) |
 | `/crafting reload` | OP (`mavocrafting.admin`) | Re-register custom + beginner recipes |
@@ -181,15 +181,18 @@ Custom recipes craft in a normal crafting table. `/workbench` + `/e craft` still
 ## MAVOEnchants 1.0.0
 | Command | Who | What it does |
 |---|---|---|
-| `/gemshop` | Players | Buy enchant gems with coins — tiers I–X = 1M / 2M / 4M / 8M / 16M / 32M / 64M / 128M / 256M / 512M |
-| `/maenchant list` | Players | List the 4 gem enchants + charge table |
+| `/gemshop` | Players | Buy enchant gems with coins — **page 1 = tool gems, page 2 = armor gems** (Next/Prev arrows). Tiers I–X = 1M / 2M / 4M / 8M / 16M / 32M / 64M / 128M / 256M / 512M |
+| `/maenchant list` | Players | List all 8 gem enchants (4 tool + 4 armor/slot) with exact mining drop odds + charge table |
 | `/maenchant shop` | Players | Opens the same gem shop |
 | `/maenchant charges` | Players | Your uses left + cooldown per gem type |
 | `/maenchant gem <p> <type> [tier 1-10]` | OP (`mavoenchants.admin`) | Give a gem |
 
+**Touch gems** (emerald): VEIN Vein Miner · SMELT Auto Smelt · XP XP Boost · LIFESTEAL Lifesteal.
+**Armor gems** (colored, own slot — Hotfix 43): **AQUA** Diving (helmet, lapis — no drowning damage) · **AEGIS** (chestplate, diamond — chance to halve damage; tier×4%, cap 50%) · **MIGHT** (leggings, amethyst — chance melee deals +50%; tier×2%, cap 25%) · **FEATHER** Featherfall (boots, quartz — no fall damage). Armor effects only trigger while recharging-free (1 charge per trigger/proc); fire/suffocation ticks never drain AEGIS.
+
 **Charges & cooldown per level** (config `gem-charges`): L1 10 uses/10 min · L2 5/9 · L3 10/8 · L4 15/7 · L5 20/6 · L6 25/5 · L7 30/4 · L8 35/3 · L9 50/2 · **L10 unlimited**. The cooldown starts with the FIRST use and the pool refreshes when it ends. State persists per player (`data.yml`).
 
-Gems also drop from mining ores: **1% tier I, 0.5% II, 0.25% III**, half chance per level after (10 levels). Apply: gem in main hand + tool in offhand, right-click (max 3 gems/tool).
+Gems also drop from mining ores — **exact per-action rolls** (Hotfix 43, tiers 1–3 only, no hidden counters): tier I **0.1% (1 in 1,000)**, tier II **0.05% (1 in 2,000)**, tier III **0.01% (1 in 10,000)** per ore mined. Shop still sells all tiers I–X. Apply: gem in main hand + the item (tool or armor piece) in offhand, right-click (max 3 gems/item, slot-validated).
 
 ---
 
@@ -217,6 +220,7 @@ crate-chance % Crate Key) plus the boss **HP**. Those chances are rolled indepen
 | `/crate unset` | OP | Remove the crate block you look at (holo cleaned) |
 | `/crate clear <name>` | OP | Remove all blocks of that crate type |
 | `/crate givekey <p> <name> [n]` | OP | Give crate keys |
+| `/crate inspect <player>` | OP (`mavocrate.admin`) | **Read-only inventory view of an online player** with every MAVOCrate key marked; buttons take all keys or one tier (common/rare/mythic) out of their inventory + ender chest — only keys are ever removed, enchanted/spent items stay untouched |
 | `/crate resholo` | OP | Rebuild all crate holograms |
 | `/crate reload` | OP | Reload pools/key-drop chances |
 

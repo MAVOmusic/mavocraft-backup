@@ -218,6 +218,16 @@ FISHING TOURNAMENT · MAIL · SEASONAL CALENDAR · AUCTION 1.1 · Sleep 07:00.
 🎯 Bosses announce their drop pool in % + HP on spawn; /hunt lands ~200 blocks away.
 ```
 
+### 🎉 v29 — FAIR GEM DROPS + COLORED ARMOR GEMS + KEY CLEANUP (Hotfix 43)
+```
+💎 Gem drops fixed: tiers 1-3 only, EVERY ore is its own roll - 0.1% / 0.05% / 0.01%.
+🛡️ 4 NEW armor gems (each a different color): Diving (helmet), Aegis (chest),
+   Might (legs), Featherfall (boots) - /gemshop page 2!
+🔍 /crate inspect <player> (OP): look at anyone's inventory + remove exploited
+   crate keys - spent/enchanted items are never touched ("gift").
+🔑 Key drop rates double-checked - still Common 1% / Rare 0.05% / Mythic 0.01%.
+```
+
 ---
 
 
@@ -780,6 +790,8 @@ One boss a week - the whole server fights it together.
 **Post in ✨features:**
 ```
 🎁 CRATES + KEYS - right-click shows every drop + its %; keys from farm/mine/fish.
+🔍 Admins: /crate inspect <player> - clean up exploited keys (never touches
+enchanted items); key rates are Common 1% / Rare 0.05% / Mythic 0.01%.
 📌 more in #crates
 ```
 **Thread first message:**
@@ -791,9 +803,13 @@ Reward crates you open with a key - and the odds are shown!
 • Tiers: COMMON / RARE / MYTHIC (bigger prizes, longer cooldowns)
 • Prizes: coins, Lucky Coins, items (Elytra, totems, netherite in Mythic!)
 • KEYS DROP FROM PLAYING: farming (mature crops), mining (ores) and fishing -
-  Common 1% · Rare 0.05% · Mythic 0.01% per action
+  Common 1% · Rare 0.05% · Mythic 0.01% per action (checked - exact)
 • Every crate block has a floating name holo
-• /crate list | info (players) | set | unset | clear | givekey | resholo | reload (OP)
+• /crate list | info (players)
+• /crate set | unset | clear | givekey | resholo | reload (OP)
+• /crate inspect <player> (OP): read-only view of a player's inventory with every
+  key marked; buttons take all keys or one tier out of their inventory + ender
+  chest. Only keys are removed - already-spent / enchanted items stay ("gift").
 ```
 
 ### ⚡ DOUBLE XP — `#double-xp`
@@ -924,25 +940,36 @@ Two different things!
 ### 💎 ENCHANT GEMS — `#enchant-gems`
 **Post in ✨features:**
 ```
-💎 ENCHANT GEMS - /gemshop (1M->512M) or mine ores; gems 1-10 with charges
-+ cooldowns (L10 unlimited); Vein/Smelt/XP/Lifesteal.
+💎 ENCHANT GEMS - /gemshop 2 pages (1M->512M) or mine ores for tiers 1-3
+(0.1% / 0.05% / 0.01% per ore - every ore its own roll). 8 gems: 4 tool
+(Vein/Smelt/XP/Lifesteal) + 4 colored armor (Diving/Aegis/Might/Featherfall).
 📌 more in #enchant-gems
 ```
 **Thread first message:**
 ```
 💎 ENCHANT GEMS (/gemshop, /maenchant)
-Custom enchants as gems - buy them or find them.
-• 4 gems: VEIN (break a whole ore vein), SMELT (ores drop smelted),
+Custom enchants as gems - buy them or find them. 8 kinds!
+• TOOL gems (emerald): VEIN (break a whole ore vein), SMELT (ores drop smelted),
   XP (bonus XP orbs from kills), LIFESTEAL (heal on kill)
+• ARMOR gems (each a different color - /gemshop page 2):
+  AQUA Diving (LAPIS, helmet - no drowning damage, refills air)
+  AEGIS (DIAMOND, chestplate - chance to halve damage (tier x4%, max 50%))
+  MIGHT (AMETHYST, leggings - chance melee deals +50% (tier x2%, max 25%))
+  FEATHER Featherfall (QUARTZ, boots - no fall damage)
 • Tiers I-X: /gemshop 1M / 2M / 4M / 8M ... / 512M coins
+  (page 1 = tool gems, page 2 = armor gems, arrows to switch)
 • Hovering a gem shows the effect for THAT tier + its charges/cooldown
   (VEIN up to 6xT blocks, SMELT +10%/tier bonus item chance,
    XP +50%/tier, LIFESTEAL heals T hearts)
 • Charges: L1 10 uses / 10 min -> L9 50 / 2 min, L10 UNLIMITED.
   Cooldown starts on your FIRST use; the pool refreshes when it ends.
+  Armor effects spend 1 charge per trigger/proc.
 • /maenchant charges - your uses left + cooldown
-• Mining ores: ~1% chance a random gem drops (halves per level, 10 levels)
-• Apply: gem in MAIN hand + tool in OFFHAND, right-click. Max 3 gems per tool.
+• MINING DROPS (exact, tiers 1-3 only): 0.1% (1 in 1,000) tier I,
+  0.05% (1 in 2,000) tier II, 0.01% (1 in 10,000) tier III - every ore
+  is its own roll, no hidden counters, max 1 gem per ore
+• Apply: gem in MAIN hand + the item (tool OR armor piece) in OFFHAND,
+  right-click. Max 3 gems per item (slot-checked).
 ```
 
 ### 🎯 MINIBOSS — `#miniboss`

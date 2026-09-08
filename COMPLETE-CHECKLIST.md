@@ -233,22 +233,36 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | OP | `/crafting reload` | Reloads; recipes still craftable |
 | OP | `/workbench` (or `/e craft`) | Essentials workbench still works for ops |
 
-### D-15 ⭐ MAVOEnchants 1.0.0 (HOTFIX 35)
+### D-15 ⭐ MAVOEnchants 1.0.0 (HOTFIX 43)
 | Who | Test | Expected |
 |---|---|---|
 | OP | `/maenchant gem <p> VEIN 2` | Gem given to player |
-| Player | `/gemshop` | GUI: 4 gem types × tiers I-X; prices 1M→512M; hovering shows **effect for THAT tier** (e.g. Vein V = 30 blocks), charges/cooldown + price |
+| Player | `/gemshop` | GUI **page 1** = 4 tool gems × tiers I-X (1M→512M) with per-tier effect lore, charges + price; **Next → page 2** = 4 colored armor gems (lapis/diamond/amethyst/quartz); Prev/Close work |
 | Player | click a gem in `/gemshop` with enough coins | Gem bought, coins deducted (Vault) |
 | Player | use a gem | Charge consumed; L1 = 10 uses/10 min → L10 = unlimited (cooldown starts on first use, pool refreshes when it ends) |
 | Player | run out of charges | "recharging - M:SS left"; effect stops until cooldown ends |
 | Player | `/maenchant charges` | Shows uses left + cooldown per type |
 | Player | `/gemshop` with < price | "You need X coins" |
-| Player | mine ~50 ores | ~1% chance random gem (tier I), 0.5% II, 0.25% III... |
+| Player | mine ores | **Only tiers I–III drop, exact per-action odds: 0.1% (1 in 1,000), 0.05% (1 in 2,000), 0.01% (1 in 10,000) per ore** — no 4-gems-per-hour, no hidden counters; message shows the % |
 | Player | hold gem in main hand + pickaxe in OFFHAND, right-click | Enchant applied, gem consumed |
+| Player | hold AQUA gem + HELMET in offhand, right-click | AQUA applied to helmet (wrong slot = clear error message) |
+| Player | wear AQUA helmet + drown | No drowning damage, air refilled, 1 charge used |
+| Player | wear FEATHER boots + fall | No fall damage, 1 charge used |
+| Player | wear AEGIS chest + take melee/projectile damage | Chance (tier×4%, cap 50%) halves it, 1 charge per proc; fire/suffocation ticks never drain charges |
+| Player | wear MIGHT leggings + melee a mob | Chance (tier×2%, cap 25%) hit deals +50%, 1 charge per proc |
 | Player | break an ore vein with VEIN pickaxe | Whole vein breaks |
 | Player | mine ores with SMELT pick | Ores drop as ingots |
 | Player | kill mobs with XP pick / LIFESTEAL sword | Bonus XP orbs / heal message |
-| Player | apply 4th gem | "Tool gem limit reached" |
+| Player | apply 4th gem | "Item gem limit reached" |
+
+### D-15b ⭐ MAVOCrates admin key cleanup (HOTFIX 43)
+| Who | Test | Expected |
+|---|---|---|
+| OP | `/crate inspect <player>` | Read-only GUI: that player's inventory + armor + offhand; keys marked `[KEY]` with crate id on hover; summary shows counted keys (incl. ender chest) |
+| OP | click TAKE COMMON / RARE / MYTHIC | Only that tier removed from the target's inventory + ender chest (count message) |
+| OP | click TAKE ALL KEYS | Every MAVOCrate key removed; enchanted/gemmed items, coins, other items untouched |
+| OP | close / refresh | GUI closes; Refresh re-reads live inventory |
+| Player | farm/mine/fish | Key messages still at Common 1% / Rare 0.05% / Mythic 0.01% per action (rates regression check) |
 
 ### D-16 ⭐ MAVOCouples 1.0.0
 | Who | Test | Expected |

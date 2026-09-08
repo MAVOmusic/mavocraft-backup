@@ -78,6 +78,8 @@ public final class Crates extends JavaPlugin implements Listener {
     private final Map<Location, String> blocks = new HashMap<>();
     /** open crate GUIs (Hotfix 42): only these clicks are handled - no server-wide click theft */
     private final Map<UUID, GuiState> openGuis = new HashMap<>();
+    /** admin inventory inspection GUIs (Hotfix 43): target player, exact scope for cleanup */
+    private final Map<UUID, InspectState> inspects = new HashMap<>();
 
     private boolean keyDrops = true;
     private double keyCommon = 1.0, keyRare = 0.05, keyMythic = 0.01;
@@ -86,6 +88,7 @@ public final class Crates extends JavaPlugin implements Listener {
     private record CrateDef(String display, List<String> holo, Material keyMat, String keyName,
                             List<String> keyLore, long cooldown, List<Reward> rewards) { }
     private record GuiState(String id, Location at, Inventory inv) { }
+    private record InspectState(UUID target, Inventory inv) { }
 
     @Override public void onEnable() {
         inst = this;
@@ -418,7 +421,13 @@ public final class Crates extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onClose(InventoryCloseEvent e) {
-        if (e.getPlayer() instanceof Player p) openGuis.remove(p.getUniqueId());
+        if (!(e.getPlayer() instanceof Player p)) return;
+        // only drop mapping when the CLOSED inventory is the tracked one (refresh/roll
+        // close events for the previous view fire after the new one is stored)
+        GuiState g = openGuis.get(p.getUniqueId());
+        if (g != null && g.inv().equals(e.getView().getTopInventory())) openGuis.remove(p.getUniqueId());
+        InspectState s = inspects.get(p.getUniqueId());
+        if (s != null && s.inv().equals(e.getView().getTopInventory())) inspects.remove(p.getUniqueId());
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -428,22 +437,172 @@ public final class Crates extends JavaPlugin implements Listener {
         // per-player tracked inventory makes the guard exact, so chests/furnaces/
         // player inventories are never affected.
         GuiState g = openGuis.get(p.getUniqueId());
-        if (g == null || !g.inv().equals(e.getView().getTopInventory())) return;
+        if (g != null && g.inv().equals(e.getView().getTopInventory())) {
+            e.setCancelled(true);
+            ItemStack it = e.getCurrentItem();
+            if (it == null || !it.hasItemMeta()) return;
+            String act = it.getItemMeta().getPersistentDataContainer().get(guiTag, PersistentDataType.STRING);
+            if (act == null) return;
+            if (act.equals("open")) {
+                p.closeInventory();
+                roll(p, g.id(), g.at());
+            }
+            return;
+        }
+        // HOTFIX 43: admin inventory inspection - same exact-scope rule
+        InspectState s = inspects.get(p.getUniqueId());
+        if (s == null || !s.inv().equals(e.getView().getTopInventory())) return;
         e.setCancelled(true);
+        Player target = Bukkit.getPlayer(s.target());
+        if (target == null) { p.sendMessage(C + "cThat player went offline - close and /crate inspect again."); return; }
         ItemStack it = e.getCurrentItem();
         if (it == null || !it.hasItemMeta()) return;
         String act = it.getItemMeta().getPersistentDataContainer().get(guiTag, PersistentDataType.STRING);
         if (act == null) return;
-        if (act.equals("open")) {
-            p.closeInventory();
-            roll(p, g.id(), g.at());
+        if (act.equals("refresh")) { openInspect(p, target); return; }
+        if (act.equals("close")) { p.closeInventory(); return; }
+        if (act.startsWith("take:")) {
+            String id = act.substring(5);
+            if (!id.equals("*") && !defs.containsKey(id)) return;
+            int n = removeKeys(target, id.equals("*") ? null : id);
+            p.sendMessage(C + "aRemoved " + C + "e" + n + C + "a "
+                    + (id.equals("*") ? "crate key(s)" : cc(defs.get(id).keyName) + C + "a(s)")
+                    + C + "a from " + target.getName() + " (inventory + ender chest)."
+                    + C + "8 Already-spent keys / enchanted items are untouched.");
+            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 0.8f);
+            openInspect(p, target);
         }
     }
 
     @EventHandler
     public void onDrag(InventoryDragEvent e) {
         if (!(e.getWhoClicked() instanceof Player p)) return;
-        if (openGuis.containsKey(p.getUniqueId())) e.setCancelled(true);
+        if (openGuis.containsKey(p.getUniqueId()) || inspects.containsKey(p.getUniqueId()))
+            e.setCancelled(true);
+    }
+
+    // ---------------- admin inventory inspection + key cleanup (Hotfix 43) ----------------
+    /** Read-only copy of a player's inventory with keys marked; buttons remove keys
+     *  (per tier or all) from the REAL inventory + ender chest. Only keys are ever
+     *  removed - enchanted items / spent goods stay untouched ("gift"). */
+    private void openInspect(Player admin, Player target) {
+        if (!admin.hasPermission("mavocrate.admin")) { admin.sendMessage("OP only."); return; }
+        if (target == null) { admin.sendMessage(C + "cPlayer not found."); return; }
+        Inventory inv = Bukkit.createInventory(null, 54, C + "1\u276f Inspect " + target.getName());
+        for (int i = 0; i < 36; i++) inv.setItem(i, displayCopy(target.getInventory().getContents()[i]));
+        ItemStack[] armor = target.getInventory().getArmorContents();
+        for (int i = 0; i < 4; i++) inv.setItem(36 + i, displayCopy(armor[i]));
+        inv.setItem(40, displayCopy(target.getInventory().getItemInOffHand()));
+        // summary
+        long c = countKeys(target, "common"), r = countKeys(target, "rare"), m = countKeys(target, "mythic");
+        long ec = countKeys(target, null, false);   // ender chest only (inv=false skips the player inventory)
+        inv.setItem(45, actionItem(Material.BARRIER, C + "cTAKE ALL KEYS", "take:*",
+                "Removes every MAVOCrate key from", target.getName() + "'s inventory + ender chest."));
+        inv.setItem(47, infoItem(Material.PAPER, C + "7Keys found: common " + C + "e" + c
+                + C + "7, rare " + C + "e" + r + C + "7, mythic " + C + "e" + m
+                + C + "7" + (ec > 0 ? " (+" + ec + " in ender chest)" : "")));
+        inv.setItem(48, takeBtn("common", KeyMat("common"), C + "eTake COMMON keys"));
+        inv.setItem(49, takeBtn("rare", KeyMat("rare"), C + "eTake RARE keys"));
+        inv.setItem(50, takeBtn("mythic", KeyMat("mythic"), C + "eTake MYTHIC keys"));
+        inv.setItem(51, actionItem(Material.BOOK, C + "eClose", "close", "Close the inspection."));
+        inv.setItem(52, actionItem(Material.COMPASS, C + "eRefresh", "refresh", "Re-read the live inventory."));
+        inspects.put(admin.getUniqueId(), new InspectState(target.getUniqueId(), inv));
+        admin.openInventory(inv);
+    }
+
+    private ItemStack KeyMat(String id) {
+        CrateDef d = defs.get(id);
+        return new ItemStack(d != null ? d.keyMat : Material.TRIPWIRE_HOOK);
+    }
+
+    private ItemStack takeBtn(String id, ItemStack mat, String name) {
+        ItemStack it = mat.clone();
+        ItemMeta m = it.getItemMeta();
+        m.setDisplayName(name);
+        m.setLore(List.of(C + "7Removes this tier of key from", C + "7the player's inventory + ender chest."));
+        m.getPersistentDataContainer().set(guiTag, PersistentDataType.STRING, "take:" + id);
+        it.setItemMeta(m);
+        return it;
+    }
+
+    private ItemStack actionItem(Material mat, String name, String act, List<String> lore) {
+        ItemStack it = new ItemStack(mat);
+        ItemMeta m = it.getItemMeta();
+        m.setDisplayName(name);
+        if (lore != null) m.setLore(lore);
+        m.getPersistentDataContainer().set(guiTag, PersistentDataType.STRING, act);
+        it.setItemMeta(m);
+        return it;
+    }
+
+    private ItemStack infoItem(Material mat, String name) {
+        ItemStack it = new ItemStack(mat);
+        ItemMeta m = it.getItemMeta();
+        m.setDisplayName(name);
+        it.setItemMeta(m);
+        return it;
+    }
+
+    /** Copy for display: identical item, keys get a visual marker. Never mutated. */
+    private ItemStack displayCopy(ItemStack src) {
+        if (src == null || src.getType() == Material.AIR) return null;
+        ItemStack it = src.clone();
+        if (isAnyKey(it)) {
+            ItemMeta m = it.getItemMeta();
+            m.setDisplayName(C + "a[KEY] " + (m.hasDisplayName() ? m.getDisplayName() : it.getType().name()));
+            List<String> lore = new ArrayList<>(m.hasLore() ? m.getLore() : List.of());
+            lore.add(C + "7Key PDC: " + it.getItemMeta().getPersistentDataContainer().get(keyTag, PersistentDataType.STRING));
+            m.setLore(lore);
+            it.setItemMeta(m);
+        }
+        return it;
+    }
+
+    private boolean isAnyKey(ItemStack it) {
+        return it != null && it.hasItemMeta()
+                && it.getItemMeta().getPersistentDataContainer().has(keyTag, PersistentDataType.STRING)
+                && defs.containsKey(it.getItemMeta().getPersistentDataContainer().get(keyTag, PersistentDataType.STRING));
+    }
+
+    private long countKeys(Player p, String id) { return countKeys(p, id, true); }
+
+    private long countKeys(Player p, String id, boolean inv) {
+        long n = 0;
+        if (inv) {
+            for (ItemStack it : p.getInventory().getContents()) n += keyCount(it, id);
+            n += keyCount(p.getInventory().getItemInOffHand(), id);
+        }
+        for (ItemStack it : p.getEnderChest().getContents()) n += keyCount(it, id);
+        return n;
+    }
+
+    private long keyCount(ItemStack it, String id) {
+        if (!isAnyKey(it)) return 0;
+        String got = it.getItemMeta().getPersistentDataContainer().get(keyTag, PersistentDataType.STRING);
+        return id == null || id.equals(got) ? it.getAmount() : 0;
+    }
+
+    /** Removes MAVOCrate keys (all tiers if id == null, else one tier) from the player's
+     *  inventory + ender chest. Returns how many were taken. Nothing else is touched. */
+    private int removeKeys(Player p, String id) {
+        int removed = 0;
+        for (int i = 0; i < p.getInventory().getSize(); i++) {
+            ItemStack it = p.getInventory().getItem(i);
+            if (isAnyKey(it) && (id == null || id.equals(it.getItemMeta().getPersistentDataContainer()
+                    .get(keyTag, PersistentDataType.STRING)))) {
+                removed += it.getAmount();
+                p.getInventory().setItem(i, null);
+            }
+        }
+        for (int i = 0; i < p.getEnderChest().getSize(); i++) {
+            ItemStack it = p.getEnderChest().getItem(i);
+            if (isAnyKey(it) && (id == null || id.equals(it.getItemMeta().getPersistentDataContainer()
+                    .get(keyTag, PersistentDataType.STRING)))) {
+                removed += it.getAmount();
+                p.getEnderChest().setItem(i, null);
+            }
+        }
+        return removed;
     }
 
     // ---------------- rolling ----------------
@@ -541,10 +700,15 @@ public final class Crates extends JavaPlugin implements Listener {
     @Override public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 1) {
             List<String> out = new ArrayList<>(List.of("list", "info"));
-            if (sender.hasPermission("mavocrate.admin")) out.addAll(List.of("set", "unset", "clear", "givekey", "resholo", "reload"));
+            if (sender.hasPermission("mavocrate.admin"))
+                out.addAll(List.of("set", "unset", "clear", "givekey", "inspect", "resholo", "reload"));
             return out;
         }
-        if (args.length == 2 && sender.hasPermission("mavocrate.admin")) return new ArrayList<>(defs.keySet());
+        if (args.length == 2 && sender.hasPermission("mavocrate.admin")) {
+            if (args[0].equalsIgnoreCase("givekey")) return new ArrayList<>(defs.keySet());
+            if (args[0].equalsIgnoreCase("inspect"))
+                return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+        }
         return List.of();
     }
 
@@ -609,6 +773,16 @@ public final class Crates extends JavaPlugin implements Listener {
                 giveKey(target, args[2], args.length >= 4 ? parseInt(args[3], 1) : 1);
                 sender.sendMessage(C + "aDone.");
             }
+            case "inspect" -> {
+                if (!sender.hasPermission("mavocrate.admin")) { sender.sendMessage("OP only."); return true; }
+                if (!(sender instanceof Player admin)) { sender.sendMessage("Players only."); return true; }
+                if (args.length < 2) { sender.sendMessage(C + "cUsage: /crate inspect <player>"); return true; }
+                Player target = Bukkit.getPlayerExact(args[1]);
+                if (target == null) { sender.sendMessage(C + "cPlayer offline (names are case-sensitive)."); return true; }
+                openInspect(admin, target);
+                admin.sendMessage(C + "7Inspecting " + C + "e" + target.getName() + C + "7 - use the buttons to "
+                        + "remove exploited crate keys. Enchanted/spent items are never touched.");
+            }
             case "resholo" -> {
                 if (!sender.hasPermission("mavocrate.admin")) { sender.sendMessage("OP only."); return true; }
                 spawnHolos();
@@ -620,7 +794,7 @@ public final class Crates extends JavaPlugin implements Listener {
                 spawnHolos();
                 sender.sendMessage(C + "aCrate pools reloaded (" + defs.size() + " types).");
             }
-            default -> sender.sendMessage(C + "7/crate list | info <name> (OP: set, unset, clear, givekey, resholo, reload)");
+            default -> sender.sendMessage(C + "7/crate list | info <name> (OP: set, unset, clear, givekey, inspect <player>, resholo, reload)");
         }
         return true;
     }
