@@ -226,6 +226,8 @@ FISHING TOURNAMENT · MAIL · SEASONAL CALENDAR · AUCTION 1.1 · Sleep 07:00.
 🔍 /crate inspect <player> (OP): look at anyone's inventory + remove exploited
    crate keys - spent/enchanted items are never touched ("gift").
 🔑 Key drop rates double-checked - still Common 1% / Rare 0.05% / Mythic 0.01%.
+📖 Guide 2.8.4 (v20): What's New + 5 new feature pages (Timber, /craft guide,
+   Enchant Gems, Crates, Mini Bosses) + tutorial CH16 - /updates pops for everyone.
 ```
 
 ---
@@ -239,6 +241,8 @@ For each feature: paste the first block into `✨┃features`, then paste the se
 **Post in ✨features:**
 ```
 🎮 THE GUIDE - in-game book: /updates, /tutorial chapters, /whatsnew.
+Updated with EVERY hotfix (What's New + pages + chapters) - it pops up
+automatically so players never miss a change.
 📌 more in #guide
 ```
 **Thread first message:**
@@ -246,8 +250,11 @@ For each feature: paste the first block into `✨┃features`, then paste the se
 🎮 THE GUIDE (/updates, /guide, /mods, /features)
 The in-game book with everything about the server.
 • /updates - main menu + What's New
-• /tutorial - step-by-step chapters CH0 (newbie basics) -> CH15 (Mob Farm), 16 chapters
+• /tutorial - step-by-step chapters CH0 (newbie basics) -> CH16 (Gems, Crates &
+  Hunting), 17 chapters
 • /whatsnew - latest update notes, newest first
+• Updated with EVERY hotfix: What's New entry + feature pages + tutorial
+  chapter, and the new MAVOGuide jar ships with the feature jars
 • Auto-opens once per server update so nobody misses a change
 • Menus are clickable; the reader is paged (12 lines/page) with Back/Next/Close
 • "This Guide" book is pinned in the middle of the menu

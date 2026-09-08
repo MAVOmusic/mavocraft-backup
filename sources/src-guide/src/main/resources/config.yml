@@ -1,10 +1,26 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 19
+version: 20
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&b&lv20 &7- Fair gem drops + armor gems + crates 2.0 (Hotfix 43)"
+    icon: DIAMOND
+    lines:
+      - "&7&eGems from mining&7 are now FAIR: every ore is its own roll -"
+      - "&7tier I &f0.1%&7 (1 in 1,000), tier II &f0.05%&7 (1 in 2,000), tier III"
+      - "&7&f0.01%&7 (1 in 10,000). Only tiers 1-3 drop. No more gem floods!"
+      - "&7&e4 NEW armor gems&7 (different colors, /gemshop page 2):"
+      - "&7&9AQUA&7 helmet (no drowning), &bAEGIS&7 chestplate (halve"
+      - "&7damage chance), &dMIGHT&7 leggings (+50% melee chance), &fFEATHER&7"
+      - "&7boots (no fall damage). They use charges, just like tool gems."
+      - "&7&eCrates 2.0&7: right-click opens the drop GUI with &fexact %&7; keys"
+      - "&7drop from farming/mining/fishing &f1% / 0.05% / 0.01%&7 per action."
+      - "&7&eBosses&7 announce their drop pool % + HP on spawn; &e/hunt&7 puts"
+      - "&7you ~200 blocks from the boss. GUIDES updated for all of it!"
+      - "&7&eTimber&7 fells grown trees only, &e/craft&7 = 100-recipe guide."
+      - ""
   - title: "&d&lv19 &7- Sleeper is LIVE (10th profession!)"
     icon: RED_BED
     lines:
@@ -388,6 +404,24 @@ tutorial:
       - "&7&e/mobfarm leave &7- stash trip; Hunter/Archer XP = 30%."
       - "&7Every bay has a &fcommunity chest&7 - at &e1,000,000"
       - "&7coins the base spawner count rises forever!"
+  - name: "&b&lGems, Crates & Hunting"
+    icon: DIAMOND
+    lines:
+      - "&7Ready for the fun stuff? Three quick ways to get rich:"
+      - ""
+      - "&7&e1) ENCHANT GEMS&7 - &e/gemshop&7 (page 1 tools, page 2 armor)."
+      - "&7Gems also drop from ores: tiers 1-3 only, &f0.1%/0.05%/0.01%&7"
+      - "&7per ore (1 in 1,000 / 2,000 / 10,000 - every ore its own roll)."
+      - "&7Apply: gem in MAIN hand + item in OFFHAND, right-click."
+      - "&7Charges per level - L10 unlimited. &e/maenchant charges&7."
+      - ""
+      - "&7&e2) CRATES&7 - right-click a crate block, see every drop + its"
+      - "&7exact %, hit OPEN with a key. Keys drop from farming, mining"
+      - "&7and fishing: &fCommon 1% / Rare 0.05% / Mythic 0.01%&7 per action."
+      - ""
+      - "&7&e3) HUNT BOSSES&7 - watch chat for the boss broadcast, then"
+      - "&e/hunt&7 (lands ~200 blocks away). Bosses show their drop pool"
+      - "&7% + HP on spawn. Coins + Lucky Coins + crate key + trophy!"
 features:
   - id: professions
     icon: IRON_PICKAXE
@@ -720,6 +754,80 @@ features:
       - ""
       - "&c\u26A0 Every teleport takes 3s: moving cancels, and"
       - "&cmonsters within 12 blocks block it entirely."
+  - id: timber
+    icon: OAK_AXE
+    name: "&a&lTimber"
+    short: "Whole trees fall - grown trees only"
+    info:
+      - "&7Break the &fbottom log &7of a NATURAL tree and the whole"
+      - "&7tree falls into your inventory (&f&e/craft&7 crafting table works)."
+      - "&e/timber toggle&7 - turn it off/on per player (default ON)."
+      - "&7Anti-exploit: max &e10 logs&7 collected per tree, 1 axe durability"
+      - "&7per log, max &e10 Lumberjack XP&7 per tree. Crown leaves decay ~0.5s"
+      - "&7later (saplings + sticks)."
+      - "&7Grown trees only: shipwrecks, village houses and player builds"
+      - "&7are NOT felled - they break like vanilla (that's a feature!)."
+      - "&7Plant saplings and let trees grow to get real tree felling."
+  - id: craftguide
+    icon: CRAFTING_TABLE
+    name: "&e&lCrafting Guide"
+    short: "/craft - 100 recipes, click for preview"
+    info:
+      - "&e/craft&7 - beginner recipe GUIDE with &f100 recipes&7 (3 pages)."
+      - "&7Click any recipe -> &f3x3 preview &7showing the REAL recipe"
+      - "&7(grid/shapeless + result) - &cNOTHING is crafted or consumed.&7"
+      - "&7The recipe also unlocks in your &frecipe book &7(press &fE&7)."
+      - "&e/craft <recipe>&7 jumps straight to that recipe's page"
+      - "&7(e.g. &e/craft stone_pickaxe&7)."
+      - "&7MAVO custom recipes (name tag, saddle, lead, chainmail set):"
+      - "&e/crafting list&7 - they craft in a NORMAL crafting table."
+  - id: enchantgems
+    icon: EMERALD
+    name: "&b&lEnchant Gems"
+    short: "8 gems - 4 tool + 4 colored armor (charges)"
+    info:
+      - "&7Custom enchants as &fgem items&7. Apply: gem in &fMAIN hand&7 +"
+      - "&7the tool/armor piece in &fOFFHAND&7, right-click (max 3 per item)."
+      - "&7&e/gemshop&7: page 1 = tool gems (emerald): &bVEIN&7 (whole ore"
+      - "&7vein), &6SMELT&7 (smelted ores +bonus chance), &aXP&7 (bonus XP),"
+      - "&cLIFESTEAL&7 (heal on kill). Page 2 = armor gems (colored):"
+      - "&7&9AQUA&7 helmet (no drowning), &bAEGIS&7 chestplate (chance to"
+      - "&7halve damage), &dMIGHT&7 leggings (chance +50% melee), &fFEATHER&7"
+      - "&7boots (no fall damage). Prices 1M -> 512M per tier (I-X)."
+      - "&7Mining ores: tiers &f1-3&7 only, per-ore odds &f0.1% / 0.05% / 0.01%&7"
+      - "&7(1 in 1,000 / 2,000 / 10,000)."
+      - "&7Charges: L1 10 uses/10 min ... L10 &fUNLIMITED&7. Cooldown starts"
+      - "&7on your FIRST use. &e/maenchant list|charges&7 for details."
+  - id: crates
+    icon: CHEST
+    name: "&6&lCrates & Keys"
+    short: "Right-click a crate - every drop shown with %"
+    info:
+      - "&7Reward crates stand around the world (floating holo above)."
+      - "&7Right-click -> GUI with &fEVERY reward + its exact %&7 - then hit"
+      - "&7&fOPEN&7 (uses &e1x crate key&7, rolls once, shows what you won)."
+      - "&7Tiers: &aCOMMON&7 / &eRARE&7 / &dMYTHIC&7 - bigger prizes, longer"
+      - "&7cooldowns. Mythic has elytra, totems, netherite!"
+      - "&7&eKEYS DROP FROM PLAYING&7: farming (mature crops), mining"
+      - "&7(ores) and fishing - &fCommon 1% / Rare 0.05% / Mythic 0.01%&7"
+      - "&7per action (every action is its own roll)."
+      - "&e/crate list&7 - types &7| &e/crate info <name>&7 - every drop %."
+  - id: miniboss
+    icon: ZOMBIE_HEAD
+    name: "&2&lMini Bosses"
+    short: "/hunt - rare biome bosses, 5 types"
+    info:
+      - "&7Rare biome bosses: &fWitch Lord, Desert Pharaoh, Ice Queen,"
+      - "&fJungle Shaman, Nether Overlord&7 - one spawns every ~45 min"
+      - "&7(max 3 alive), 1k-5k from spawn, on the surface."
+      - "&7Every 5 min the server broadcasts &fwhere it is&7. &e/hunt&7"
+      - "&7teleports you ~&f200 blocks&7 from a live boss (30s cooldown),"
+      - "&7or to a random wild spot if none is alive."
+      - "&7On spawn chat shows the &fdrop pool %&7 (coins always + lucky %"
+      - "&7+ crate key %) and the boss &fHP&7 - so you know the odds."
+      - "&7Kill drops: coins, Lucky Coins, a crate key, trophy head."
+      - "&e/miniboss status|locate&7 - what's alive right now."
+
   - id: clock
     icon: CLOCK
     name: "&f&lHUD Clock"

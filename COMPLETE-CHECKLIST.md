@@ -110,11 +110,15 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 
 > Each block = **OP test row** + **Player test row**. Run the Player rows on the non-OP account.
 
-### D-1 MAVOGuide 2.8.3
+### D-1 MAVOGuide 2.8.4 (v20)
 | Who | Test | Expected |
 |---|---|---|
 | OP | `/updates reload` | Reload ok |
-| Player | `/updates`, `/tutorial`, `/whatsnew` | Menus open; What's New lists versions |
+| Player | `/updates`, `/tutorial`, `/whatsnew` | Menus open; What's New lists versions (v20 top: gem drops + armor gems + crates) |
+| Player | `/updates` > Enchant Gems | Page: 8 gems (4 tool + 4 colored armor), /gemshop pages, mining odds 0.1/0.05/0.01%, charges |
+| Player | `/updates` > Crates & Keys | Page: GUI with exact %, key drop rates 1%/0.05%/0.01%, holos |
+| Player | `/updates` > Mini Bosses | Page: /hunt ~200 blocks, spawn announce drops% + HP, 5 types |
+| Player | `/tutorial` | CH16 "Gems, Crates & Hunting" exists and reads; CH0-CH15 still present |
 
 ### D-2 MAVOEvents 1.2.1
 | Who | Test | Expected |

@@ -263,12 +263,17 @@ Also verify plugins/ClaimChunk/config.yml has economy.useEconomy=false
 
 ## STANDING MAINTENANCE PROTOCOL (user-mandated - ALWAYS follow)
 1. EVERY update that changes gameplay, prices, systems or flows MUST also
-   update MAVOGuide (changelog bump + affected feature/tutorial pages),
+   update MAVOGuide in ALL THREE places - Guide (feature pages), Tutorials
+   (chapters) and Updates (What's New entry) - bump the guide version, then
    rebuild MAVOGuide-x.y.z.jar and deliver it alongside the feature jar.
-2. After EVERY delivered update: rebuild MAVOcraft-backup.zip (jars/ docs/
+   (User: "always create things into Guide, Tutorials and Updates and give
+   those jars too.")
+2. The Discord pack (DISCORD-PACK-2026-09-07.md) MUST be updated EVERY time
+   something gets done - version-log block + affected feature threads.
+3. After EVERY delivered update: rebuild MAVOcraft-backup.zip (jars/ docs/
    sources/), print its SHA-256, and append what changed to this document.
    User uploads the backup to GitHub - it is the disaster-recovery source.
-3. This document is the single source of truth for reviving context.
+4. This document is the single source of truth for reviving context.
 
 ## OWNER RANK = TAG ONLY (since 2026-09-01 fresh-start stream)
 MAVOmusicYT plays as a NORMAL player: de-opped, no fly/creative/supermod.
@@ -1002,3 +1007,4 @@ CI run 33814070963 SUCCESS. Commit chain: f6a14d7 (sources) -> 7a0c525 (ci: rebu
 - **Deploy (after CI):** replace MAVOEnchants-1.0.0.jar + MAVOCrates-1.0.0.jar, FULL server restart (not /reload). Keep configs - Enchants config auto-upgrades (drop-version 2). Verify: mining ~1/1000 tier1 odds feel (no 4 gems/hour); shop page 2 shows 4 colored armor gems; apply AQUA to helmet then drown (no damage, charge used); AEGIS/MIGHT procs spend a charge; /crate inspect <player> shows keys + take buttons remove keys only; keys still drop 1%/0.05%/0.01%.
 - **SHIPPED 2026-09-08:** commits `531e104` (code+docs+configs) -> `4412f27` (CI failure log - compile fix needed) -> `feccccc` (fix: actionItem lore List.of) -> `f4a236c` (plugin.yml description) -> `b948020`/`1af86e1`/`59beb65`/`8ecffa2` (CI hardening: upload-rebuilt-jars artifact + non-fatal push + retries; GitHub intermittently rejects the bot push with `remote: fatal error in commit_refs` - retried runs / probes confirmed it is server-side flakiness, jars push eventually lands; artifact + 4x20s retry are the safety net) -> `92532c6` + `0ff4ed0` (ci: rebuilt plugin jars, SUCCESS - verified inside jar: drop-version 2 / mine-gem-max-tier 3 / chances 0.1-0.05-0.01, armor gem strings, Crates "TAKE ALL KEYS" + "[KEY]") -> this zip refresh.
 - **Zip:** MAVOcraft-backup.zip refreshed (505 files, jars/ + sources/ + docs + uploads + logo), SHA `00a56600b62e8d36e1099047b4ffc4ca7967dd2945faddfffd72dac4bcb77878` (also in MAVOcraft-backup.sha256). `MAVOEnchants-1.0.0.jar` (27,282 B) + `MAVOCrates-1.0.0.jar` (29,262 B) updated in root, jars/ and the zip.
+- **MAVOGuide 2.8.4 (v20) - Guide + Tutorials + Updates (user mandate: every delivery):** the guide had NOT been touched since v19 (Sleeper, hotfix 21) so it was missing Timber, the /craft GUIDE, gem shop, crates 2.0 and minibosses entirely. Fixed now: version 19 -> 20 (auto-popup for every player), What's New v20 entry (fair gem odds + armor gems + crates 2.0 + Timber/craft), NEW feature pages `timber` (whole tree/grown only/10-log cap), `craftguide` (100-recipe /craft preview + recipe-book unlock), `enchantgems` (8 gems, 2-page shop, charges, exact mining odds), `crates` (GUI with %, key drop rates, holos), `miniboss` (/hunt, spawn announce drops % + HP, broadcast); NEW tutorial chapter CH16 "Gems, Crates & Hunting". Plugin/pom version 2.8.3 -> 2.8.4 (MAVOGuide-2.8.4.jar delivered alongside MAVOEnchants/MAVOCrates). Checklist D-1 updated for 2.8.4, COMMANDS guide section updated with the every-hotfix rule, Discord pack v29 + #guide thread updated.

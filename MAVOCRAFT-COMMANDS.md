@@ -4,15 +4,15 @@ Every MAVO jar and its commands. **Players** = anyone online · **OP** = server 
 
 ---
 
-## MAVOGuide 2.8.0
+## MAVOGuide 2.8.4
 | Command | Who | What it does |
 |---|---|---|
 | `/updates` | Players | Open the guide main menu (aliases: `/guide`, `/mods`, `/features`) |
-| `/tutorial` | Players | Open the tutorial chapter list — CH0 newbie basics → CH15 Mob Farm (aliases: `/howto`, `/help2`) |
-| `/whatsnew` | Players | Open the What's New version list (newest first, paged) |
+| `/tutorial` | Players | Open the tutorial chapter list — CH0 newbie basics → CH16 Gems, Crates & Hunting (aliases: `/howto`, `/help2`) |
+| `/whatsnew` | Players | Open the What's New version list (newest first, paged) — currently v20 (Hotfix 43) |
 | `/updates reload` | OP (`mavoguide.admin`) | Reload config; players who haven't seen the new version get the popup on next join |
 
-Notes: Guide auto-opens once per new version. "This Guide" book is pinned bottom-middle of the menu.
+Notes: Guide auto-opens once per new version (auto-popup + chat banner). "This Guide" book is pinned bottom-middle of the menu. **The Guide is updated with EVERY hotfix** (What's New entry + feature pages + tutorial chapters, rebuilt jar delivered alongside the feature jar) — e.g. v20 added the Timber / Crafting Guide / Enchant Gems / Crates & Keys / Mini Bosses pages + CH16.
 
 ---
 
