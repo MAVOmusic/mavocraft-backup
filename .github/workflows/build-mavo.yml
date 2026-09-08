@@ -117,12 +117,13 @@ jobs:
             exit 0
           fi
           git commit -m "ci: rebuilt plugin jars"
-          if git push origin HEAD:"${GITHUB_REF_NAME}"; then
+          ERR=/tmp/jarpush.err
+          if git push origin HEAD:"${GITHUB_REF_NAME}" 2>"$ERR"; then
             echo "jar commit pushed"
           else
             # Bot push blocked (branch moved / token limits): the built jars are
             # still available as the 'mavo-rebuilt-jars' artifact - commit them
             # manually. Keep the run green so the artifact is not lost.
-            echo "::warning::jar push failed - fetch the 'mavo-rebuilt-jars' artifact and commit manually"
+            echo "::warning::jar push failed - $(tr '\n' ' ' < "$ERR" | head -c 600)"
             exit 0
           fi
