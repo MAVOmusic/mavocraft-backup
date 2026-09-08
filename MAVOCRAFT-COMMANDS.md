@@ -196,16 +196,24 @@ Gems also drop from mining ores — **exact per-action rolls** (Hotfix 43, tiers
 
 ---
 
-## MAVOMiniboss 1.0.0
+## MAVOMiniboss 1.0.0 (Hotfix 44: 15 types, 2 fixed arenas)
 | Command | Who | What it does |
 |---|---|---|
 | `/hunt` | Players | Teleport **outside spawn**; ~200 blocks from a live boss if one is up (30s cooldown) |
-| `/miniboss status` | Players | Bosses alive, types, interval, /hunt + broadcast state |
-| `/miniboss locate` | Players | Exact coords of live bosses |
+| `/miniboss status` | Players | Bosses alive, types, interval, /hunt + broadcast state, **both arenas**, where each live boss is |
+| `/miniboss locate` | Players | Exact coords of live bosses (with their arena) |
 | `/miniboss broadcast` | Players | Force a boss location broadcast now (**spawns a boss first if none is alive**) |
-| `/miniboss reload` | OP (`mavominiboss.admin`) | Reload boss config |
+| `/miniboss reload` | OP (`mavominiboss.admin`) | Reload boss list + arenas from config |
 
-Boss locations are also **broadcast every 5 min** as "around x, z (±100 blocks)".
+**Spawn arenas (Hotfix 44):** bosses no longer appear at random wild spots — they spawn at
+**2 fixed arenas** from `spawn-locations` in config.yml: `NORTHERN ARENA (-2700, 560)` and
+`SOUTHERN ARENA (340, 1470)` (each a random point inside its `jitter` radius, surface only).
+Change the coords in config (reload with `/miniboss reload`) — no code edit needed.
+The spawn broadcast and the 5-min broadcast **name the arena** + exact coords.
+
+**15 boss types** (5 originals + 10 new — Spider Queen, Plains Titan, Skeleton King, Ocean Tide
+King, Undead Warlord, Dark Forest Stalker, Mountain Giant, End Crusader, Crimson Behemoth,
+Ancient Golem). Nether Overlord (live-tuned): 2000 HP / 150k coins / 6x Lucky @50% / 3x Mythic @50%.
 On spawn, chat announces the **drop pool in %** (100% coins · lucky-chance % Lucky Coins ·
 crate-chance % Crate Key) plus the boss **HP**. Those chances are rolled independently on kill
 (config: `lucky-chance`, `crate-chance` per boss).

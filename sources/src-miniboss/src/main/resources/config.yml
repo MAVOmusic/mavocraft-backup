@@ -1,9 +1,24 @@
-# MAVOMiniboss - rare biome bosses
+# MAVOMiniboss - arena bosses (Hotfix 44: 15 boss types, 2 fixed spawn locations)
 spawn-interval-minutes: 45
 max-alive: 3
-spawn-min-distance: 1000     # from spawn (-2579,-1685)
-spawn-max-distance: 5000
 spawn-surface: true          # only on the surface (y>50)
+
+# ---- SPAWN LOCATIONS (Hotfix 44) ----
+# Bosses no longer appear at random wild spots - they spawn at THESE arenas.
+# Each entry: name (chat color), world, center x/z and jitter (random offset
+# around the center, in blocks). Change values here, then /miniboss reload
+# (OP) - no code edit needed. Jitter 0 = always the exact center.
+spawn-locations:
+  - name: "&4&lNORTHERN ARENA"
+    world: world
+    x: -2700
+    z: 560
+    jitter: 120
+  - name: "&6&lSOUTHERN ARENA"
+    world: world
+    x: 340
+    z: 1470
+    jitter: 120
 
 # ---- /hunt (Hotfix 35 + 42) ----
 # Players can't reach the wild from spawn except the Wild Portal - /hunt teleports
@@ -19,9 +34,11 @@ broadcast-locations: true
 broadcast-interval-minutes: 5
 broadcast-radius: 100        # shown in chat as "around x, z (±100 blocks)"
 
-# ---- Boss difficulty + drop pool (Hotfix 42) ----
+# ---- Boss difficulty + drop pool (Hotfix 42 + 44) ----
 # Spawn broadcasts announce the drop pool in % (lucky-chance / crate-chance) and
 # the boss HP before the callout. Chances are rolled independently on kill.
+# Hotfix 44: NETHER OVERLORD matches the live production values (150k / 6x @50% /
+# 3x Mythic @50% / 2000 HP) and 10 NEW bosses join the roster (15 total).
 bosses:
   swamp_witch_lord:
     name: "&5&lSWAMP WITCH LORD"
@@ -70,11 +87,121 @@ bosses:
   nether_overlord:
     name: "&4&lNETHER OVERLORD"
     entity: PIGLIN_BRUTE
-    hp: 1400
+    hp: 2000
+    coins: 150000
+    lucky-coins: 6
+    lucky-chance: 50
+    crate-key: "mythic"
+    crate-keys: 3
+    crate-chance: 50
+    head: PLAYER_HEAD
+  spider_queen:
+    name: "&d&lSPIDER QUEEN"
+    entity: CAVE_SPIDER
+    hp: 900
+    coins: 55000
+    lucky-coins: 3
+    lucky-chance: 55
+    crate-key: "rare"
+    crate-keys: 1
+    crate-chance: 55
+    head: PLAYER_HEAD
+  plains_titan:
+    name: "&e&lPLAINS TITAN"
+    entity: RAVAGER
+    hp: 1600
+    coins: 90000
+    lucky-coins: 4
+    lucky-chance: 50
+    crate-key: "rare"
+    crate-keys: 2
+    crate-chance: 60
+    head: PLAYER_HEAD
+  skeleton_king:
+    name: "&f&lSKELETON KING"
+    entity: SKELETON
+    hp: 1300
+    coins: 75000
+    lucky-coins: 3
+    lucky-chance: 60
+    crate-key: "rare"
+    crate-keys: 1
+    crate-chance: 65
+    head: SKELETON_SKULL
+  ocean_tide_king:
+    name: "&3&lOCEAN TIDE KING"
+    entity: DROWNED
+    hp: 1500
+    coins: 85000
+    lucky-coins: 3
+    lucky-chance: 55
+    crate-key: "mythic"
+    crate-keys: 1
+    crate-chance: 35
+    head: ZOMBIE_HEAD
+  undead_warlord:
+    name: "&8&lUNDEAD WARLORD"
+    entity: WITHER_SKELETON
+    hp: 1200
+    coins: 70000
+    lucky-coins: 4
+    lucky-chance: 55
+    crate-key: "rare"
+    crate-keys: 2
+    crate-chance: 55
+    head: WITHER_SKELETON_SKULL
+  dark_forest_stalker:
+    name: "&2&lDARK FOREST STALKER"
+    entity: VINDICATOR
+    hp: 1350
+    coins: 80000
+    lucky-coins: 3
+    lucky-chance: 50
+    crate-key: "rare"
+    crate-keys: 1
+    crate-chance: 70
+    head: PLAYER_HEAD
+  mountain_giant:
+    name: "&7&lMOUNTAIN GIANT"
+    entity: GIANT
+    hp: 1900
     coins: 100000
-    lucky-coins: 5
-    lucky-chance: 65
+    lucky-coins: 4
+    lucky-chance: 55
+    crate-key: "rare"
+    crate-keys: 2
+    crate-chance: 60
+    head: ZOMBIE_HEAD
+  end_crusader:
+    name: "&5&lEND CRUSADER"
+    entity: ENDERMAN
+    hp: 1700
+    coins: 95000
+    lucky-coins: 4
+    lucky-chance: 50
     crate-key: "mythic"
     crate-keys: 1
     crate-chance: 40
-    head: PIGLIN_HEAD
+    head: PLAYER_HEAD
+  crimson_behemoth:
+    name: "&4&lCRIMSON BEHEMOTH"
+    entity: ZOGLIN
+    hp: 1600
+    coins: 90000
+    lucky-coins: 4
+    lucky-chance: 50
+    crate-key: "mythic"
+    crate-keys: 1
+    crate-chance: 45
+    head: PLAYER_HEAD
+  ancient_golem:
+    name: "&6&lANCIENT GOLEM"
+    entity: IRON_GOLEM
+    hp: 2400
+    coins: 130000
+    lucky-coins: 5
+    lucky-chance: 55
+    crate-key: "mythic"
+    crate-keys: 2
+    crate-chance: 40
+    head: PLAYER_HEAD

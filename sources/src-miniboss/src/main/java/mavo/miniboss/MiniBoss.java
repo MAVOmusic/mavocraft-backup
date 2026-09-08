@@ -1,5 +1,9 @@
 package mavo.miniboss;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +24,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -32,8 +37,9 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/** MAVOMiniboss 1.0.0 - ambient biome bosses (Discord CW#4 idea 17, inspired by MythicMobs/Elitemobs).
- *  Every 45 min a random boss spawns in the wild (surface, 1-5k from spawn, up to 3 alive).
+/** MAVOMiniboss 1.0.0 - arena bosses (Discord CW#4 idea 17, inspired by MythicMobs/Elitemobs).
+ *  Every 45 min a random boss spawns at one of the config "spawn-locations" arenas
+ *  (Hotfix 44: 2 fixed locations instead of random wild spots, up to 3 alive).
  *  Bosses are tagged, hit harder (config HP), and drop coins + Lucky Coins + crate keys +
  *  a trophy head to the killer (Vault / reflection into MAVOLuckyCoins + MAVOCrates).
  *  Hotfix 35: /hunt teleports you out of spawn (next to a live boss if one is up - 30s
@@ -45,8 +51,9 @@ public final class MiniBoss extends JavaPlugin implements Listener {
     private final NamespacedKey bossType = new NamespacedKey("mavominiboss", "type");
 
     private Economy econ;
-    private int intervalMin = 45, maxAlive = 3, spawnMin = 1000, spawnMax = 5000;
+    private int intervalMin = 45, maxAlive = 3;
     private boolean surfaceOnly = true;
+    private final List<SpawnArena> arenas = new ArrayList<>();
     private boolean huntEnabled = true;
     private int huntCooldown = 30;              // seconds
     private int huntBareMin = 500, huntBareMax = 2000;
@@ -58,6 +65,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
     private final Map<UUID, Long> huntCooldowns = new HashMap<>();
     private final Map<String, BossDef> defs = new HashMap<>();
     private final Map<UUID, String> alive = new HashMap<>();
+    private final Map<UUID, String> arenaOf = new HashMap<>();  // HOTFIX 44: arena a boss spawned in
     private final Random rnd = new Random();
 
     // HOTFIX 42: drop chances (percent) per boss - announced on spawn, rolled on kill
@@ -65,10 +73,15 @@ public final class MiniBoss extends JavaPlugin implements Listener {
                            int lucky, int luckyChance, String crate, int crateKeys,
                            int crateChance, Material head) {}
 
+    // HOTFIX 44: named spawn arena from config (center + optional jitter in blocks)
+    private record SpawnArena(String name, String world, int x, int z, int jitter) {}
+    private record SpawnSpot(Location loc, SpawnArena arena) {}
+
     @Override public void onEnable() {
         saveDefaultConfig();
         getConfig().options().copyDefaults(true);
         saveConfig();                          // adds /hunt + broadcast keys to existing configs
+        mergeBossRoster();                     // HOTFIX 44: add the 10 new boss defs to old configs
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp != null) econ = rsp.getProvider();
         load();
@@ -76,8 +89,8 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         Bukkit.getScheduler().runTaskTimer(this, this::tick, 200L, 1200L);   // once a minute
         tick();
         getLogger().info("MAVOMiniboss v" + getDescription().getVersion() + " enabled - " + defs.size()
-                + " boss type(s), /hunt " + (huntEnabled ? "on" : "off") + ", location broadcast every "
-                + broadcastInterval + " min.");
+                + " boss type(s), " + arenas.size() + " arena(s), /hunt " + (huntEnabled ? "on" : "off")
+                + ", location broadcast every " + broadcastInterval + " min.");
     }
 
     @Override public void onDisable() {
@@ -86,15 +99,62 @@ public final class MiniBoss extends JavaPlugin implements Listener {
             if (en != null) en.remove();
         }
         alive.clear();
+        arenaOf.clear();
+    }
+
+    /** HOTFIX 44: an existing config.yml already has a "bosses" section with only
+     *  the 5 old defs - copyDefaults() cannot add ids inside it. Merge every
+     *  bundled boss id the disk file is missing (live-tuned stats stay untouched). */
+    private void mergeBossRoster() {
+        File f = new File(getDataFolder(), "config.yml");
+        try {
+            YamlConfiguration disk = YamlConfiguration.loadConfiguration(f);
+            InputStream in = getResource("config.yml");
+            if (in == null) return;
+            YamlConfiguration def = YamlConfiguration.loadConfiguration(
+                    new InputStreamReader(in, StandardCharsets.UTF_8));
+            ConfigurationSection dcs = def.getConfigurationSection("bosses");
+            if (dcs == null) return;
+            int added = 0;
+            for (String id : dcs.getKeys(false)) {
+                if (!disk.isConfigurationSection("bosses." + id)) {
+                    disk.set("bosses." + id, def.get("bosses." + id));
+                    added++;
+                }
+            }
+            if (added > 0) {
+                disk.save(f);
+                getLogger().info("Hotfix 44: " + added + " new boss type(s) added to config.yml.");
+            }
+            reloadConfig();
+        } catch (Throwable t) {
+            getLogger().warning("boss roster merge failed: " + t.getMessage());
+        }
     }
 
     private void load() {
         defs.clear();
+        arenas.clear();
         intervalMin = Math.max(5, getConfig().getInt("spawn-interval-minutes", 45));
         maxAlive = Math.max(1, getConfig().getInt("max-alive", 3));
-        spawnMin = Math.max(100, getConfig().getInt("spawn-min-distance", 1000));
-        spawnMax = Math.max(spawnMin, getConfig().getInt("spawn-max-distance", 5000));
         surfaceOnly = getConfig().getBoolean("spawn-surface", true);
+        // HOTFIX 44: bosses spawn at these fixed arenas (config-driven, /miniboss reload).
+        for (var sec : getConfig().getMapList("spawn-locations")) {
+            try {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> m = (Map<String, Object>) sec;
+                String w = String.valueOf(m.getOrDefault("world", "world"));
+                String nm = String.valueOf(m.getOrDefault("name", "&cARENA"));
+                double dx = m.containsKey("x") ? ((Number) m.get("x")).doubleValue() : 0;
+                double dz = m.containsKey("z") ? ((Number) m.get("z")).doubleValue() : 0;
+                int jit = Math.max(0, (int) (m.containsKey("jitter") ? ((Number) m.get("jitter")).doubleValue() : 0));
+                arenas.add(new SpawnArena(nm, w, (int) dx, (int) dz, jit));
+            } catch (Throwable t) {
+                getLogger().warning("bad spawn-location entry skipped: " + t.getMessage());
+            }
+        }
+        if (arenas.isEmpty())
+            getLogger().warning("spawn-locations is empty - bosses cannot spawn (check config.yml).");
         huntEnabled = getConfig().getBoolean("hunt-enabled", true);
         huntCooldown = Math.max(0, getConfig().getInt("hunt-cooldown-seconds", 30));
         huntBareMin = Math.max(100, getConfig().getInt("hunt-bare-min", 500));
@@ -147,17 +207,20 @@ public final class MiniBoss extends JavaPlugin implements Listener {
             var en = Bukkit.getEntity(id);
             if (en == null) continue;
             Location l = en.getLocation();
-            Bukkit.broadcastMessage(C + "5\u00bb " + cc(getDef(en).name()) + C + "8 is around "
+            String arena = arenaOf.containsKey(id) ? cc(arenaOf.get(id)) : "";
+            Bukkit.broadcastMessage(C + "5\u00bb " + cc(getDef(en).name()) + C + "8 is at "
+                    + (arena.isEmpty() ? "" : "the " + arena + C + "8 ")
                     + C + "e" + l.getBlockX() + " , " + l.getBlockZ()
                     + C + "8 (\u00b1" + broadcastRadius + " blocks) - " + C + "b/hunt" + C + "8 to go hunting!");
         }
     }
 
     private void spawnOne() {
-        if (defs.isEmpty()) return;
-        World w = Bukkit.getWorlds().get(0);
-        Location l = findSpot(w);
-        if (l == null) return;
+        if (defs.isEmpty() || arenas.isEmpty()) return;
+        SpawnSpot spot = pickSpot();
+        if (spot == null) return;
+        World w = spot.loc().getWorld();
+        Location l = spot.loc();
         String key = new ArrayList<>(defs.keySet()).get(rnd.nextInt(defs.size()));
         BossDef d = defs.get(key);
         LivingEntity e = (LivingEntity) w.spawnEntity(l, d.type());
@@ -174,10 +237,11 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         e.getPersistentDataContainer().set(tag, PersistentDataType.BYTE, (byte) 1);
         e.getPersistentDataContainer().set(bossType, PersistentDataType.STRING, key);
         alive.put(e.getUniqueId(), key);
-        // HOTFIX 42: announce the drop pool (percentages) + boss difficulty before the callout
-        Bukkit.broadcastMessage(C + "5\u00bb A " + cc(d.name()) + C + "5 has appeared in the wild ("
-                + C + "e" + (int) l.getX() + ", " + (int) l.getZ() + C + "5)!"
-                + C + "8 " + dropsLine(d) + C + "8. HP " + C + "e" + (long) d.hp()
+        arenaOf.put(e.getUniqueId(), spot.arena().name());
+        // HOTFIX 42 + 44: announce the arena + drop pool (percentages) + boss HP
+        Bukkit.broadcastMessage(C + "5\u00bb A " + cc(d.name()) + C + "5 has appeared at the "
+                + cc(spot.arena().name()) + C + "5 (" + C + "e" + (int) l.getX() + ", " + (int) l.getZ()
+                + C + "5)!" + C + "8 " + dropsLine(d) + C + "8. HP " + C + "e" + (long) d.hp()
                 + C + "8 - " + C + "b/hunt" + C + "8!");
     }
 
@@ -199,16 +263,29 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         return Character.toUpperCase(crate.charAt(0)) + crate.substring(1).toLowerCase(Locale.ROOT) + " Crate Key";
     }
 
-    private Location findSpot(World w) {
-        int sx = w.getSpawnLocation().getBlockX(), sz = w.getSpawnLocation().getBlockZ();
-        for (int tries = 0; tries < 50; tries++) {
-            double ang = rnd.nextDouble() * Math.PI * 2;
-            int dist = spawnMin + rnd.nextInt(spawnMax - spawnMin);
-            int x = sx + (int) (Math.cos(ang) * dist);
-            int z = sz + (int) (Math.sin(ang) * dist);
-            int y = w.getHighestBlockYAt(x, z);
-            if (surfaceOnly && y < 50) continue;
-            return new Location(w, x + 0.5, y + 1, z + 0.5);
+    /** HOTFIX 44: pick a spawn point at one of the config arenas (random arena,
+     *  random offset inside its jitter radius, surface only). Falls back to the
+     *  arena centre so a boss always reaches its announced arena. */
+    private SpawnSpot pickSpot() {
+        if (arenas.isEmpty()) return null;
+        World fallback = Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0);
+        for (int round = 0; round < 5; round++) {
+            SpawnArena a = arenas.get(rnd.nextInt(arenas.size()));
+            World w = Bukkit.getWorld(a.world());
+            if (w == null) w = fallback;
+            if (w == null) return null;
+            int ax = a.x(), az = a.z();
+            for (int tries = 0; tries < 40; tries++) {
+                int j = a.jitter();
+                int x = ax + (j > 0 ? rnd.nextInt(j * 2 + 1) - j : 0);
+                int z = az + (j > 0 ? rnd.nextInt(j * 2 + 1) - j : 0);
+                int y = w.getHighestBlockYAt(x, z);
+                if (surfaceOnly && y < 50) continue;
+                return new SpawnSpot(new Location(w, x + 0.5, y + 1, z + 0.5), a);
+            }
+            int y = w.getHighestBlockYAt(ax, az);
+            if (y >= 0)
+                return new SpawnSpot(new Location(w, ax + 0.5, Math.max(50, y) + 1, az + 0.5), a);
         }
         return null;
     }
@@ -281,6 +358,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         LivingEntity en = e.getEntity();
         if (!en.getPersistentDataContainer().has(tag, PersistentDataType.BYTE)) return;
         alive.remove(en.getUniqueId());
+        arenaOf.remove(en.getUniqueId());
         String key = en.getPersistentDataContainer().get(bossType, PersistentDataType.STRING);
         BossDef d = defs.get(key);
         if (d == null) return;
@@ -342,9 +420,15 @@ public final class MiniBoss extends JavaPlugin implements Listener {
                         + C + "5 alive, " + C + "e" + defs.size() + C + "5 types, every " + intervalMin
                         + " min. /hunt: " + (huntEnabled ? C + "aON" : C + "cOFF")
                         + C + "5, locations broadcast every " + broadcastInterval + " min.");
+                StringBuilder sb = new StringBuilder(C + "7Arenas:");
+                for (SpawnArena a : arenas)
+                    sb.append(" ").append(cc(a.name())).append(C + "7 (").append(a.x()).append(",")
+                            .append(a.z()).append(")");
+                sender.sendMessage(sb.toString());
                 for (UUID id : alive.keySet()) {
                     var en = Bukkit.getEntity(id);
                     if (en != null) sender.sendMessage(C + "7 - " + cc(getDef(en).name()) + C + "7 at "
+                            + (arenaOf.containsKey(id) ? "the " + cc(arenaOf.get(id)) + C + "7 " : "")
                             + en.getLocation().getBlockX() + "," + en.getLocation().getBlockZ());
                 }
             }
@@ -353,6 +437,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
                 for (UUID id : alive.keySet()) {
                     var en = Bukkit.getEntity(id);
                     if (en != null) sender.sendMessage(C + "7 - " + cc(getDef(en).name()) + C + "7 at "
+                            + (arenaOf.containsKey(id) ? "the " + cc(arenaOf.get(id)) + C + "7 " : "")
                             + en.getLocation().getBlockX() + " " + en.getLocation().getBlockZ());
                 }
             }
@@ -363,7 +448,7 @@ public final class MiniBoss extends JavaPlugin implements Listener {
             case "reload" -> {
                 if (!sender.hasPermission("mavominiboss.admin")) { sender.sendMessage("OP only."); return true; }
                 reloadConfig(); load();
-                sender.sendMessage(C + "aReloaded " + defs.size() + " boss types.");
+                sender.sendMessage(C + "aReloaded " + defs.size() + " boss types, " + arenas.size() + " arenas.");
             }
             default -> sender.sendMessage(C + "7/hunt | /miniboss status | locate | broadcast (OP: reload)");
         }

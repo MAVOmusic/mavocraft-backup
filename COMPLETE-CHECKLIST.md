@@ -110,14 +110,14 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 
 > Each block = **OP test row** + **Player test row**. Run the Player rows on the non-OP account.
 
-### D-1 MAVOGuide 2.8.4 (v20)
+### D-1 MAVOGuide 2.8.5 (v21)
 | Who | Test | Expected |
 |---|---|---|
 | OP | `/updates reload` | Reload ok |
-| Player | `/updates`, `/tutorial`, `/whatsnew` | Menus open; What's New lists versions (v20 top: gem drops + armor gems + crates) |
+| Player | `/updates`, `/tutorial`, `/whatsnew` | Menus open; What's New lists versions (v21 top: 15 minibosses, 2 arenas) |
 | Player | `/updates` > Enchant Gems | Page: 8 gems (4 tool + 4 colored armor), /gemshop pages, mining odds 0.1/0.05/0.01%, charges |
 | Player | `/updates` > Crates & Keys | Page: GUI with exact %, key drop rates 1%/0.05%/0.01%, holos |
-| Player | `/updates` > Mini Bosses | Page: /hunt ~200 blocks, spawn announce drops% + HP, 5 types |
+| Player | `/updates` > Mini Bosses | Page: /hunt ~200 blocks, spawn announce drops% + HP, **15 types at 2 arenas** |
 | Player | `/tutorial` | CH16 "Gems, Crates & Hunting" exists and reads; CH0-CH15 still present |
 
 ### D-2 MAVOEvents 1.2.1
@@ -286,13 +286,15 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | Player | `/hunt` (no boss alive) | Teleported OUTSIDE spawn to wild (500-2000 blocks, surface, 30s cooldown) |
 | Player | `/hunt` (boss alive) | Teleported ~200 blocks from a live boss (not 1000) |
 | Player | wait | Boss location broadcast **every 5 min** (a boss is SPAWNED first if none is alive) |
-| OP | `/miniboss broadcast` | Spawns a boss if none is alive, then broadcasts its location |
-| OP | `/miniboss status` | 0/3 alive + 5 types + 45 min + /hunt ON + broadcast 5 min |
-| OP | `/miniboss locate` | Lists alive bosses (or "none") |
-| Player | wait / hunt | Broadcast "A … appeared in the wild"; boss spawns 1k–5k from spawn, surface |
-| Player | wait for spawn | Chat shows the **drop pool in %** (100% coins · lucky% · crate%) + boss HP before the callout |
-| Player | kill a boss | Coins (always) + Lucky Coins (if rolled) + crate key (if rolled) + trophy head; broadcast shows what dropped |
-| OP | edit config → `/miniboss reload` | Boss list reloads |
+| OP | `/miniboss broadcast` | Spawns a boss if none is alive, then broadcasts its location (with the arena name) |
+| OP | `/miniboss status` | 0/3 alive + **15 types** + 45 min + /hunt ON + broadcast 5 min + **2 arenas listed** |
+| OP | `/miniboss locate` | Lists alive bosses + their arena (or "none") |
+| Player | wait / hunt | Broadcast "A … appeared at the **NORTHERN/SOUTHERN ARENA** (x, z)"; boss spawns inside its jitter radius, surface |
+| OP | edit `spawn-locations` → `/miniboss reload` | New coords used (no code edit); status shows both arenas |
+| Player | wait for spawn | Chat shows the **drop pool in %** + boss HP before the callout (nether_overlord: 2000 HP / 150k / 6x @50% / 3x Mythic @50%) |
+| Player | kill a boss (incl. a NEW type) | Coins (always) + Lucky Coins (if rolled) + crate key (if rolled) + trophy head; broadcast shows what dropped |
+| Player | repeat spawns | Both arenas get bosses over time (random per spawn); no more random 1k-5k wild spots |
+| OP | boot log | "MAVOMiniboss v1.0.0 enabled - **15 boss type(s), 2 arena(s)**" |
 
 ### D-18 ⭐ MAVOSpawners 1.0.0
 | Who | Test | Expected |

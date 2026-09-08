@@ -1,10 +1,26 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 20
+version: 21
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&2&lv21 &7- 15 minibosses, 2 arenas (Hotfix 44)"
+    icon: ZOMBIE_HEAD
+    lines:
+      - "&7&e15 boss types now!&7 The 5 originals + 10 NEW: Spider Queen,"
+      - "&7Plains Titan (ravager), Skeleton King, Ocean Tide King, Undead"
+      - "&7Warlord, Dark Forest Stalker, Mountain Giant, End Crusader,"
+      - "&7Crimson Behemoth and the &6Ancient Golem&7 (2400 HP boss!)."
+      - "&7&eBosses no longer appear at random wild spots&7 - they spawn at"
+      - "&72 FIXED ARENAS: &4NORTHERN ARENA&7 (-2700, 560) and &6SOUTHERN"
+      - "&7ARENA&7 (340, 1470) - around the center, surface only."
+      - "&7The spawn message + 5-min broadcast name the arena so you know"
+      - "&7exactly where to go. &e/hunt&7 still drops you ~200 blocks away."
+      - "&7&eNether Overlord&7 got a boost to match live: &f2000 HP, 150k coins,"
+      - "&f6x Lucky Coin @50%, 3x Mythic Key @50%&7 - the richest hunt!"
+      - "&7&e/miniboss status&7 now lists both arenas and where bosses are."
+      - ""
   - title: "&b&lv20 &7- Fair gem drops + armor gems + crates 2.0 (Hotfix 43)"
     icon: DIAMOND
     lines:
@@ -419,9 +435,11 @@ tutorial:
       - "&7exact %, hit OPEN with a key. Keys drop from farming, mining"
       - "&7and fishing: &fCommon 1% / Rare 0.05% / Mythic 0.01%&7 per action."
       - ""
-      - "&7&e3) HUNT BOSSES&7 - watch chat for the boss broadcast, then"
-      - "&e/hunt&7 (lands ~200 blocks away). Bosses show their drop pool"
-      - "&7% + HP on spawn. Coins + Lucky Coins + crate key + trophy!"
+      - "&7&e3) HUNT BOSSES&7 - &f15 boss types&7 spawn at &42 FIXED ARENAS&7"
+      - "&7(Northern -2700,560 / Southern 340,1470). Watch chat for the"
+      - "&7broadcast, then &e/hunt&7 (lands ~200 blocks away). Bosses show"
+      - "&7their drop pool % + HP on spawn. Coins + Lucky Coins + crate"
+      - "&7key + trophy! &e/miniboss status&7 shows the arenas too."
 features:
   - id: professions
     icon: IRON_PICKAXE
@@ -815,18 +833,23 @@ features:
   - id: miniboss
     icon: ZOMBIE_HEAD
     name: "&2&lMini Bosses"
-    short: "/hunt - rare biome bosses, 5 types"
+    short: "/hunt - 15 bosses at 2 arenas"
     info:
-      - "&7Rare biome bosses: &fWitch Lord, Desert Pharaoh, Ice Queen,"
-      - "&fJungle Shaman, Nether Overlord&7 - one spawns every ~45 min"
-      - "&7(max 3 alive), 1k-5k from spawn, on the surface."
-      - "&7Every 5 min the server broadcasts &fwhere it is&7. &e/hunt&7"
-      - "&7teleports you ~&f200 blocks&7 from a live boss (30s cooldown),"
-      - "&7or to a random wild spot if none is alive."
-      - "&7On spawn chat shows the &fdrop pool %&7 (coins always + lucky %"
-      - "&7+ crate key %) and the boss &fHP&7 - so you know the odds."
+      - "&7&l15 boss types!&7 The 5 originals (Witch Lord, Desert Pharaoh,"
+      - "&7Ice Queen, Jungle Shaman, Nether Overlord) + &f10 NEW&7: Spider"
+      - "&7Queen, Plains Titan, Skeleton King, Ocean Tide King, Undead"
+      - "&7Warlord, Dark Forest Stalker, Mountain Giant, End Crusader,"
+      - "&7Crimson Behemoth and Ancient Golem."
+      - "&7&eBosses spawn at 2 FIXED ARENAS&7 (no more random wild spots):"
+      - "&4NORTHERN ARENA&7 (-2700, 560) and &6SOUTHERN ARENA&7 (340, 1470)."
+      - "&7Every ~45 min one spawns (max 3 alive) at an arena, on the"
+      - "&7surface near its center - the spawn broadcast names the arena."
+      - "&7Every 5 min the server re-broadcasts &fwhere bosses are&7."
+      - "&e/hunt&7 teleports you ~&f200 blocks&7 from a live boss (30s cd)."
+      - "&7Spawn chat shows the &fdrop pool %&7 + boss &fHP&7: coins always,"
+      - "&7lucky coin % and crate key % - so you know the odds."
       - "&7Kill drops: coins, Lucky Coins, a crate key, trophy head."
-      - "&e/miniboss status|locate&7 - what's alive right now."
+      - "&e/miniboss status|locate&7 - arenas + what's alive right now."
 
   - id: clock
     icon: CLOCK

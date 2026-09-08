@@ -230,6 +230,20 @@ FISHING TOURNAMENT · MAIL · SEASONAL CALENDAR · AUCTION 1.1 · Sleep 07:00.
    Enchant Gems, Crates, Mini Bosses) + tutorial CH16 - /updates pops for everyone.
 ```
 
+### 🎉 v30 — 15 MINIBOSSES AT 2 ARENAS (Hotfix 44)
+```
+🎯 10 NEW minibosses (15 total): Spider Queen, Plains Titan, Skeleton King,
+   Ocean Tide King, Undead Warlord, Dark Forest Stalker, Mountain Giant,
+   End Crusader, Crimson Behemoth + Ancient Golem (2400 HP!).
+📍 NO MORE RANDOM WILD SPOTS - bosses spawn at 2 FIXED ARENAS:
+   Northern Arena (-2700, 560) & Southern Arena (340, 1470).
+📢 Spawn callouts + 5-min broadcasts name the arena + coords. /hunt still
+   drops you ~200 blocks away. /miniboss status lists the arenas too.
+🔥 Nether Overlord boosted to match live: 2000 HP, 150,000 coins,
+   6x Lucky @50%, 3x Mythic Key @50% - the richest hunt now.
+📖 Guide 2.8.5 (v21) - /updates pops for everyone.
+```
+
 ---
 
 
@@ -982,21 +996,26 @@ Custom enchants as gems - buy them or find them. 8 kinds!
 ### 🎯 MINIBOSS — `#miniboss`
 **Post in ✨features:**
 ```
-🎯 MINIBOSSES - rare biome bosses; /hunt + 5-min location broadcast (a boss
-spawns first if none is up).
+🎯 MINIBOSSES - 15 types at 2 FIXED arenas (Northern/Southern); /hunt +
+5-min location broadcast (a boss spawns first if none is up).
 📌 more in #miniboss
 ```
 **Thread first message:**
 ```
 🎯 MINIBOSSES (/hunt, /miniboss)
-Rare biome bosses appear in the wild.
-• 5 types: Witch Lord, Desert Pharaoh, Ice Queen, Jungle Shaman, Nether Overlord
-• A boss spawns every ~45 min (max 3 alive), 1k-5k from world spawn, on the surface
-• Spawn callout announces the DROP POOL in % (100% coins, then lucky/crate
-  chances) + the boss HP - so you know what you are hunting before you fight
+15 boss types, 2 FIXED ARENAS - no more random wild spots!
+• 5 originals: Witch Lord, Desert Pharaoh, Ice Queen, Jungle Shaman,
+  Nether Overlord (boosted: 2000 HP / 150k coins / 6x Lucky @50% / 3x Mythic @50%)
+• 10 NEW: Spider Queen, Plains Titan, Skeleton King, Ocean Tide King,
+  Undead Warlord, Dark Forest Stalker, Mountain Giant, End Crusader,
+  Crimson Behemoth, Ancient Golem (2400 HP - the big one!)
+• Arenas (config spawn-locations, reloadable): NORTHERN (-2700, 560) and
+  SOUTHERN (340, 1470) - bosses spawn inside the jitter radius, surface only
+• A boss spawns every ~45 min (max 3 alive); spawn callout announces the
+  DROP POOL in % (100% coins, then lucky/crate chances) + the boss HP
 • /hunt - teleport outside spawn; ~200 blocks from a live boss (30s cooldown)
-• Boss locations broadcast every 5 min as "around x, z (+/-100)" -
-  a boss is SPAWNED first if none is up
+• Boss locations broadcast every 5 min WITH the arena name - a boss is
+  SPAWNED first if none is up
 • Kill: coins always, Lucky Coins + crate key only if their % rolled + trophy head
 • /miniboss status | locate | broadcast | reload
 ```
@@ -1043,6 +1062,19 @@ One block per work item so they stand out. Sentences short. `✅ = done · 🔜 
 ✓ D13-D15 + D17 fixes shipped (Hotfix 35-37)
 ⏳ D16 - needs 2+ players for couple tests
 ⏳ D18-D20 - next test round
+```
+
+```
+━━━━━━━━━━━━━━━━━━━━
+✓ CURRENT WORK 5 - 15 MINIBOSSES AT 2 ARENAS ... SHIPPED (Hotfix 44)
+━━━━━━━━━━━━━━━━━━━━
+✓ 10 new boss types (15 total: Spider Queen .. Ancient Golem 2400HP)
+✓ Bosses spawn at 2 FIXED arenas (Northern -2700,560 / Southern 340,1470)
+✓ Spawn + 5-min broadcasts name the arena; /miniboss status lists both
+✓ Nether Overlord = live values (2000 HP / 150k / 6x Lucky @50% / 3x Mythic @50%)
+✓ Old configs auto-get the 10 new defs + arenas (live tuning kept)
+✓ Guide 2.8.5 (v21) - /updates pops for everyone
+⏳ deploy jar + restart, watch the boot log, then in-game verify
 ```
 
 ---
