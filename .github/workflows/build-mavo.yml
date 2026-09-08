@@ -107,25 +107,6 @@ jobs:
             jars/*.jar
           if-no-files-found: error
 
-      - name: Commit build marker (pre-push)
-        run: |
-          # Observed: a first push in a runner session occasionally dies with
-          # 'remote: fatal error in commit_refs' while the SAME push works when a
-          # trivial push went first (2026-09-08, hotfix 43). Push this tiny
-          # marker first so the jar push below goes through.
-          git config user.name "mavocraft-ci"
-          git config user.email "ci@mavocraft.local"
-          echo "run ${{ github.run_id }} $(date -u +%FT%TZ) branch ${GITHUB_REF_NAME}" > ci-build.txt
-          git add ci-build.txt
-          git commit -m "ci: build marker run ${{ github.run_id }}" || true
-          ERR=/tmp/marker.err
-          if git push origin HEAD:"${GITHUB_REF_NAME}" 2>"$ERR"; then
-            echo "marker pushed"
-          else
-            echo "::warning::marker push failed - $(tr '\n' ' ' < "$ERR" | head -c 600)"
-            exit 0
-          fi
-
       - name: Commit rebuilt jars
         run: |
           git config user.name "mavocraft-ci"
@@ -136,13 +117,21 @@ jobs:
             exit 0
           fi
           git commit -m "ci: rebuilt plugin jars"
+          # GitHub intermittently rejects pushes with 'remote: fatal error in
+          # commit_refs' (observed 2026-09-08, hotfix 43) - retry a few times.
           ERR=/tmp/jarpush.err
-          if git push origin HEAD:"${GITHUB_REF_NAME}" 2>"$ERR"; then
+          ok=0
+          for i in 1 2 3 4; do
+            if git push origin HEAD:"${GITHUB_REF_NAME}" 2>"$ERR"; then ok=1; break; fi
+            echo "jar push attempt $i failed - retrying in 20s"
+            sleep 20
+          done
+          if [ "$ok" = 1 ]; then
             echo "jar commit pushed"
           else
-            # Bot push blocked (branch moved / token limits): the built jars are
-            # still available as the 'mavo-rebuilt-jars' artifact - commit them
-            # manually. Keep the run green so the artifact is not lost.
-            echo "::warning::jar push failed - $(tr '\n' ' ' < "$ERR" | head -c 600)"
+            # Bot push blocked: the built jars are still available as the
+            # 'mavo-rebuilt-jars' artifact - commit them manually. Keep the run
+            # green so the artifact is not lost.
+            echo "::warning::jar push failed after retries - $(tr '\n' ' ' < "$ERR" | head -c 600)"
             exit 0
           fi
