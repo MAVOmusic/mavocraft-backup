@@ -1,6 +1,9 @@
 package mavo.guide;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -52,10 +55,37 @@ public final class Guide extends JavaPlugin implements Listener {
     public void onEnable() {
         idKey = new NamespacedKey(this, "guideid");
         saveDefaultConfig();
+        syncConfig();          // v22 fix: live config was stuck at v19 while the jar had v21+
         dataFile = new File(getDataFolder(), "data.yml");
         data = YamlConfiguration.loadConfiguration(dataFile);
         getServer().getPluginManager().registerEvents(this, this);
         getLogger().info("MAVOGuide enabled - welcome aboard.");
+    }
+
+    /** v22 fix (root cause: live showing v19/v20 content forever): copyDefaults()
+     *  never replaces an EXISTING config.yml, so old servers kept their old
+     *  features/whatsnew/tutorial even though the jar was newer. If the bundled
+     *  config version is higher than the disk one, regenerate the file (the
+     *  bundled config is the source of truth; per-player data.yml is untouched). */
+    private void syncConfig() {
+        File f = new File(getDataFolder(), "config.yml");
+        try {
+            YamlConfiguration disk = YamlConfiguration.loadConfiguration(f);
+            InputStream in = getResource("config.yml");
+            if (in == null) return;
+            YamlConfiguration def = YamlConfiguration.loadConfiguration(
+                    new InputStreamReader(in, StandardCharsets.UTF_8));
+            int diskV = disk.getInt("version", 0);
+            int defV = def.getInt("version", 0);
+            if (defV > diskV && diskV > 0) {
+                def.save(f);
+                reloadConfig();
+                getLogger().info("Guide config v" + diskV + " -> v" + defV
+                        + " (new pages/notes delivered; player data kept).");
+            }
+        } catch (Throwable t) {
+            getLogger().warning("config sync failed: " + t.getMessage());
+        }
     }
 
     @Override
