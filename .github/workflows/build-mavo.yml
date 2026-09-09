@@ -107,6 +107,27 @@ jobs:
             jars/*.jar
           if-no-files-found: error
 
+      - name: Warm ref (pre-push build marker)
+        run: |
+          # Observed (2026-09-08, hotfix 43 and again 2026-09-09 for the 3.0.3
+          # jars): a first push in a runner session occasionally dies with
+          # 'remote: fatal error in commit_refs' while the SAME push works when a
+          # trivial push went first. Push a tiny marker first so the jar push
+          # below goes through. Only a warning on failure - the jar push retries
+          # anyway.
+          git config user.name "mavocraft-ci"
+          git config user.email "ci@mavocraft.local"
+          echo "run ${{ github.run_id }} $(date -u +%FT%TZ) branch ${GITHUB_REF_NAME}" > ci-build.txt
+          git add ci-build.txt
+          git commit -m "ci: build marker run ${{ github.run_id }}" || true
+          ERR=/tmp/marker.err
+          if git push origin HEAD:"${GITHUB_REF_NAME}" 2>"$ERR"; then
+            echo "marker pushed"
+          else
+            echo "::warning::marker push failed - $(tr '\n' ' ' < "$ERR" | head -c 600)"
+            exit 0
+          fi
+
       - name: Commit rebuilt jars
         run: |
           git config user.name "mavocraft-ci"
@@ -121,7 +142,7 @@ jobs:
           # commit_refs' (observed 2026-09-08, hotfix 43) - retry a few times.
           ERR=/tmp/jarpush.err
           ok=0
-          for i in 1 2 3 4; do
+          for i in 1 2 3 4 5 6; do
             if git push origin HEAD:"${GITHUB_REF_NAME}" 2>"$ERR"; then ok=1; break; fi
             echo "jar push attempt $i failed - retrying in 20s"
             sleep 20
