@@ -1121,6 +1121,49 @@ One block per work item so they stand out. Sentences short. `✅ = done · 🔜 
 ⏳ CI build + deploy all 3.0.0 jars, restart, then in-game verify
 ```
 
+## 5. NEXT IDEAS — paste into `💡┃ideas`
+
+One block per idea. `💡 = proposal · ✅ = approved · 🔨 = building`.
+
+```
+━━━━━━━━━━━━━━━━━━━━
+💡 NEXT 10 (ideas 21-30) - YOUR PICK
+━━━━━━━━━━━━━━━━━━━━
+21 /bounty   - put coins on a head, killer collects (GUI + hunter board)
+22 /party    - teams of 5: /p chat, /p home, shared boss credit
+23 /dungeon  - instanced dungeon runs 1-4 players, 4 rooms, token shop
+24 /stats    - career stats + /stats top leaderboards (kills, bosses, XP...)
+25 /trade    - SAFE player-to-player trade GUI (no ground drops)
+26 /parkour  - 3 timed courses, medals, fastest-time boards
+27 /dig      - treasure maps: buried chest 500-2000 blocks away
+28 /fame     - build showcase + weekly votes, top 3 get prizes + plaque
+29 /bank     - save coins, weekly interest, tier upgrades = coin sink
+30 /brew     - alchemy: custom potions, boss essences gate the best brews
+```
+
+```
+━━━━━━━━━━━━━━━━━━━━
+💡 PLUGIN UPGRADES (quick wins first)
+━━━━━━━━━━━━━━━━━━━━
+💡 Miniboss: boss trophies + Boss Rush week (all 15 = 3 keys + coins)
+💡 /craft: search + favorites + "you can craft it" ✅ marker
+💡 Chest Hunt: weekly Golden Chest + 3-day streak bonus roll
+💡 Couples: shared home + anniversary chest + longest-married board
+💡 Guilds: guild bank + weekly guild quest
+💡 Duels: ranked ELO + stake-a-coin lobby + spectator
+💡 Spawners: paid speed upgrades + silk-touch move item
+💡 Enchants: fuse 3 gems -> next tier + socket cap per item
+💡 Professions: profession-of-the-week 1.5x + level titles
+💡 Tavern: group rest + daily special
+💡 LuckyCoins: coin exchange shop (boosts) - gives coins a real sink
+💡 Curator: visitor rewards + exhibit-of-the-week
+💡 Casino: loyalty points + progressive jackpot
+💡 HUD / Quests / Wild / DeathChest / Achievements / PortalRoom / BossRaid
+   / FishComp / CommunityGoals / Pets / Timber - see guide doc for each
+```
+
+*Full detail + effort ratings: `MAVOCRAFT-IDEAS-NEXT.md`.*
+
 ---
 
 *Generated 2026-09-07 from the live repo (MAVOcraft). Old pack: DISCORD-PACK-2026-09-05.md.*
