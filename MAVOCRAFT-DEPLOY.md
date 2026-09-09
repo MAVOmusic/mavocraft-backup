@@ -144,3 +144,27 @@ MAVOWanderer-3.0.0.jar  MAVOWarps-3.0.0.jar  MAVOWild-3.0.0.jar
 - `MAVOChestHunt v3.0.0 enabled - chest every day at noon, radius 100 blocks, pool 20 item type(s)`
 - `/chesthunt spawn` (OP) -> broadcast + chest + holo within 100 blocks of spawn; right-click -> GUI; take item; leave it -> vanish after 20 min (or next noon).
 - Guide v22 popup; /whatsnew v22 top.
+
+---
+
+## 2026-09-09 — v3.0.0 PLUGIN PACK (`3.0.0/plugins/`, 59 numbered jars)
+
+**THE SAFE WAY (user-approved protocol):**
+1. **STOP** the server (full stop).
+2. In `plugins/` **delete ONLY the .jar files**. NEVER delete plugin folders / data
+   (LuckPerms, Essentials userdata, EconomyShopGUI shops+transactions, ClaimChunk data,
+   BlueMap configs, all MAVO data.yml / homes.yml / vaults.yml - they must stay).
+3. Copy **all 59 jars** from `3.0.0/plugins/` (01-13 third-party, 14-59 MAVO) into plugins/.
+4. **START** and check:
+   - `MAVOChestHunt v3.0.0 enabled - chest every day at noon, radius 100 blocks, pool 20 item type(s)`
+   - `MAVOEnchants v3.0.0 ... mining drop 1=0.1%/2=0.05%/3=0.01% (tiers 1-3), charge table 10 levels`
+   - `MAVOCrafting v3.0.0 ... 100 beginner recipe(s)`
+   - `MAVOGuide ...` + `Guide config v19 -> v22` (auto-fix, was stuck at v19)
+   - `MAVOMiniboss v3.0.0 ... 15 boss type(s), 2 arena(s)`
+
+**Never rename the 13 no-source jars (20/21/22/35/36/42/44/46/49/51/52/55/56) to 3.0.0** -
+they are the exact live jars (sha256-identical), no edit was made. If you ever upload
+their plugin folders/sources, they get rebuilt + bumped too.
+
+**Full mapping:** `3.0.0/MANIFEST.md` (per jar: name/version/source/sha256), `3.0.0/SHA256SUMS`
+(verify with `sha256sum -c`), `3.0.0/live-configs/` (server configs snapshot).
