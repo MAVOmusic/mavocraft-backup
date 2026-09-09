@@ -1,5 +1,5 @@
 name: MAVODoubleXp
-version: 1.0.0
+version: 3.0.0
 main: mavo.doublexp.DoubleXp
 api-version: '1.21'
 description: Scheduled DOUBLE XP weekends - multiplies every profession XP grant (MAVOcraft)

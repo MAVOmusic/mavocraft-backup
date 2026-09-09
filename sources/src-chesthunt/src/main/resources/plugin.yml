@@ -1,0 +1,14 @@
+name: MAVOChestHunt
+version: 3.0.0
+main: mavo.chesthunt.ChestHunt
+api-version: '1.21'
+description: Daily loot chest - every Minecraft day at noon a chest appears near spawn (MAVOcraft)
+author: MAVO
+commands:
+  chesthunt:
+    description: "Chest Hunt - find the daily loot chest / status / reload (admin)"
+    usage: /chesthunt [status] | /chesthunt reload|spawn (admin)
+permissions:
+  chesthunt.admin:
+    description: Admin Chest Hunt control (reload/spawn)
+    default: op

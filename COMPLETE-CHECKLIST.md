@@ -110,15 +110,16 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 
 > Each block = **OP test row** + **Player test row**. Run the Player rows on the non-OP account.
 
-### D-1 MAVOGuide 2.8.5 (v21)
+### D-1 MAVOGuide 3.0.0 (v22)
 | Who | Test | Expected |
 |---|---|---|
 | OP | `/updates reload` | Reload ok |
-| Player | `/updates`, `/tutorial`, `/whatsnew` | Menus open; What's New lists versions (v21 top: 15 minibosses, 2 arenas) |
+| Player | `/updates`, `/tutorial`, `/whatsnew` | Menus open; What's New lists versions (v22 top: Chest Hunt + v3.0.0) |
 | Player | `/updates` > Enchant Gems | Page: 8 gems (4 tool + 4 colored armor), /gemshop pages, mining odds 0.1/0.05/0.01%, charges |
 | Player | `/updates` > Crates & Keys | Page: GUI with exact %, key drop rates 1%/0.05%/0.01%, holos |
 | Player | `/updates` > Mini Bosses | Page: /hunt ~200 blocks, spawn announce drops% + HP, **15 types at 2 arenas** |
-| Player | `/tutorial` | CH16 "Gems, Crates & Hunting" exists and reads; CH0-CH15 still present |
+| Player | `/updates` > **Chest Hunt** | Page: noon spawn, 100-block radius, shared loot, rare prizes, vanishes if uncollected |
+| Player | `/tutorial` | CH16 "Gems, Crates & Hunting" exists and reads (now 4 steps incl. Chest Hunt); CH0-CH15 still present |
 
 ### D-2 MAVOEvents 1.2.1
 | Who | Test | Expected |
@@ -224,11 +225,11 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | Player | break with hand | No tree fall |
 | Player | `/timber toggle` then break | Felling off; toggle persists after relog |
 
-### D-14 ⭐ MAVOCrafting 1.0.0 (HOTFIX 35)
+### D-14 ⭐ MAVOCrafting 1.0.0 (v3.0.0)
 | Who | Test | Expected |
 |---|---|---|
-| Player | `/craft` (NON-op survival) | **Opens the beginner recipe list with ALL 50 recipes** (existing configs auto-upgraded on enable) |
-| Player | `/craft` | 50 basic recipes, 45 per page, click = consumes ingredients + crafts |
+| OP | boot log | "MAVOCrafting v3.0.0 enabled - 7 custom recipe(s), **100 beginner recipe(s)**" (v3.0 repairs old configs) |
+| Player | `/craft` (NON-op survival) | **Opens the beginner recipe list with ALL 100 recipes** (3 pages, 45 per page) |
 | Player | `/craft stone_pickaxe` | Opens the page with Stone Pickaxe |
 | Player | click a recipe in /craft | **GUIDE only - nothing is crafted/consumed**: opens a 3x3 preview of the REAL recipe (+result), recipe also unlocked in the vanilla recipe book (press E) |
 | Player | `/craft` (all pages) | **100 beginner recipes** (3 pages of 45), each shows ingredients on hover |
@@ -237,9 +238,10 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | OP | `/crafting reload` | Reloads; recipes still craftable |
 | OP | `/workbench` (or `/e craft`) | Essentials workbench still works for ops |
 
-### D-15 ⭐ MAVOEnchants 1.0.0 (HOTFIX 43)
+### D-15 ⭐ MAVOEnchants 1.0.0 (v3.0.0)
 | Who | Test | Expected |
 |---|---|---|
+| OP | boot log | "MAVOEnchants v3.0.0 enabled - 8 enchants … max tier 10 … mining drop 1=0.1%/2=0.05%/3=0.01% (tiers 1-3), charge table 10 levels" (v3.0 repairs live config; old boot showed "mining drop off, charge table 0 levels") |
 | OP | `/maenchant gem <p> VEIN 2` | Gem given to player |
 | Player | `/gemshop` | GUI **page 1** = 4 tool gems × tiers I-X (1M→512M) with per-tier effect lore, charges + price; **Next → page 2** = 4 colored armor gems (lapis/diamond/amethyst/quartz); Prev/Close work |
 | Player | click a gem in `/gemshop` with enough coins | Gem bought, coins deducted (Vault) |
@@ -333,6 +335,19 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 | Player | `/guild leave` then `/guild disband` (as leader) | Member can leave; leader must disband (or promote first) |
 | OP | `/guild reload` | Reloads config |
 
+### D-21 ⭐ MAVOChestHunt 3.0.0
+| Who | Test | Expected |
+|---|---|---|
+| OP | boot log | "MAVOChestHunt v3.0.0 enabled - chest every day at noon, radius 100 blocks, pool 20 item type(s)." |
+| OP | wait for noon (or `/chesthunt spawn`) | Broadcast: "A Chest Hunt chest has appeared within 100 blocks of spawn (x, z)!" — ender chest + holo within 100 blocks of spawn |
+| Player | `/chesthunt` | Distance hint + sound (or "next one at noon" if none) |
+| Player | right-click the chest | Shared 27-slot loot GUI opens; vanilla ender-chest GUI does NOT open; chest unbreakable |
+| Player | take an item | Item enters inventory; gone from the chest for everyone; other open views refresh |
+| Player | `/chesthunt status` | Coords + items left + expires in X min |
+| Player | do NOT open the chest | After 20 min broadcast "vanished - nobody collected it" and block + holo gone |
+| OP | edit config → `/chesthunt reload` | New loot/radius/lifetime used (pool size in reply) |
+| OP | restart within lifetime | Chest block respawns at the same spot; loot regenerated |
+
 ---
 
 ## PART E — ⭐ THE 10 NEW FILES: BIG TEST RUN ORDER
@@ -350,6 +365,7 @@ Deploy **all 10 jars** at once (plus everything from any previous test run), the
 9. **MAVOSpawners** — silk-touch one spawner (D-18) ✅
 10. **MAVODuels** — `/duelarena`, duel with 0 bet then with 100 coins (D-19) ✅
 11. **MAVOGuilds** — create + claim + enemy-can't-build (D-20) ✅
+12. **MAVOChestHunt** — `/chesthunt spawn`, right-click GUI, take items, vanish timer (D-21)
 12. **Persistence check** — restart server and confirm: locks, marriage, duels stats, guilds + claims, miniboss config survive.
 
 ---
@@ -375,7 +391,7 @@ VERSIONS TESTED: [jars list]
 PART A (boot): A1✅ A2✅ A3✅ A4✅ A5✅ A6❌ — ...
 PART B (vanilla): ...
 PART C (third-party): ...
-PART D (new plugins): D-11 … D-20 (each ✅/❌ + notes)
+PART D (new plugins): D-11 … D-21 (each ✅/❌ + notes)
 PART E (persistence): pass/fail
 PART F (datapacks): pass/fail
 ANY ERRORS IN CONSOLE: [paste]

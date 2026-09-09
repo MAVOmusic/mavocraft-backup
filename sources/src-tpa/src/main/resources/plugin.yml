@@ -1,5 +1,5 @@
 name: MAVOTpa
-version: 1.0.0
+version: 3.0.0
 main: mavo.tpa.Tpa
 api-version: '1.21'
 description: Teleport requests - /tpa, /tpahere, /tpaccept, /tpdeny, /tpacancel (MAVOcraft)

@@ -1,0 +1,36 @@
+# MAVOChestHunt 3.0.0 - daily loot chest
+# Every Minecraft day at noon (tick 6000) a chest appears within 'radius'
+# blocks of world spawn. It holds useful loot plus a REALLY small chance of
+# expensive items (low weights below). If nobody opens it within
+# 'lifetime-minutes' it disappears - next one at noon.
+enabled: true
+world: world
+spawn-daytime-tick: 6000     # 12:00 (6000 ticks into the day)
+radius: 100                  # chest spawns within this many blocks of world spawn
+lifetime-minutes: 20         # one full Minecraft day; vanish if nobody collects
+loot-slots: 12               # how many item stacks the chest holds
+
+# Loot pool: material -> { amount: stack size, weight: roll weight }.
+# Weight 1 = really rare (sum of all weights decides the %). Never use Material
+# values with NBT (plain items only).
+loot:
+  IRON_INGOT: { amount: 8, weight: 120 }
+  GOLD_INGOT: { amount: 4, weight: 60 }
+  DIAMOND: { amount: 2, weight: 25 }
+  EMERALD: { amount: 6, weight: 45 }
+  EXP_BOTTLE: { amount: 8, weight: 80 }
+  COOKED_BEEF: { amount: 12, weight: 100 }
+  BREAD: { amount: 16, weight: 70 }
+  BAKED_POTATO: { amount: 12, weight: 40 }
+  IRON_PICKAXE: { amount: 1, weight: 50 }
+  IRON_SWORD: { amount: 1, weight: 40 }
+  SHIELD: { amount: 1, weight: 30 }
+  GOLDEN_APPLE: { amount: 2, weight: 35 }
+  ARROW: { amount: 16, weight: 40 }
+  BOW: { amount: 1, weight: 25 }
+  OBSIDIAN: { amount: 8, weight: 35 }
+  DIAMOND_BLOCK: { amount: 1, weight: 2 }
+  NETHERITE_INGOT: { amount: 1, weight: 1 }
+  NETHERITE_SWORD: { amount: 1, weight: 1 }
+  ELYTRA: { amount: 1, weight: 1 }
+  ENCHANTED_GOLDEN_APPLE: { amount: 1, weight: 1 }

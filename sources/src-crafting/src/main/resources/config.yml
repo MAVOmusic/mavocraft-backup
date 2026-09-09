@@ -62,13 +62,14 @@ recipes:
     result: CHAINMAIL_BOOTS
 
 # ---------------------------------------------------------------
-# BEGINNER RECIPE LIST (/craft) - HOTFIX 35
-# /craft is open to EVERYONE (no permission) and shows these 50 basic recipes
-# a new character needs. Click a result = it uses the ingredients from your
-# inventory and gives you the crafted item. This is SEPARATE from the normal
-# crafting table and from the custom recipes above.
+# BEGINNER RECIPE LIST (/craft) - HOTFIX 35, now 100 recipes (HOTFIX 40)
+# /craft is open to EVERYONE (no permission) and shows these 100 basic recipes.
+# Clicking shows the recipe preview + unlocks it in the recipe book - it never
+# crafts or consumes anything. Separate from the normal crafting table.
 # ingredients: "MATERIAL:amount"
+# recipes-version: 3 - old configs carrying the 50-recipe list get replaced at boot.
 # ---------------------------------------------------------------
+recipes-version: 3
 beginner-recipes:
   planks:
     result: OAK_PLANKS

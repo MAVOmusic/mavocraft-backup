@@ -174,24 +174,34 @@ public final class Enchants extends JavaPlugin implements Listener {
             if (in == null) return;
             YamlConfiguration def = YamlConfiguration.loadConfiguration(
                     new InputStreamReader(in, StandardCharsets.UTF_8));
-            if (mergeMissing(disk, def, "")) {
+            if (mergeMissing(disk, def)) {
                 try { disk.save(f); }
                 catch (Exception ex) { getLogger().warning("could not save config.yml: " + ex.getMessage()); }
             }
+            // v3.0 REPAIR (live bug from Hotfix 37/43): the old recursive merge created
+            // EMPTY gem-charges / shop-prices / mine-gem-chances sections on live
+            // ("charge table 0 levels", "mining drop off") and copyDefaults wrote
+            // drop-version: 2 BEFORE the migration ran, so it never rewrote the section.
+            // Replace any empty/missing table with the bundled values.
+            ConfigurationSection dGem = def.getConfigurationSection("gem-charges");
+            ConfigurationSection dShop = def.getConfigurationSection("shop-prices");
+            ConfigurationSection dMine = def.getConfigurationSection("mine-gem-chances");
+            boolean repaired = false;
+            if (dGem != null && isEmpty(disk, "gem-charges")) { disk.set("gem-charges", dGem); repaired = true; }
+            if (dShop != null && isEmpty(disk, "shop-prices")) { disk.set("shop-prices", dShop); repaired = true; }
             // HOTFIX 43: exact mining drop rates (0.1% / 0.05% / 0.01%, tiers 1-3 only).
-            // Existing configs have the old 1% base + 10 levels - those MUST be replaced,
-            // not just merged, so bump drop-version and rewrite the section.
-            if (disk.getInt("drop-version", 0) < 2) {
+            if (disk.getInt("drop-version", 0) < 2 || isEmpty(disk, "mine-gem-chances")) {
                 disk.set("drop-version", 2);
                 disk.set("mine-gem-max-tier", def.getInt("mine-gem-max-tier", 3));
-                ConfigurationSection ch = disk.createSection("mine-gem-chances");
-                ConfigurationSection dch = def.getConfigurationSection("mine-gem-chances");
-                if (dch != null) for (String k : dch.getKeys(false)) ch.set(k, dch.get(k));
+                if (dMine != null) disk.set("mine-gem-chances", dMine);
                 disk.set("mine-gem-base-chance", null);
                 disk.set("mine-gem-levels", null);
+                repaired = true;
+            }
+            if (repaired) {
                 try { disk.save(f); }
-                catch (Exception ex) { getLogger().warning("could not save drop upgrade: " + ex.getMessage()); }
-                getLogger().info("Hotfix 43: gem drops -> 0.1% / 0.05% / 0.01% (tiers 1-3 only).");
+                catch (Exception ex) { getLogger().warning("could not save config repair: " + ex.getMessage()); }
+                getLogger().info("v3.0: config repaired - gem charges, shop prices and mining gem odds restored.");
             }
             reloadConfig();
         } catch (Throwable t) {
@@ -199,19 +209,21 @@ public final class Enchants extends JavaPlugin implements Listener {
         }
     }
 
-    private boolean mergeMissing(ConfigurationSection disk, ConfigurationSection def, String prefix) {
+    private boolean isEmpty(ConfigurationSection disk, String path) {
+        ConfigurationSection s = disk.getConfigurationSection(path);
+        return s == null || s.getKeys(false).isEmpty();
+    }
+
+    /** v3.0: flat key merge - the old recursive version built wrong path prefixes
+     *  (nested sections stayed empty). Every missing leaf path from the bundled
+     *  config is written once; empty/partial sections are repaired above. */
+    private boolean mergeMissing(ConfigurationSection disk, ConfigurationSection def) {
         boolean changed = false;
-        for (String key : def.getKeys(false)) {
-            String path = prefix.isEmpty() ? key : prefix + "." + key;
-            Object dv = def.get(path);
-            if (dv instanceof ConfigurationSection) {
-                if (!disk.isConfigurationSection(path)) {
-                    disk.createSection(path);
-                    changed = true;
-                }
-                changed |= mergeMissing(disk, ((ConfigurationSection) dv), path);
-            } else if (disk.get(path) == null) {
-                disk.set(path, dv);
+        for (String path : def.getKeys(true)) {
+            Object v = def.get(path);
+            if (v == null || v instanceof ConfigurationSection) continue;   // leaves only
+            if (disk.get(path) == null) {
+                disk.set(path, v);
                 changed = true;
             }
         }

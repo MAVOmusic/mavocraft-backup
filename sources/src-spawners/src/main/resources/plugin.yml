@@ -1,5 +1,5 @@
 name: MAVOSpawners
-version: 1.0.0
+version: 3.0.0
 main: mavo.spawners.Spawners
 api-version: '1.21'
 description: Silk-touch mine spawners, place them anywhere - /spawner info (MAVOcraft)

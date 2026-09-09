@@ -1,5 +1,5 @@
 name: MAVOCrates
-version: 1.0.0
+version: 3.0.0
 main: mavo.crates.Crates
 api-version: '1.21'
 description: Custom reward crates + keys - place a crate, right-click it with its key (MAVOcraft)

@@ -1,10 +1,24 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 21
+version: 22
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&d&lv22 &7- Chest Hunt + all plugins v3.0.0!"
+    icon: ENDER_CHEST
+    lines:
+      - "&7&eCHEST HUNT&7 (new): every Minecraft day at &fnoon&7 a loot chest"
+      - "&7appears within &f100 blocks of spawn&7, filled with useful items -"
+      - "&7and a &fREALLY small &7chance of a big prize (elytra, netherite!)."
+      - "&e/chesthunt&7 shows how far away it is. If nobody collects it"
+      - "&7within 20 min it disappears - the next one at noon."
+      - "&7&eALL PLUGINS ARE v3.0.0&7 - filenames now show 3.0.0 so you"
+      - "&7can see what was updated when you copy jars."
+      - "&7&eFixed for good&7: gems now really use their &fcharge table&7"
+      - "&7(was unlimited) & mining drops are back on (&f0.1/0.05/0.01%&7),"
+      - "&7and &e/craft&7 really has all &f100&7 beginner recipes."
+      - ""
   - title: "&2&lv21 &7- 15 minibosses, 2 arenas (Hotfix 44)"
     icon: ZOMBIE_HEAD
     lines:
@@ -440,6 +454,10 @@ tutorial:
       - "&7broadcast, then &e/hunt&7 (lands ~200 blocks away). Bosses show"
       - "&7their drop pool % + HP on spawn. Coins + Lucky Coins + crate"
       - "&7key + trophy! &e/miniboss status&7 shows the arenas too."
+      - ""
+      - "&7&e4) CHEST HUNT&7 - every day at &fnoon&7 a loot chest appears"
+      - "&7within &f100 blocks of spawn&7 (useful items + a small chance of"
+      - "&7a big prize). &e/chesthunt&7 - it vanishes if nobody collects it."
 features:
   - id: professions
     icon: IRON_PICKAXE
@@ -850,6 +868,22 @@ features:
       - "&7lucky coin % and crate key % - so you know the odds."
       - "&7Kill drops: coins, Lucky Coins, a crate key, trophy head."
       - "&e/miniboss status|locate&7 - arenas + what's alive right now."
+
+  - id: chesthunt
+    icon: ENDER_CHEST
+    name: "&d&lChest Hunt"
+    short: "Daily loot chest at noon, 100 blocks from spawn"
+    info:
+      - "&7Every Minecraft day at &fnoon&7 a &fEnder Chest&7 appears within"
+      - "&f100 blocks of spawn&7 (watch the chat callout)."
+      - "&7Right-click it: a menu with &fuseful loot&7 - iron, gold, diamonds,"
+      - "&7XP, food, tools - plus a &fREALLY small chance&7 of a BIG prize"
+      - "&7(elytra, netherite, enchanted golden apple)."
+      - "&7The chest is &fSHARED&7: items you take are gone for everyone."
+      - "&7If nobody collects it within &f20 min&7 it disappears - the"
+      - "&7next one appears at noon the next day."
+      - "&e/chesthunt&7 - how far away is it? &7| &e/chesthunt status&7 -"
+      - "&7where it is + items left. It is protected - you cannot break it."
 
   - id: clock
     icon: CLOCK

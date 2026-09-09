@@ -1,5 +1,5 @@
 name: MAVOWanderer
-version: 1.1.0
+version: 3.0.0
 main: mavo.wanderer.Wanderer
 api-version: '1.13'
 description: Wandering traders sell only USEFUL stock for MAVOcraft - and actually visit

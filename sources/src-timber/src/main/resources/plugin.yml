@@ -1,5 +1,5 @@
 name: MAVOTimber
-version: 1.0.0
+version: 3.0.0
 main: mavo.timber.Timber
 api-version: '1.21'
 description: Tree felling - chop the bottom log, the whole tree falls (MAVOcraft)

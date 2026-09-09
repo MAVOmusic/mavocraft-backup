@@ -1,5 +1,5 @@
 name: MAVOWild
-version: 1.7.4
+version: 3.0.0
 main: mavo.wild.Wild
 api-version: '1.13'
 description: Random wilderness teleport + Wild Portal for MAVOcraft

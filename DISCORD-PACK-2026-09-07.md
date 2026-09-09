@@ -244,6 +244,19 @@ FISHING TOURNAMENT · MAIL · SEASONAL CALENDAR · AUCTION 1.1 · Sleep 07:00.
 📖 Guide 2.8.5 (v21) - /updates pops for everyone.
 ```
 
+### 🎉 v31 — CHEST HUNT + ALL PLUGINS v3.0.0
+```
+🎁 NEW: CHEST HUNT - every Minecraft day at 12:00 a loot chest appears within
+   100 blocks of spawn (useful items + a REALLY small chance of a big prize:
+   elytra, netherite, enchanted golden apple). /chesthunt shows the distance.
+⏳ If nobody collects it in 20 min it disappears - next one at noon.
+📦 ALL MAVO PLUGINS ARE NOW v3.0.0 - jar filenames show the version, so you
+   always know what got updated when you copy files.
+🔧 Fixed: gem charges work again (were unlimited) + mining gem drops are ON
+   (0.1% / 0.05% / 0.01%) + /craft really has all 100 beginner recipes.
+📖 Guide v22 - /updates pops for everyone.
+```
+
 ---
 
 
@@ -1020,6 +1033,24 @@ Custom enchants as gems - buy them or find them. 8 kinds!
 • /miniboss status | locate | broadcast | reload
 ```
 
+### 🎁 CHEST HUNT — `#chesthunt`
+**Post in ✨features:**
+```
+🎁 CHEST HUNT - daily loot chest at noon, within 100 blocks of spawn.
+📌 more in #chesthunt
+```
+**Thread first message:**
+```
+🎁 CHEST HUNT (/chesthunt)
+Every Minecraft day at 12:00 a loot chest appears within 100 blocks of spawn.
+• Right-click it: useful loot - iron, gold, diamonds, XP, food, tools
+• REALLY small chance of a BIG prize: elytra, netherite, enchanted apple
+• The chest is SHARED - items you take are gone for everyone
+• If nobody collects it within 20 min it disappears (next one at noon)
+• /chesthunt - how far away is it? | /chesthunt status - coords + items left
+• Protected - you cannot break it. Restart-proof inside its lifetime.
+```
+
 ## 4. CURRENT WORK — paste into `🛠┃current-work`
 
 One block per work item so they stand out. Sentences short. `✅ = done · 🔜 = next · ⏳ = waiting`.
@@ -1075,6 +1106,19 @@ One block per work item so they stand out. Sentences short. `✅ = done · 🔜 
 ✓ Old configs auto-get the 10 new defs + arenas (live tuning kept)
 ✓ Guide 2.8.5 (v21) - /updates pops for everyone
 ⏳ deploy jar + restart, watch the boot log, then in-game verify
+```
+
+```
+━━━━━━━━━━━━━━━━━━━━
+🔜 CURRENT WORK 6 - CHEST HUNT + v3.0.0 ... BUILDING
+━━━━━━━━━━━━━━━━━━━━
+✓ NEW plugin MAVOChestHunt 3.0.0: daily noon chest, 100 blocks of spawn
+✓ Useful loot + really small chance of expensive items (elytra/netherite)
+✓ Vanishes after 20 min if nobody collects it; /chesthunt distance hint
+✓ Fixed live errors: gem charges (were unlimited) + mining drops + /craft 100
+✓ ALL plugin jars bumped to 3.0.0 (filenames show the version)
+✓ Guide v22 (chest hunt page + CH16 step 4) + Discord pack v31
+⏳ CI build + deploy all 3.0.0 jars, restart, then in-game verify
 ```
 
 ---

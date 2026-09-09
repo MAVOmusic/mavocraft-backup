@@ -1,5 +1,5 @@
 name: MAVOAchievements
-version: 1.7.2
+version: 3.0.0
 main: mavo.achievements.Achievements
 api-version: '1.13'
 description: Tab-based progression achievements with milestone rewards (MAVOcraft)

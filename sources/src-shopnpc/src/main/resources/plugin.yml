@@ -1,5 +1,5 @@
 name: MAVOShopNPC
-version: 1.3.3
+version: 3.0.0
 main: mavo.shopnpc.ShopNPC
 api-version: '1.13'
 description: Citizens-free shop NPCs for MAVOcraft

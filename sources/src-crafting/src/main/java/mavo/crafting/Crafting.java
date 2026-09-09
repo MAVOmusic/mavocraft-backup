@@ -76,9 +76,22 @@ public final class Crafting extends JavaPlugin implements Listener {
             if (in == null) return;
             YamlConfiguration def = YamlConfiguration.loadConfiguration(
                     new InputStreamReader(in, StandardCharsets.UTF_8));
-            if (mergeMissing(disk, def, "")) {
+            if (mergeMissing(disk, def)) {
                 try { disk.save(f); }
                 catch (Exception ex) { getLogger().warning("could not save config.yml: " + ex.getMessage()); }
+            }
+            // v3.0 REPAIR (live bug): old configs carry the 50-recipe list and the
+            // merge only ADDS missing keys, so the other 50 never appeared
+            // ("50 beginner recipe(s)" on live). Replace the whole section once.
+            if (disk.getInt("recipes-version", 0) < 3) {
+                Object list = def.get("beginner-recipes");
+                if (list != null) {
+                    disk.set("recipes-version", 3);
+                    disk.set("beginner-recipes", list);
+                    try { disk.save(f); }
+                    catch (Exception ex) { getLogger().warning("could not save recipe upgrade: " + ex.getMessage()); }
+                    getLogger().info("v3.0: beginner recipes upgraded to 100 (/craft guide).");
+                }
             }
             reloadConfig();
         } catch (Throwable t) {
@@ -86,19 +99,16 @@ public final class Crafting extends JavaPlugin implements Listener {
         }
     }
 
-    private boolean mergeMissing(ConfigurationSection disk, ConfigurationSection def, String prefix) {
+    /** v3.0: flat key merge - the old recursive version built wrong path prefixes
+     *  (nested sections stayed empty). Every missing leaf path from the bundled
+     *  config is written once. */
+    private boolean mergeMissing(ConfigurationSection disk, ConfigurationSection def) {
         boolean changed = false;
-        for (String key : def.getKeys(false)) {
-            String path = prefix.isEmpty() ? key : prefix + "." + key;
-            Object dv = def.get(path);
-            if (dv instanceof ConfigurationSection) {
-                if (!disk.isConfigurationSection(path)) {
-                    disk.createSection(path);
-                    changed = true;
-                }
-                changed |= mergeMissing(disk, ((ConfigurationSection) dv), path);
-            } else if (disk.get(path) == null) {
-                disk.set(path, dv);
+        for (String path : def.getKeys(true)) {
+            Object v = def.get(path);
+            if (v == null || v instanceof ConfigurationSection) continue;   // leaves only
+            if (disk.get(path) == null) {
+                disk.set(path, v);
                 changed = true;
             }
         }

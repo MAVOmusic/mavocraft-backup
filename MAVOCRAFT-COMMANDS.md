@@ -2,17 +2,40 @@
 
 Every MAVO jar and its commands. **Players** = anyone online · **OP** = server admins / LuckyPerms group with the listed permission.
 
+> **VERSION RULE (from v3.0.0):** every time a plugin is edited its version is bumped
+> (all plugins are 3.0.0 now; next edits become 3.0.1, 3.0.2 …). The jar file name
+> shows the version — if the file you copy is NOT the version in this file, it wasn't
+> updated. Plugins without sources in this repo (Tavern, Vault, Homes, Spawn, Quests,
+> HUD, PortalRoom, Trades, Streaks, CommunityGoals, ChunkBorders, ChunkPrices,
+> PersonalVault) stay at their original versions until sources exist.
+
 ---
 
-## MAVOGuide 2.8.4
+## MAVOGuide 3.0.0
 | Command | Who | What it does |
 |---|---|---|
 | `/updates` | Players | Open the guide main menu (aliases: `/guide`, `/mods`, `/features`) |
 | `/tutorial` | Players | Open the tutorial chapter list — CH0 newbie basics → CH16 Gems, Crates & Hunting (aliases: `/howto`, `/help2`) |
-| `/whatsnew` | Players | Open the What's New version list (newest first, paged) — currently v20 (Hotfix 43) |
+| `/whatsnew` | Players | Open the What's New version list (newest first, paged) — currently v22 (Chest Hunt + v3.0.0) |
 | `/updates reload` | OP (`mavoguide.admin`) | Reload config; players who haven't seen the new version get the popup on next join |
 
-Notes: Guide auto-opens once per new version (auto-popup + chat banner). "This Guide" book is pinned bottom-middle of the menu. **The Guide is updated with EVERY hotfix** (What's New entry + feature pages + tutorial chapters, rebuilt jar delivered alongside the feature jar) — e.g. v20 added the Timber / Crafting Guide / Enchant Gems / Crates & Keys / Mini Bosses pages + CH16.
+Notes: Guide auto-opens once per new version (auto-popup + chat banner). "This Guide" book is pinned bottom-middle of the menu. **The Guide is updated with EVERY hotfix** (What's New entry + feature pages + tutorial chapters, rebuilt jar delivered alongside the feature jar) — e.g. v22 added the Chest Hunt page + CH16 step 4.
+
+## MAVOChestHunt 3.0.0
+| Command | Who | What it does |
+|---|---|---|
+| `/chesthunt` | Players | Shows how far away the daily loot chest is (sound ping) |
+| `/chesthunt status` | Players | Chest coords, items left, minutes until it vanishes |
+| `/chesthunt reload` | OP (`chesthunt.admin`) | Reload config (loot pool, radius, lifetime) |
+| `/chesthunt spawn` | OP (`chesthunt.admin`) | Force a chest now (next daily at noon is not double-spawned) |
+
+Every Minecraft day at **noon (tick 6000)** an ender chest appears within **100 blocks of
+world spawn** (config: `radius`, `lifetime-minutes` = 20 = one MC day). Right-click opens a
+sharing loot GUI — useful items + a really small chance of expensive items (ELYTRA,
+netherite, enchanted golden apple — low config weights). If nobody opens it within its
+lifetime it disappears; the next appears at noon. The chest is protected (unbreakable),
+persists restarts inside its lifetime, and the spawn callout always broadcasts the coords.
+
 
 ---
 

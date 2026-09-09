@@ -93,3 +93,54 @@ Expected boot lines (order depends on jar loading):
 - MAVOCRAFT-CONTEXT-REVIVAL.md: HOTFIX 26 entry appended.
 - DISCORD-PACK-2026-09-05.md: version-log v20/v21 blocks + FEATURES blocks for all
   seven new systems + CW3 done list + CW4 "next 10" proposals — copy from there.
+
+---
+
+## 2026-09-09 — v3.0.0 BATCH + CHEST HUNT (all maintained plugins -> 3.0.0)
+
+**VERSION RULE (user, standing):** every edit bumps the plugin version (3.0.0 -> 3.0.1 -> ...).
+Jar file names show the version - if the file you copy is not the newest version, it was not
+updated. No edits = version stays.
+
+**What changed:** NEW MAVOChestHunt-3.0.0 (daily noon chest near spawn, 100-block radius,
+useful + rare loot, vanishes if uncollected); all 33 maintained plugins rebuilt at 3.0.0;
+MAVOEnchants + MAVOCrafting config REPAIRS (gem charge table / mining gem drops / 100
+beginner recipes - old configs auto-upgrade at boot); MAVOGuide 3.0.0 (v22).
+
+**Plugins WITHOUT sources in this repo stay at their old version (no change, nothing to copy):**
+Tavern, Vault, PersonalVault, Spawn, Homes, Quests, HUD, PortalRoom, Trades, Streaks,
+CommunityGoals, ChunkBorders, ChunkPrices.
+
+### 1. STOP the server (full stop, no /reload)
+
+### 2. In plugins/ DELETE the old MAVO jars you are replacing (every jar whose name is NOT 3.0.0
+and exists in this batch list) - each plugin has exactly one jar in plugins/:
+MAVOAchievements, AuctionHouse, BossRaid, Casino, ChestShops, Couples, Crafting, Crates,
+Curator, DeathChest, DoubleXp, Duels, Enchants, Events, FishComp, Guide, Guilds, Locks,
+LuckyCoins, Mail, Miniboss, MobFarm, Pets, Professions, Seasonal, ShopNPC, Spawners, Timber,
+Tpa, Wanderer, Warps, Wild. DELETE MAVOChestHunt* if present (should not be).
+
+### 3. UPLOAD all 33 jars below into plugins/ (versions now 3.0.0; MAVOGuide = 3.0.0 v22):
+MAVOAchievements-3.0.0.jar  MAVOAuctionHouse-3.0.0.jar  MAVOBossRaid-3.0.0.jar
+MAVOCasino-3.0.0.jar  MAVOChestShops-3.0.0.jar  MAVOChestHunt-3.0.0.jar  MAVOCouples-3.0.0.jar
+MAVOCrafting-3.0.0.jar  MAVOCrates-3.0.0.jar  MAVOCurator-3.0.0.jar  MAVODeathChest-3.0.0.jar
+MAVODoubleXp-3.0.0.jar  MAVODuels-3.0.0.jar  MAVOEnchants-3.0.0.jar  MAVOEvents-3.0.0.jar
+MAVOFishComp-3.0.0.jar  MAVOGuide-3.0.0.jar  MAVOGuilds-3.0.0.jar  MAVOLocks-3.0.0.jar
+MAVOLuckyCoins-3.0.0.jar  MAVOMail-3.0.0.jar  MAVOMiniboss-3.0.0.jar  MAVOMobFarm-3.0.0.jar
+MAVOPets-3.0.0.jar  MAVOProfessions-3.0.0.jar  MAVOSeasonal-3.0.0.jar
+MAVOShopNPC-3.0.0.jar  MAVOSpawners-3.0.0.jar  MAVOTimber-3.0.0.jar  MAVOTpa-3.0.0.jar
+MAVOWanderer-3.0.0.jar  MAVOWarps-3.0.0.jar  MAVOWild-3.0.0.jar
+
+(The plugins WITHOUT sources above - Tavern/Vault/etc - keep their existing jars untouched.)
+
+### 4. START the server. Configs auto-upgrade (no config edits needed):
+- MAVOEnchants: repairs gem-charges/shop-prices/mine-gem-chances (log: "v3.0: config repaired ...").
+- MAVOCrafting: replaces the 50-recipe list with 100 (log: "v3.0: beginner recipes upgraded to 100").
+- MAVOChestHunt: creates config.yml on first boot (loot pool, radius 100, lifetime 20 min).
+
+### 5. VERIFY (boot log + in game):
+- `MAVOEnchants v3.0.0 enabled - ... mining drop 1=0.1%/2=0.05%/3=0.01% (tiers 1-3), charge table 10 levels`
+- `MAVOCrafting v3.0.0 enabled - 7 custom recipe(s), 100 beginner recipe(s)`
+- `MAVOChestHunt v3.0.0 enabled - chest every day at noon, radius 100 blocks, pool 20 item type(s)`
+- `/chesthunt spawn` (OP) -> broadcast + chest + holo within 100 blocks of spawn; right-click -> GUI; take item; leave it -> vanish after 20 min (or next noon).
+- Guide v22 popup; /whatsnew v22 top.
