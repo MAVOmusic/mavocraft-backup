@@ -1,15 +1,23 @@
 # MAVOcraft 3.0.0 — complete plugin pack (verified)
 
-This folder is a **fully mapped, cross-checked copy of your live plugins folder**,
-updated so **every MAVO jar is 3.0.0**. It contains **59 jars** in `plugins/`, numbered
-so they always load in a safe order, plus `live-configs/` (the config/data snapshot
-running on the server) and `MANIFEST.md` (every jar checked: file ↔ `plugin.yml`
-name ↔ version ↔ sha256).
+This folder is a **fully mapped, cross-checked copy of your live plugins folder**.
+It contains **59 jars** in `plugins/`, numbered so they always load in a safe order,
+plus `live-configs/` (the config/data snapshot running on the server) and
+`MANIFEST.md` (every jar checked: file ↔ `plugin.yml` name ↔ version ↔ sha256).
 
-## Every jar at 3.0.0 — how
-- **46 MAVO jars, ALL 3.0.0** (file name + internal `plugin.yml` — verified, see MANIFEST):
+**Current state: 43 MAVO jars at 3.0.0, 3 MAVO jars at 3.0.1
+(MAVOChestHunt, MAVOCrafting, MAVOGuide — the 3.0.1 bug-fix round).**
+The version bump is the signal: any MAVO file that is NOT at the version below is
+old and must be replaced.
+
+## Versions — how
+- **46 MAVO jars: 43 @ 3.0.0 + 3 @ 3.0.1** (file name + internal `plugin.yml` —
+  verified, see MANIFEST):
   - **33 rebuilt from source** by MAVOcraft CI (all hotfixes 35–44, Chest Hunt, gem fix,
-    100 recipes, guide v22 + config auto-fix, 15 minibosses at 2 arenas …).
+    100 recipes, guide v22 + config auto-fix, 15 minibosses at 2 arenas …). 3 of them
+    are now **3.0.1**: ChestHunt (loot pool now includes XP bottles — 20/20 item types,
+    was 19/20), Crafting (2 bad recipe names fixed — now really 100 beginner recipes,
+    was 98), Guide (v23 What's New entry describing both fixes).
   - **13 had no source code in this repo** (never uploaded before part 1–7:
     ChunkBorders, ChunkPrices, CommunityGoals, Homes, Hud, PersonalVault, PortalRoom,
     Quests, Spawn, Streaks, Tavern, Trades, Vault). Their `plugin.yml` version was
@@ -32,24 +40,27 @@ name ↔ version ↔ sha256).
 3. Copy **all 59 jars** from `3.0.0/plugins/` into `plugins/` (numbers handle order:
    01–13 third-party first, 14–59 MAVO alphabetical).
 4. Start and check:
-   - `MAVOChestHunt v3.0.0 enabled - chest every day at noon, radius 100 blocks, pool 20 item type(s)`
+   - `MAVOChestHunt v3.0.1 enabled - chest every day at noon, radius 100 blocks, pool 20 item type(s)`
    - `MAVOEnchants v3.0.0 ... mining drop 1=0.1%/2=0.05%/3=0.01% (tiers 1-3), charge table 10 levels`
-   - `MAVOCrafting v3.0.0 ... 100 beginner recipe(s)`
-   - `MAVOGuide ...` + `Guide config v19 -> v22 (new pages/notes delivered...)`
+   - `MAVOCrafting v3.0.1 ... 7 custom recipe(s), 100 beginner recipe(s)`
+   - `MAVOGuide v3.0.1 ...` + `Guide config v22 -> v23 (3.0.1 fixes...)`
    - `MAVOMiniboss v3.0.0 ... 15 boss type(s), 2 arena(s)`
-   - `/plugins` shows every MAVO* plugin as v3.0.0.
+   - `/plugins` shows the 43 MAVO plugins as v3.0.0 and the 3 fixed ones as v3.0.1.
 5. Verify checksums: `sha256sum -c 3.0.0/SHA256SUMS` (run inside the folder holding the
    copied jars) — all 59 must say OK.
 
 ## Version rule (yours, now absolute)
 Any future MAVO edit bumps the version: 3.0.0 → 3.0.1 → 3.0.2 … Every rebuilt jar is
-replaced in this pack + pushed here, so when you copy, any file still reading `3.0.0`
-with a different SHA, or any file not at 3.0.0, is instantly visible.
+replaced in this pack + pushed here, so when you copy, any file still reading an older
+version, or any file not matching `SHA256SUMS`, is instantly visible.
+
+**Zip note:** `MAVOcraft-backup.zip` extracts every file writable (`-rw-rw-rw-`), so
+jars/configs can be uploaded or overwritten from the panel without any chmod.
 
 ## Files in this folder
 | Path | What |
 |---|---|
-| `plugins/` | the 59 numbered jars to copy (46 MAVO @3.0.0 + 13 third-party) |
+| `plugins/` | the 59 numbered jars to copy (43 MAVO @3.0.0 + 3 MAVO @3.0.1 + 13 third-party) |
 | `MANIFEST.md` | per-jar table: #, filename, plugin, version, source, sha256 |
 | `SHA256SUMS` | official checksums (same order as MANIFEST) |
 | `live-configs/` | snapshot of configs/data currently on the server (reference + mapping) |

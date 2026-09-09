@@ -1,10 +1,12 @@
 # MAVOcraft 3.0.0 PLUGIN PACK - manifest (verified)
 
 Every jar below was opened and its `plugin.yml` name + version matched against the file name.
-**ALL 46 MAVO plugins are 3.0.0 - filename and plugin.yml, no exceptions.**
-33 were rebuilt from source by MAVOcraft CI; the 13 without source code in this repo had their
-plugin.yml version patched to 3.0.0 - code inside is byte-identical to the jar running on the server
-(sha-verified), so behaviour is unchanged. **1 new plugin: MAVOChestHunt 3.0.0.**
+**46 MAVO plugins: 43 at 3.0.0, and 3 at 3.0.1 (MAVOChestHunt, MAVOCrafting, MAVOGuide - the
+3.0.1 bug-fix round: healed EXP bottle loot entry + the 2 bad recipe names + Guide v23).**
+33 were rebuilt from source by MAVOcraft CI (3 of them now 3.0.1); the 13 without source code in
+this repo had their plugin.yml version patched to 3.0.0 - code inside is byte-identical to the
+jar running on the server (sha-verified), so behaviour is unchanged. **MAVOChestHunt 3.0.0 was
+the new plugin in 3.0.0; it is now at 3.0.1.**
 Third-party jars (01-13) keep their REAL upstream versions - they are never edited, so they can never
 hide an edit; a fake 3.0.0 there would break plugin update checks.
 
@@ -23,52 +25,52 @@ hide an edit; a fake 3.0.0 there would break plugin update checks.
 | 11 | 11_EconomyShopGUI-7.2.1.jar | EconomyShopGUI | 7.2.1 | third-party (upstream - never edited) | `c9a06a910ea57c98…` |
 | 12 | 12_CoreProtect-24.0.jar | CoreProtect | 24.0 | third-party (upstream - never edited) | `0000faa904e86b30…` |
 | 13 | 13_BlueMap-5.23.jar | BlueMap | 5.23 | third-party (upstream - never edited) | `339554d75cedab35…` |
-| 14 | 14_MAVO-Achievements-3.0.0.jar | MAVOAchievements | 3.0.0 | rebuilt from source | `7212eb2333f3178e…` |
-| 15 | 15_MAVO-AuctionHouse-3.0.0.jar | MAVOAuctionHouse | 3.0.0 | rebuilt from source | `7db6345e3accf635…` |
-| 16 | 16_MAVO-BossRaid-3.0.0.jar | MAVOBossRaid | 3.0.0 | rebuilt from source | `8775ea62c8203c26…` |
-| 17 | 17_MAVO-Casino-3.0.0.jar | MAVOCasino | 3.0.0 | rebuilt from source | `42e24a4b2bd650d1…` |
-| 18 | 18_MAVO-ChestHunt-3.0.0.jar | MAVOChestHunt | 3.0.0 | rebuilt from source | `4d936d223719d48f…` |
-| 19 | 19_MAVO-ChestShops-3.0.0.jar | MAVOChestShops | 3.0.0 | rebuilt from source | `dc88551fba8403c9…` |
+| 14 | 14_MAVO-Achievements-3.0.0.jar | MAVOAchievements | 3.0.0 | rebuilt from source | `1d0390e03a996074…` |
+| 15 | 15_MAVO-AuctionHouse-3.0.0.jar | MAVOAuctionHouse | 3.0.0 | rebuilt from source | `fd5eda7edff358ec…` |
+| 16 | 16_MAVO-BossRaid-3.0.0.jar | MAVOBossRaid | 3.0.0 | rebuilt from source | `a7eac2f47d5e89eb…` |
+| 17 | 17_MAVO-Casino-3.0.0.jar | MAVOCasino | 3.0.0 | rebuilt from source | `57c21943f495b468…` |
+| 18 | 18_MAVO-ChestHunt-3.0.1.jar | MAVOChestHunt | 3.0.1 | rebuilt from source - 3.0.1 bugfix (EXP bottle + 2 recipe names) | `98c9fcd9ccb355a9…` |
+| 19 | 19_MAVO-ChestShops-3.0.0.jar | MAVOChestShops | 3.0.0 | rebuilt from source | `20d19ccdd5c52dbb…` |
 | 20 | 20_MAVO-ChunkBorders-3.0.0.jar | MAVOChunkBorders | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `9c24bc3b2fdc82fa…` |
 | 21 | 21_MAVO-ChunkPrices-3.0.0.jar | MAVOChunkPrices | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `6e1ae6d72b0f3770…` |
 | 22 | 22_MAVO-CommunityGoals-3.0.0.jar | MAVOCommunityGoals | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `2949117d074d4f90…` |
-| 23 | 23_MAVO-Couples-3.0.0.jar | MAVOCouples | 3.0.0 | rebuilt from source | `806f9f58913ac59b…` |
-| 24 | 24_MAVO-Crafting-3.0.0.jar | MAVOCrafting | 3.0.0 | rebuilt from source | `7cfde38b29023c55…` |
-| 25 | 25_MAVO-Crates-3.0.0.jar | MAVOCrates | 3.0.0 | rebuilt from source | `f5a1990fe73a56ad…` |
-| 26 | 26_MAVO-Curator-3.0.0.jar | MAVOCurator | 3.0.0 | rebuilt from source | `36d087e6a118bba6…` |
-| 27 | 27_MAVO-DeathChest-3.0.0.jar | MAVODeathChest | 3.0.0 | rebuilt from source | `ec226fbbc328d767…` |
-| 28 | 28_MAVO-DoubleXp-3.0.0.jar | MAVODoubleXp | 3.0.0 | rebuilt from source | `9a6590ef17842b53…` |
-| 29 | 29_MAVO-Duels-3.0.0.jar | MAVODuels | 3.0.0 | rebuilt from source | `c1fa70ae9b22f286…` |
-| 30 | 30_MAVO-Enchants-3.0.0.jar | MAVOEnchants | 3.0.0 | rebuilt from source | `1fb9f7e2b37ea5dc…` |
-| 31 | 31_MAVO-Events-3.0.0.jar | MAVOEvents | 3.0.0 | rebuilt from source | `316371dd04b25483…` |
-| 32 | 32_MAVO-FishComp-3.0.0.jar | MAVOFishComp | 3.0.0 | rebuilt from source | `d068a79df4787104…` |
-| 33 | 33_MAVO-Guide-3.0.0.jar | MAVOGuide | 3.0.0 | rebuilt from source | `771977168825a8cd…` |
-| 34 | 34_MAVO-Guilds-3.0.0.jar | MAVOGuilds | 3.0.0 | rebuilt from source | `dceacdbbb064fbc1…` |
+| 23 | 23_MAVO-Couples-3.0.0.jar | MAVOCouples | 3.0.0 | rebuilt from source | `db835351613ceedd…` |
+| 24 | 24_MAVO-Crafting-3.0.1.jar | MAVOCrafting | 3.0.1 | rebuilt from source - 3.0.1 bugfix (EXP bottle + 2 recipe names) | `fea8df2c5a0d5a5b…` |
+| 25 | 25_MAVO-Crates-3.0.0.jar | MAVOCrates | 3.0.0 | rebuilt from source | `fe9e080111be74fa…` |
+| 26 | 26_MAVO-Curator-3.0.0.jar | MAVOCurator | 3.0.0 | rebuilt from source | `2585d6a7ca240dc4…` |
+| 27 | 27_MAVO-DeathChest-3.0.0.jar | MAVODeathChest | 3.0.0 | rebuilt from source | `5c4b0c6a96d47872…` |
+| 28 | 28_MAVO-DoubleXp-3.0.0.jar | MAVODoubleXp | 3.0.0 | rebuilt from source | `b873ecb67d038027…` |
+| 29 | 29_MAVO-Duels-3.0.0.jar | MAVODuels | 3.0.0 | rebuilt from source | `9ce7088dcb1ba159…` |
+| 30 | 30_MAVO-Enchants-3.0.0.jar | MAVOEnchants | 3.0.0 | rebuilt from source | `1f3389c6a60ae44b…` |
+| 31 | 31_MAVO-Events-3.0.0.jar | MAVOEvents | 3.0.0 | rebuilt from source | `8f13f1020694755a…` |
+| 32 | 32_MAVO-FishComp-3.0.0.jar | MAVOFishComp | 3.0.0 | rebuilt from source | `505d2ec6ad56f73c…` |
+| 33 | 33_MAVO-Guide-3.0.1.jar | MAVOGuide | 3.0.1 | rebuilt from source - 3.0.1 bugfix (EXP bottle + 2 recipe names) | `53bb983c36e60f92…` |
+| 34 | 34_MAVO-Guilds-3.0.0.jar | MAVOGuilds | 3.0.0 | rebuilt from source | `5af532218ed79238…` |
 | 35 | 35_MAVO-Homes-3.0.0.jar | MAVOHomes | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `e50461bda67841e0…` |
 | 36 | 36_MAVO-Hud-3.0.0.jar | MAVOHud | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `95627604ab20c97d…` |
-| 37 | 37_MAVO-Locks-3.0.0.jar | MAVOLocks | 3.0.0 | rebuilt from source | `cf813347a4855e45…` |
-| 38 | 38_MAVO-LuckyCoins-3.0.0.jar | MAVOLuckyCoins | 3.0.0 | rebuilt from source | `a821c672383142d7…` |
-| 39 | 39_MAVO-Mail-3.0.0.jar | MAVOMail | 3.0.0 | rebuilt from source | `c453e22699a253dc…` |
-| 40 | 40_MAVO-Miniboss-3.0.0.jar | MAVOMiniboss | 3.0.0 | rebuilt from source | `dc55e2ac7165ce58…` |
-| 41 | 41_MAVO-MobFarm-3.0.0.jar | MAVOMobFarm | 3.0.0 | rebuilt from source | `f81c28a105b9d3b0…` |
+| 37 | 37_MAVO-Locks-3.0.0.jar | MAVOLocks | 3.0.0 | rebuilt from source | `db74371d102ab190…` |
+| 38 | 38_MAVO-LuckyCoins-3.0.0.jar | MAVOLuckyCoins | 3.0.0 | rebuilt from source | `c899cdea041e7c17…` |
+| 39 | 39_MAVO-Mail-3.0.0.jar | MAVOMail | 3.0.0 | rebuilt from source | `10634d80cf47cef9…` |
+| 40 | 40_MAVO-Miniboss-3.0.0.jar | MAVOMiniboss | 3.0.0 | rebuilt from source | `f675da501654c8d2…` |
+| 41 | 41_MAVO-MobFarm-3.0.0.jar | MAVOMobFarm | 3.0.0 | rebuilt from source | `7f98ddd8c7283f87…` |
 | 42 | 42_MAVO-PersonalVault-3.0.0.jar | MAVOPersonalVault | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `262fc9e9e373f75e…` |
-| 43 | 43_MAVO-Pets-3.0.0.jar | MAVOPets | 3.0.0 | rebuilt from source | `63ae061654058b09…` |
+| 43 | 43_MAVO-Pets-3.0.0.jar | MAVOPets | 3.0.0 | rebuilt from source | `a44ca165e5db5cce…` |
 | 44 | 44_MAVO-PortalRoom-3.0.0.jar | MAVOPortalRoom | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `e0dfbba6c5cb1fe4…` |
-| 45 | 45_MAVO-Professions-3.0.0.jar | MAVOProfessions | 3.0.0 | rebuilt from source | `68132d4ccd913812…` |
+| 45 | 45_MAVO-Professions-3.0.0.jar | MAVOProfessions | 3.0.0 | rebuilt from source | `95359abd5d06ada8…` |
 | 46 | 46_MAVO-Quests-3.0.0.jar | MAVOQuests | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `610f4df0f7e182fc…` |
-| 47 | 47_MAVO-Seasonal-3.0.0.jar | MAVOSeasonal | 3.0.0 | rebuilt from source | `95c998f186fc2b29…` |
-| 48 | 48_MAVO-ShopNPC-3.0.0.jar | MAVOShopNPC | 3.0.0 | rebuilt from source | `704fab685f205e1d…` |
+| 47 | 47_MAVO-Seasonal-3.0.0.jar | MAVOSeasonal | 3.0.0 | rebuilt from source | `21c038db5a8e736e…` |
+| 48 | 48_MAVO-ShopNPC-3.0.0.jar | MAVOShopNPC | 3.0.0 | rebuilt from source | `011582004a51aace…` |
 | 49 | 49_MAVO-Spawn-3.0.0.jar | MAVOSpawn | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `505bec8d02b0b29f…` |
-| 50 | 50_MAVO-Spawners-3.0.0.jar | MAVOSpawners | 3.0.0 | rebuilt from source | `da1a2a601d0d1a1d…` |
+| 50 | 50_MAVO-Spawners-3.0.0.jar | MAVOSpawners | 3.0.0 | rebuilt from source | `e0920536e9f94de6…` |
 | 51 | 51_MAVO-Streaks-3.0.0.jar | MAVOStreaks | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `d6feb1ebdb366e83…` |
 | 52 | 52_MAVO-Tavern-3.0.0.jar | MAVOTavern | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `0183a64854a48aea…` |
-| 53 | 53_MAVO-Timber-3.0.0.jar | MAVOTimber | 3.0.0 | rebuilt from source | `b0595f118c3bf0a3…` |
-| 54 | 54_MAVO-Tpa-3.0.0.jar | MAVOTpa | 3.0.0 | rebuilt from source | `fc1000e4d5885b02…` |
+| 53 | 53_MAVO-Timber-3.0.0.jar | MAVOTimber | 3.0.0 | rebuilt from source | `945ef5efbdb4213a…` |
+| 54 | 54_MAVO-Tpa-3.0.0.jar | MAVOTpa | 3.0.0 | rebuilt from source | `f46c974ad5605971…` |
 | 55 | 55_MAVO-Trades-3.0.0.jar | MAVOTrades | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `db6825e024f55311…` |
 | 56 | 56_MAVO-Vault-3.0.0.jar | MAVOVault | 3.0.0 | metadata-patched to 3.0.0 (code = live jar, no source) | `f0c27c00182802c8…` |
-| 57 | 57_MAVO-Wanderer-3.0.0.jar | MAVOWanderer | 3.0.0 | rebuilt from source | `7a9257a7f987c6bd…` |
-| 58 | 58_MAVO-Warps-3.0.0.jar | MAVOWarps | 3.0.0 | rebuilt from source | `f84da5c3f022a0bf…` |
-| 59 | 59_MAVO-Wild-3.0.0.jar | MAVOWild | 3.0.0 | rebuilt from source | `711ff706c3c4f5de…` |
+| 57 | 57_MAVO-Wanderer-3.0.0.jar | MAVOWanderer | 3.0.0 | rebuilt from source | `8200bc3d2256f84a…` |
+| 58 | 58_MAVO-Warps-3.0.0.jar | MAVOWarps | 3.0.0 | rebuilt from source | `c82a28717eeec4be…` |
+| 59 | 59_MAVO-Wild-3.0.0.jar | MAVOWild | 3.0.0 | rebuilt from source | `7cfc7b141c8e7e86…` |
 
 **Copy protocol (see README.md):** stop server → delete ONLY the .jar files in plugins/
 (keep every plugin folder + data) → copy all 59 jars → start → check the boot lines in README.
