@@ -170,3 +170,11 @@ their plugin folders/sources, they get rebuilt + bumped too.
 
 **Full mapping:** `3.0.0/MANIFEST.md` (per jar: name/version/source/sha256), `3.0.0/SHA256SUMS`
 (verify with `sha256sum -c`), `3.0.0/live-configs/` (server configs snapshot).
+
+---
+
+## 2026-09-09 — 3.0.1 round (3 files changed - the bump is the signal)
+Replace in plugins/: `18_MAVO-ChestHunt-3.0.1.jar`, `24_MAVO-Crafting-3.0.1.jar`,
+`33_MAVO-Guide-3.0.1.jar` (delete the 3.0.0 versions of these three). Restart.
+Boot must now show: MAVOCrafting "100 beginner recipe(s)", MAVOChestHunt "pool 20 item
+type(s)", MAVOGuide "Guide config v22 -> v23". All other files stay at 3.0.0.

@@ -1124,3 +1124,12 @@ One block per work item so they stand out. Sentences short. `✅ = done · 🔜 
 ---
 
 *Generated 2026-09-07 from the live repo (MAVOcraft). Old pack: DISCORD-PACK-2026-09-05.md.*
+
+### 🎉 v32 — 3.0.1 FIX ROUND (100 recipes + Chest Hunt complete + writable jars)
+```
+🛠 /craft guide now REALLY has all 100 beginner recipes (2 bad names fixed).
+🎁 Chest Hunt loot pool complete: 20 item types incl. XP bottles - fully stocked!
+📦 Fixed the read-only files problem: the zip extract now gives writable jars,
+   so the backup lets you overwrite/copy files normally.
+📈 MAVOCrafting / MAVOChestHunt / MAVOGuide are now 3.0.1 - the bump is the signal.
+```
