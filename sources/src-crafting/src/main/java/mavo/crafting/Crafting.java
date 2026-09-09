@@ -115,7 +115,7 @@ public final class Crafting extends JavaPlugin implements Listener {
     /** 3.0.2: replace legacy material names in every string leaf of the disk config
      *  (results AND ingredients, beginner + custom recipes + anything else) and save,
      *  so the live config heals itself and all 100 recipes really load. */
-    private int repairLegacyNames(ConfigurationSection disk, File f) {
+    private int repairLegacyNames(YamlConfiguration disk, File f) {
         int fixed = 0;
         StringBuilder detail = new StringBuilder();
         java.util.regex.Pattern p = java.util.regex.Pattern.compile(
