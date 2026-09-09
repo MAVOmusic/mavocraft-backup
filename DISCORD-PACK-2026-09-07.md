@@ -1143,6 +1143,16 @@ One block per work item so they stand out. Sentences short. `✅ = done · 🔜 
 📦 MAVOCrafting / MAVOChestHunt / MAVOLuckyCoins / MAVOGuide = 3.0.2 (bump = signal).
 ```
 
+### 🎉 v35 — 3.0.4 FIX ROUND (boss table upgrade actually lands)
+```
+🐞 Found on the first 3.0.3 boot: the old boss values (90k coins, 45% Mythic key)
+   were still loaded - the upgrade marker got written BEFORE the table was replaced,
+   so the rebalance silently skipped old configs. FIXED in 3.0.4.
+⚔ Next start replaces the real table (HP x2, attack x1.5, coins 5k-15k, 1-2 Lucky
+   Coins, 1 key @10-25%) and says so in the console once.
+📦 MAVOMiniboss / MAVOGuide = 3.0.4 (Crafting stays 3.0.3; bump = signal).
+```
+
 ### 🎉 v34 — 3.0.3 BALANCE ROUND (hard bosses + real /craft recipes)
 ```
 ⚔ Boss hunts are HARD now: double HP, attacks x1.5 - and the drops are event-fair

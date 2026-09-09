@@ -206,3 +206,16 @@ damage x1.5), coins/key drops scaled down to event-fair values)." Boot must show
 type(s), 2 arena(s)", "Guide config v24 -> v25". Next boss spawn shows e.g. "Drops:
 100% 9,000 coins - 30% 1x Lucky Coin - 11% 1x Mythic Crate Key. HP 3200".
 All other files stay 3.0.0/3.0.2. Pack + `MAVOcraft-backup.zip` already rebuilt: all 59 jars verified in `3.0.0/` (MANIFEST + SHA256SUMS), zip extracts 100% writable (0666). Full checklist: `MAVOCRAFT-CHECKLIST-3.0.3.md`.
+
+---
+
+## 2026-09-09 — 3.0.4 fix round (2 files changed - the bump is the signal)
+Replace: `33_MAVO-Guide-3.0.4.jar`, `40_MAVO-Miniboss-3.0.4.jar`
+(delete the 3.0.3 versions of these TWO; Crafting stays 3.0.3).
+Restart. MAVOMiniboss MUST log once:
+\`3.0.4: boss table replaced - hard hunts (HP x2, damage x1.5), coins/key drops scaled down to event-fair values.\`
+(the 3.0.3 upgrade could silently keep the old 90k/45% table - this boot re-forces it).
+Boot must show: "MAVOMiniboss v3.0.4 ... 15 boss type(s), 2 arena(s)",
+"Guide config ... -> v26", Crafting unchanged "100 beginner recipe(s)".
+Check `plugins/MAVOMiniboss/config.yml`: `bosses-version: 3`, `boss-damage-multiplier: 1.5`,
+crimson_behemoth 3200 HP / 9000 coins. Full checklist: `MAVOCRAFT-CHECKLIST-3.0.4.md`.

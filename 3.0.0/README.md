@@ -6,17 +6,18 @@ plus `live-configs/` (the config/data snapshot running on the server) and
 `MANIFEST.md` (every jar checked: file ↔ `plugin.yml` name ↔ version ↔ sha256).
 
 **Current state: 41 MAVO jars at 3.0.0, 2 MAVO jars at 3.0.2
-(MAVOChestHunt, MAVOLuckyCoins — config-heal round) and 3 MAVO jars at 3.0.3
-(MAVOCrafting, MAVOGuide, MAVOMiniboss — balance round: hard bosses + real /craft recipes).
+(MAVOChestHunt, MAVOLuckyCoins — config-heal round), 1 MAVO jar at 3.0.3
+(MAVOCrafting — balance round) and 2 MAVO jars at 3.0.4
+(MAVOGuide, MAVOMiniboss — boss-table upgrade fix).
 The version bump is the signal: any MAVO file that is NOT at the version below is
 old and must be replaced.
 
 ## Versions — how
-- **46 MAVO jars: 41 @ 3.0.0 + 2 @ 3.0.2 + 3 @ 3.0.3** (file name + internal `plugin.yml` —
+- **46 MAVO jars: 41 @ 3.0.0 + 2 @ 3.0.2 + 1 @ 3.0.3 + 2 @ 3.0.4** (file name + internal `plugin.yml` —
   verified, see MANIFEST):
   - **33 rebuilt from source** by MAVOcraft CI (all hotfixes 35–44, Chest Hunt, gem fix,
     100 recipes, guide v22 + config auto-fix, 15 minibosses at 2 arenas …). 5 of them
-    are at **3.0.2/3.0.3** — they force-upgrade their own old configs at boot, so no
+    are at **3.0.2/3.0.3/3.0.4** — they force-upgrade their own old configs at boot, so no
     config editing/delete is needed:
     - ChestHunt: renames `EXP_BOTTLE`→`EXPERIENCE_BOTTLE` in your `config.yml`
       -> loot pool really loads **20/20 item types** (was 19).
@@ -29,6 +30,10 @@ old and must be replaced.
       counts + exact 3x3 grids - white bed = wool+planks, no dye recipes),
       Miniboss (bosses-version 2: HP x2, attack x1.5, drops ~1/10 - event-fair),
       Guide (v25 What's New).
+    - **3.0.4:** Miniboss (table upgrade fix: the 3.0.3 check ran AFTER
+      copyDefaults seeded `bosses-version` into old configs, so the old
+      90k/45% table survived while claiming v2 - merge now runs first + table
+      gen 3 re-forces it), Guide (v26 What's New).
   - **13 had no source code in this repo** (never uploaded before part 1–7:
     ChunkBorders, ChunkPrices, CommunityGoals, Homes, Hud, PersonalVault, PortalRoom,
     Quests, Spawn, Streaks, Tavern, Trades, Vault). Their `plugin.yml` version was
@@ -54,11 +59,11 @@ old and must be replaced.
    - `MAVOChestHunt 3.0.2: repaired 1 legacy item name(s) ... EXP_BOTTLE -> EXPERIENCE_BOTTLE` + `MAVOChestHunt v3.0.2 enabled ... pool 20 item type(s)` (no "not a valid item" warn)
    - `MAVOEnchants v3.0.0 ... mining drop 1=0.1%/2=0.05%/3=0.01% (tiers 1-3), charge table 10 levels`
    - `MAVOCrafting 3.0.3: beginner recipes re-verified - 100 real vanilla basics (correct amounts + 3x3 grid).` + `MAVOCrafting v3.0.3 ... 7 custom recipe(s), 100 beginner recipe(s)`
-   - `MAVOMiniboss 3.0.3: boss table replaced - hard hunts (HP x2, damage x1.5), coins/key drops scaled down to event-fair values.` + `MAVOMiniboss v3.0.3 ... 15 boss type(s), 2 arena(s)`
+   - `MAVOMiniboss 3.0.4: boss table replaced - hard hunts (HP x2, damage x1.5), coins/key drops scaled down to event-fair values.` + `MAVOMiniboss v3.0.4 ... 15 boss type(s), 2 arena(s)`
    - `MAVOLuckyCoins Wishing well pool loaded: 1268 sellable items (1 skipped)` + `MAVOLuckyCoins v3.0.2 enabled`
-   - `MAVOGuide v3.0.3 ...` + `Guide config v24 -> v25 (new pages/notes delivered...)`
+   - `MAVOGuide v3.0.4 ...` + `Guide config v24 -> v26 (new pages/notes delivered...)`
    - `MAVOMiniboss v3.0.0 ... 15 boss type(s), 2 arena(s)`
-   - `/plugins` shows the 41 MAVO plugins as v3.0.0, 2 as v3.0.2, 3 as v3.0.3.
+   - `/plugins` shows the 41 MAVO plugins as v3.0.0, 2 as v3.0.2, 1 as v3.0.3, 2 as v3.0.4.
 5. Verify checksums: `sha256sum -c 3.0.0/SHA256SUMS` (run inside the folder holding the
    copied jars) — all 59 must say OK.
 
@@ -73,7 +78,7 @@ jars/configs can be uploaded or overwritten from the panel without any chmod.
 ## Files in this folder
 | Path | What |
 |---|---|
-| `plugins/` | the 59 numbered jars to copy (41 MAVO @3.0.0 + 2 MAVO @3.0.2 + 3 MAVO @3.0.3 + 13 third-party) |
+| `plugins/` | the 59 numbered jars to copy (41 MAVO @3.0.0 + 2 MAVO @3.0.2 + 1 MAVO @3.0.3 + 2 MAVO @3.0.4 + 13 third-party) |
 | `MANIFEST.md` | per-jar table: #, filename, plugin, version, source, sha256 |
 | `SHA256SUMS` | official checksums (same order as MANIFEST) |
 | `live-configs/` | snapshot of configs/data currently on the server (reference + mapping) |
