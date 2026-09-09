@@ -103,13 +103,15 @@ Jar file names show the version - if the file you copy is not the newest version
 updated. No edits = version stays.
 
 **What changed:** NEW MAVOChestHunt-3.0.0 (daily noon chest near spawn, 100-block radius,
-useful + rare loot, vanishes if uncollected); all 33 maintained plugins rebuilt at 3.0.0;
+useful + rare loot, vanishes if uncollected); ALL 46 MAVO plugins ship at **3.0.0**
+(33 rebuilt from source + 13 version-patched — code = the live jar, byte-identical);
 MAVOEnchants + MAVOCrafting config REPAIRS (gem charge table / mining gem drops / 100
 beginner recipes - old configs auto-upgrade at boot); MAVOGuide 3.0.0 (v22).
 
-**Plugins WITHOUT sources in this repo stay at their old version (no change, nothing to copy):**
-Tavern, Vault, PersonalVault, Spawn, Homes, Quests, HUD, PortalRoom, Trades, Streaks,
-CommunityGoals, ChunkBorders, ChunkPrices.
+**All 46 MAVO jars are 3.0.0** (2.0.0+ not present anymore). The 13 no-source plugins
+(Tavern, Vault, PersonalVault, Spawn, Homes, Quests, HUD, PortalRoom, Trades, Streaks,
+CommunityGoals, ChunkBorders, ChunkPrices) are 3.0.0 too — version metadata patched,
+code identical to the jar you were running. Third-party 01–13 keep real upstream versions.
 
 ### 1. STOP the server (full stop, no /reload)
 

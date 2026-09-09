@@ -3,11 +3,14 @@
 Every MAVO jar and its commands. **Players** = anyone online · **OP** = server admins / LuckyPerms group with the listed permission.
 
 > **VERSION RULE (from v3.0.0):** every time a plugin is edited its version is bumped
-> (all plugins are 3.0.0 now; next edits become 3.0.1, 3.0.2 …). The jar file name
-> shows the version — if the file you copy is NOT the version in this file, it wasn't
-> updated. Plugins without sources in this repo (Tavern, Vault, Homes, Spawn, Quests,
-> HUD, PortalRoom, Trades, Streaks, CommunityGoals, ChunkBorders, ChunkPrices,
-> PersonalVault) stay at their original versions until sources exist.
+> (ALL 46 MAVO plugins are 3.0.0 now; next edits become 3.0.1, 3.0.2 …). The jar file
+> name + its internal plugin.yml version both show it — if the file you copy is not
+> 3.0.0 (or a later bump), it wasn't updated. The 13 plugins without source code in this
+> repo (Tavern, Vault, Homes, Spawn, Quests, HUD, PortalRoom, Trades, Streaks,
+> CommunityGoals, ChunkBorders, ChunkPrices, PersonalVault) also ship as 3.0.0 — the
+> version metadata was patched (code inside = the live jar, byte-identical), so they
+> show 3.0.0 too. Third-party jars (01–13) keep their real upstream versions — we never
+> edit them.
 
 ---
 
