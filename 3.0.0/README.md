@@ -5,18 +5,19 @@ It contains **59 jars** in `plugins/`, numbered so they always load in a safe or
 plus `live-configs/` (the config/data snapshot running on the server) and
 `MANIFEST.md` (every jar checked: file ↔ `plugin.yml` name ↔ version ↔ sha256).
 
-**Current state: 42 MAVO jars at 3.0.0, 4 MAVO jars at 3.0.2
-(MAVOChestHunt, MAVOCrafting, MAVOLuckyCoins, MAVOGuide — the 3.0.2 config-heal round).
+**Current state: 41 MAVO jars at 3.0.0, 2 MAVO jars at 3.0.2
+(MAVOChestHunt, MAVOLuckyCoins — config-heal round) and 3 MAVO jars at 3.0.3
+(MAVOCrafting, MAVOGuide, MAVOMiniboss — balance round: hard bosses + real /craft recipes).
 The version bump is the signal: any MAVO file that is NOT at the version below is
 old and must be replaced.
 
 ## Versions — how
-- **46 MAVO jars: 42 @ 3.0.0 + 4 @ 3.0.2** (file name + internal `plugin.yml` —
+- **46 MAVO jars: 41 @ 3.0.0 + 2 @ 3.0.2 + 3 @ 3.0.3** (file name + internal `plugin.yml` —
   verified, see MANIFEST):
   - **33 rebuilt from source** by MAVOcraft CI (all hotfixes 35–44, Chest Hunt, gem fix,
-    100 recipes, guide v22 + config auto-fix, 15 minibosses at 2 arenas …). 4 of them
-    are now **3.0.2** — they HEAL old config files themselves at boot, so no config
-    editing/delete is needed:
+    100 recipes, guide v22 + config auto-fix, 15 minibosses at 2 arenas …). 5 of them
+    are at **3.0.2/3.0.3** — they force-upgrade their own old configs at boot, so no
+    config editing/delete is needed:
     - ChestHunt: renames `EXP_BOTTLE`→`EXPERIENCE_BOTTLE` in your `config.yml`
       -> loot pool really loads **20/20 item types** (was 19).
     - Crafting: renames `EMPTY_MAP`→`MAP` + `TERRA_COTTA`→`TERRACOTTA` in `config.yml`
@@ -24,6 +25,10 @@ old and must be replaced.
     - LuckyCoins: well-pool.txt updated for Paper 26.2 (4 old item names replaced)
       -> **1268 sellable items** (1 hard-banned by design).
     - Guide: v24 What's New entry describing the above (config v23 -> v24 auto-upgrade).
+    - **3.0.3:** Crafting (100 VERIFIED vanilla recipes: correct amounts, output
+      counts + exact 3x3 grids - white bed = wool+planks, no dye recipes),
+      Miniboss (bosses-version 2: HP x2, attack x1.5, drops ~1/10 - event-fair),
+      Guide (v25 What's New).
   - **13 had no source code in this repo** (never uploaded before part 1–7:
     ChunkBorders, ChunkPrices, CommunityGoals, Homes, Hud, PersonalVault, PortalRoom,
     Quests, Spawn, Streaks, Tavern, Trades, Vault). Their `plugin.yml` version was
@@ -48,11 +53,12 @@ old and must be replaced.
 4. Start and check:
    - `MAVOChestHunt 3.0.2: repaired 1 legacy item name(s) ... EXP_BOTTLE -> EXPERIENCE_BOTTLE` + `MAVOChestHunt v3.0.2 enabled ... pool 20 item type(s)` (no "not a valid item" warn)
    - `MAVOEnchants v3.0.0 ... mining drop 1=0.1%/2=0.05%/3=0.01% (tiers 1-3), charge table 10 levels`
-   - `MAVOCrafting 3.0.2: repaired 2 legacy material name(s) ... EMPTY_MAP->MAP TERRA_COTTA->TERRACOTTA` + `MAVOCrafting v3.0.2 ... 7 custom recipe(s), 100 beginner recipe(s)`
+   - `MAVOCrafting 3.0.3: beginner recipes re-verified - 100 real vanilla basics (correct amounts + 3x3 grid).` + `MAVOCrafting v3.0.3 ... 7 custom recipe(s), 100 beginner recipe(s)`
+   - `MAVOMiniboss 3.0.3: boss table replaced - hard hunts (HP x2, damage x1.5), coins/key drops scaled down to event-fair values.` + `MAVOMiniboss v3.0.3 ... 15 boss type(s), 2 arena(s)`
    - `MAVOLuckyCoins Wishing well pool loaded: 1268 sellable items (1 skipped)` + `MAVOLuckyCoins v3.0.2 enabled`
-   - `MAVOGuide v3.0.2 ...` + `Guide config v23 -> v24 (new pages/notes delivered...)`
+   - `MAVOGuide v3.0.3 ...` + `Guide config v24 -> v25 (new pages/notes delivered...)`
    - `MAVOMiniboss v3.0.0 ... 15 boss type(s), 2 arena(s)`
-   - `/plugins` shows the 42 MAVO plugins as v3.0.0 and the 4 fixed ones as v3.0.2.
+   - `/plugins` shows the 41 MAVO plugins as v3.0.0, 2 as v3.0.2, 3 as v3.0.3.
 5. Verify checksums: `sha256sum -c 3.0.0/SHA256SUMS` (run inside the folder holding the
    copied jars) — all 59 must say OK.
 
@@ -67,7 +73,7 @@ jars/configs can be uploaded or overwritten from the panel without any chmod.
 ## Files in this folder
 | Path | What |
 |---|---|
-| `plugins/` | the 59 numbered jars to copy (42 MAVO @3.0.0 + 4 MAVO @3.0.2 + 13 third-party) |
+| `plugins/` | the 59 numbered jars to copy (41 MAVO @3.0.0 + 2 MAVO @3.0.2 + 3 MAVO @3.0.3 + 13 third-party) |
 | `MANIFEST.md` | per-jar table: #, filename, plugin, version, source, sha256 |
 | `SHA256SUMS` | official checksums (same order as MANIFEST) |
 | `live-configs/` | snapshot of configs/data currently on the server (reference + mapping) |

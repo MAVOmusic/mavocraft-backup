@@ -195,7 +195,7 @@ Felling: axe + break bottom log → up to **10 logs** per tree (anti-exploit; sh
 ## MAVOCrafting 1.0.0
 | Command | Who | What it does |
 |---|---|---|
-| `/craft` | **Everyone** | Open the **beginner recipe GUIDE** (100 basics, 45 per page). Click a recipe = **display-only 3×3 preview** of the real recipe + unlocks it in your vanilla recipe book (press E) — nothing is auto-crafted or consumed. Replaces the op-only Essentials workbench for this label. |
+| `/craft` | **Everyone** | Open the **beginner recipe GUIDE** (100 REAL vanilla basics, 45 per page). Click a recipe = **display-only 3×3 preview** built from the verified vanilla grid (right materials, amounts, layout - 3.0.3) + unlocks it in your vanilla recipe book (press E) — nothing is auto-crafted or consumed. Replaces the op-only Essentials workbench for this label. |
 | `/craft <recipe>` | Everyone | Jump to that recipe's page (e.g. `/craft stone_pickaxe`) |
 | `/crafting list` | Everyone | Lists the 7 custom recipes (name tag, saddle, lead, chainmail set) |
 | `/crafting reload` | OP (`mavocrafting.admin`) | Re-register custom + beginner recipes |
@@ -239,7 +239,7 @@ The spawn broadcast and the 5-min broadcast **name the arena** + exact coords.
 
 **15 boss types** (5 originals + 10 new — Spider Queen, Plains Titan, Skeleton King, Ocean Tide
 King, Undead Warlord, Dark Forest Stalker, Mountain Giant, End Crusader, Crimson Behemoth,
-Ancient Golem). Nether Overlord (live-tuned): 2000 HP / 150k coins / 6x Lucky @50% / 3x Mythic @50%.
+Ancient Golem). Nether Overlord (3.0.3 rebalance): 4000 HP / 15k coins / 2x Lucky @35% / 1x Mythic @12% - ALL bosses now: HP x2, attack x1.5, coins ~1/10, 1-2 Lucky Coins @30-35%, 1 key @ rare 20-25% / mythic 10-12%.
 On spawn, chat announces the **drop pool in %** (100% coins · lucky-chance % Lucky Coins ·
 crate-chance % Crate Key) plus the boss **HP**. Those chances are rolled independently on kill
 (config: `lucky-chance`, `crate-chance` per boss).

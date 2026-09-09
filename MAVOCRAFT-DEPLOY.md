@@ -192,3 +192,17 @@ EMPTY_MAP->MAP + TERRA_COTTA->TERRACOTTA) - do NOT delete the configs. Boot must
 LuckyCoins "1268 sellable items (1 skipped)";
 Guide "config v23 -> v24". All other files stay at 3.0.0.
 Full OP+player checklist: MAVOCRAFT-CHECKLIST-3.0.2.md.
+
+---
+
+## 2026-09-09 — 3.0.3 round (3 files changed - the bump is the signal)
+Replace: `24_MAVO-Crafting-3.0.3.jar`, `33_MAVO-Guide-3.0.3.jar`,
+`40_MAVO-Miniboss-3.0.3.jar` (delete the 3.0.2/3.0.0 versions of these three).
+Restart. The plugins force-upgrade their own configs:
+Crafting "v3.0.3: beginner recipes re-verified - 100 real vanilla basics (correct
+amounts + 3x3 grid)"; Miniboss "3.0.3: boss table replaced - hard hunts (HP x2,
+damage x1.5), coins/key drops scaled down to event-fair values)." Boot must show:
+"MAVOCrafting v3.0.3 ... 100 beginner recipe(s)", "MAVOMiniboss v3.0.3 ... 15 boss
+type(s), 2 arena(s)", "Guide config v24 -> v25". Next boss spawn shows e.g. "Drops:
+100% 9,000 coins - 30% 1x Lucky Coin - 11% 1x Mythic Crate Key. HP 3200".
+All other files stay 3.0.0/3.0.2.
