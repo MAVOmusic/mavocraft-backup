@@ -1,10 +1,21 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 25
+version: 26
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&e&lv26 &7- boss table upgrade actually lands (3.0.4)"
+    icon: DIAMOND_SWORD
+    lines:
+      - "&7&eThe 3.0.3 rebalance&7 could silently skip OLD boss configs (the upgrade"
+      - "&7marker was written before the table was replaced). Fixed - this boot"
+      - "&7forces the &freal&7 hard table: &fHP x2, attack x1.5, coins 5k-15k, 1-2"
+      - "&fLucky Coins @30-35%, 1 key @ rare 20-25% / mythic 10-12%.&7 If a boss"
+      - "&7still says 90k coins, stop the server and start again (the table was"
+      - "&7replaced on the previous boot - the first /hunt shows the real values)."
+      - "&7&34.0 jars: &fMAVOMiniboss / MAVOGuide&7."
+      - ""
   - title: "&e&lv25 &7- hard bosses + real /craft recipes (3.0.3)"
     icon: IRON_SWORD
     lines:

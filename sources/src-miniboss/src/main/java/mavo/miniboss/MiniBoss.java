@@ -79,9 +79,11 @@ public final class MiniBoss extends JavaPlugin implements Listener {
 
     @Override public void onEnable() {
         saveDefaultConfig();
+        mergeBossRoster();                     // MUST run before copyDefaults(): the bundled
+                                               // bosses-version key would otherwise seed into
+                                               // old configs and fake "already upgraded"
         getConfig().options().copyDefaults(true);
         saveConfig();                          // adds /hunt + broadcast keys to existing configs
-        mergeBossRoster();                     // HOTFIX 44: add the 10 new boss defs to old configs
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp != null) econ = rsp.getProvider();
         load();
@@ -106,7 +108,11 @@ public final class MiniBoss extends JavaPlugin implements Listener {
      *  the 5 old defs - copyDefaults() cannot add ids inside it. Merge every
      *  bundled boss id the disk file is missing.
      *  3.0.3 REBALANCE: old live-tuned stats (90k coins, 45% mythic keys, low HP)
-     *  were far too rich - bosses-version < 2 forces the WHOLE new table. */
+     *  were far too rich - bosses-version < 2 forces the WHOLE new table.
+     *  3.0.4 FIX: in 3.0.3 the check ran AFTER copyDefaults(), so the bundled
+     *  "bosses-version: 2" key was seeded into old configs first and the merge
+     *  skipped the real replacement (old 90k values survived while claiming v2).
+     *  Gen 3 > every config a 3.0.3 boot could have touched. */
     private void mergeBossRoster() {
         File f = new File(getDataFolder(), "config.yml");
         try {
@@ -124,11 +130,11 @@ public final class MiniBoss extends JavaPlugin implements Listener {
                     added++;
                 }
             }
-            if (disk.getInt("bosses-version", 0) < 2) {
-                disk.set("bosses-version", 2);
+            if (disk.getInt("bosses-version", 0) < 3) {
+                disk.set("bosses-version", 3);
                 disk.set("bosses", def.get("bosses"));
                 disk.save(f);
-                getLogger().info("3.0.3: boss table replaced - hard hunts (HP x2, damage x1.5), "
+                getLogger().info("3.0.4: boss table replaced - hard hunts (HP x2, damage x1.5), "
                         + "coins/key drops scaled down to event-fair values.");
             } else if (added > 0) {
                 disk.save(f);

@@ -39,13 +39,16 @@ broadcast-radius: 100        # shown in chat as "around x, z (±100 blocks)"
 # the boss HP before the callout. Chances are rolled independently on kill.
 # Hotfix 44: NETHER OVERLORD matches the live production values (150k / 6x @50% /
 # 3x Mythic @50% / 2000 HP) and 10 NEW bosses join the roster (15 total).
-# ---- Boss difficulty + drop pool (3.0.3 REBALANCE - v2) ----
+# ---- Boss difficulty + drop pool (3.0.3 REBALANCE - v3 in 3.0.4) ----
 # User report 2026-09-09: drops were too rich (90k coins + 45% Mythic key per kill)
 # -> bosses are now HARD (HP x2, attack x1.5 via boss-damage-multiplier) and drops
 # are a fair event reward (coins ~10%, 1-2 Lucky Coins @30-35%, 1 key @ 10-25%).
-# bosses-version 2 forces existing configs to take the new table on boot (the old
-# live-tuned values must NOT survive). Chances are rolled independently on kill.
-bosses-version: 2
+# bosses-version 3 forces existing configs to take the new table on boot (the old
+# live-tuned values must NOT survive). 3.0.4: the 3.0.3 check ran after copyDefaults
+# seeded the version key, so gen 2 may claim done while the OLD table survived -
+# gen 3 re-forces the table exactly once on any config a 3.0.3 boot touched.
+# Chances are rolled independently on kill.
+bosses-version: 3
 
 # 3.0.3: boss attack damage multiplier (hard hunts, not free money).
 boss-damage-multiplier: 1.5
