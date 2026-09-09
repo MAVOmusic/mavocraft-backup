@@ -305,7 +305,7 @@ public final class ChestHunt extends JavaPlugin implements Listener {
         if (gui == null || !gui.equals(e.getView().getTopInventory())) return;
         e.setCancelled(true);
         if (e.getClickedInventory() == null || e.getClickedInventory() != gui) return;
-        ItemStack it = e.getCurrent();
+        ItemStack it = e.getCurrentItem();   // Paper 26.2: getCurrent() removed
         if (it == null || it.getType().isAir()) return;
         // remove one matching stack from the SHARED loot
         ItemStack found = null;
@@ -317,7 +317,7 @@ public final class ChestHunt extends JavaPlugin implements Listener {
         Map<Integer, ItemStack> left = p.getInventory().addItem(it.clone());
         for (ItemStack drop : left.values())
             p.getWorld().dropItemNaturally(p.getLocation(), drop);
-        e.setCurrent(null);
+        e.getClickedInventory().setItem(e.getSlot(), null);   // Paper 26.2: setCurrent() removed
         // refresh the other open viewers so nobody double-takes
         for (Map.Entry<UUID, Inventory> en : openGuis.entrySet()) {
             if (en.getKey().equals(p.getUniqueId())) continue;
