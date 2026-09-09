@@ -93,9 +93,9 @@ jobs:
       - name: Verify MAVOPortalRoom class (javap + prices)
         run: |
           set -euo pipefail
-          javap -v -classpath MAVOPortalRoom-1.2.0.jar mavo.portalroom.PortalRoom > /dev/null
-          unzip -p MAVOPortalRoom-1.2.0.jar mavo/portalroom/PortalRoom.class | strings | grep -q "|500000|"
-          unzip -p MAVOPortalRoom-1.2.0.jar mavo/portalroom/PortalRoom.class | strings | grep -q "|5000000|"
+          javap -v -classpath MAVOPortalRoom-3.0.0.jar mavo.portalroom.PortalRoom > /dev/null
+          unzip -p MAVOPortalRoom-3.0.0.jar mavo/portalroom/PortalRoom.class | strings | grep -q "|500000|"
+          unzip -p MAVOPortalRoom-3.0.0.jar mavo/portalroom/PortalRoom.class | strings | grep -q "|5000000|"
           echo "MAVOPortalRoom class OK (javap + prices)"
 
       - name: Upload rebuilt jars (backup if the bot push is blocked)
