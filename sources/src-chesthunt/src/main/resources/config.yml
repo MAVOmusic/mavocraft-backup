@@ -18,7 +18,7 @@ loot:
   GOLD_INGOT: { amount: 4, weight: 60 }
   DIAMOND: { amount: 2, weight: 25 }
   EMERALD: { amount: 6, weight: 45 }
-  EXP_BOTTLE: { amount: 8, weight: 80 }
+  EXPERIENCE_BOTTLE: { amount: 8, weight: 80 }
   COOKED_BEEF: { amount: 12, weight: 100 }
   BREAD: { amount: 16, weight: 70 }
   BAKED_POTATO: { amount: 12, weight: 40 }

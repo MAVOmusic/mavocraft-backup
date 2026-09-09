@@ -368,7 +368,7 @@ beginner-recipes:
     count: 1
     ingredients: ["GOLD_INGOT:4", "REDSTONE:1"]
   empty_map:
-    result: EMPTY_MAP
+    result: MAP
     count: 1
     ingredients: ["PAPER:8", "COMPASS:1"]
   painting:
@@ -412,7 +412,7 @@ beginner-recipes:
     count: 4
     ingredients: ["SANDSTONE:6"]
   terracotta:
-    result: TERRA_COTTA
+    result: TERRACOTTA
     count: 1
     ingredients: ["CLAY:8"]
   lantern:

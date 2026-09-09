@@ -1,10 +1,20 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 22
+version: 23
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&e&lv23 &7- 100 basics + Chest Hunt fixed (3.0.1)"
+    icon: EXPERIENCE_BOTTLE
+    lines:
+      - "&7&e/craft&7 guide now really shows ALL &f100 beginner recipes&7"
+      - "&7(1 empty-map + 1 terracotta recipe were bad and skipped - fixed)."
+      - "&7&eChest Hunt&7 loot pool complete again (&f20 item types&7 incl. XP"
+      - "&7bottles now) - the daily chest is fully stocked."
+      - "&7&3.0.1 jars: &fMAVOCrafting / MAVOChestHunt / MAVOGuide&7 - the"
+      - "&7version bump tells you exactly what changed this round."
+      - ""
   - title: "&d&lv22 &7- Chest Hunt + all plugins v3.0.0!"
     icon: ENDER_CHEST
     lines:
