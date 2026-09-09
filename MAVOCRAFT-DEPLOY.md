@@ -178,3 +178,17 @@ Replace in plugins/: `18_MAVO-ChestHunt-3.0.1.jar`, `24_MAVO-Crafting-3.0.1.jar`
 `33_MAVO-Guide-3.0.1.jar` (delete the 3.0.0 versions of these three). Restart.
 Boot must now show: MAVOCrafting "100 beginner recipe(s)", MAVOChestHunt "pool 20 item
 type(s)", MAVOGuide "Guide config v22 -> v23". All other files stay at 3.0.0.
+
+---
+
+## 2026-09-09 — 3.0.2 round (4 files changed - the bump is the signal)
+Replace in plugins/: `18_MAVO-ChestHunt-3.0.2.jar`, `24_MAVO-Crafting-3.0.2.jar`,
+`33_MAVO-Guide-3.0.2.jar`, `38_MAVO-LuckyCoins-3.0.2.jar` (delete the 3.0.1/3.0.0
+versions of these four). Restart. **The plugins heal your existing configs themselves**
+(ChestHunt renames EXP_BOTTLE->EXPERIENCE_BOTTLE, Crafting renames
+EMPTY_MAP->MAP + TERRA_COTTA->TERRACOTTA) - do NOT delete the configs. Boot must show:
+"repaired 1 legacy item name(s)" + ChestHunt "pool 20 item type(s)";
+"repaired 2 legacy material name(s)" + Crafting "100 beginner recipe(s)";
+LuckyCoins "1268 sellable items (1 skipped)";
+Guide "config v23 -> v24". All other files stay at 3.0.0.
+Full OP+player checklist: MAVOCRAFT-CHECKLIST-3.0.2.md.

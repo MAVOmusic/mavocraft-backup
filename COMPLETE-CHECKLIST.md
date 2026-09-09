@@ -228,7 +228,7 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 ### D-14 ⭐ MAVOCrafting 1.0.0 (v3.0.0)
 | Who | Test | Expected |
 |---|---|---|
-| OP | boot log | "MAVOCrafting v3.0.1 enabled - 7 custom recipe(s), **100 beginner recipe(s)**" (3.0.0 repaired old configs; 3.0.1 fixed the 2 bad recipe names) |
+| OP | boot log | "MAVOCrafting v3.0.2 enabled - 7 custom recipe(s), **100 beginner recipe(s)**" + 3.0.2 repair line "repaired 2 legacy material name(s) (EMPTY_MAP->MAP, TERRA_COTTA->TERRACOTTA)" (3.0.1 fixed the bundled names; 3.0.2 heals the LIVE config) |
 | Player | `/craft` (NON-op survival) | **Opens the beginner recipe list with ALL 100 recipes** (3 pages, 45 per page) |
 | Player | `/craft stone_pickaxe` | Opens the page with Stone Pickaxe |
 | Player | click a recipe in /craft | **GUIDE only - nothing is crafted/consumed**: opens a 3x3 preview of the REAL recipe (+result), recipe also unlocked in the vanilla recipe book (press E) |
@@ -338,7 +338,7 @@ Tick ✅ / ❌ next to every line. ⭐ = brand-new plugin (the CW4 "next 10" —
 ### D-21 ⭐ MAVOChestHunt 3.0.0
 | Who | Test | Expected |
 |---|---|---|
-| OP | boot log | "MAVOChestHunt v3.0.1 enabled - chest every day at noon, radius 100 blocks, pool 20 item type(s)." |
+| OP | boot log | "MAVOChestHunt v3.0.2 enabled - chest every day at noon, radius 100 blocks, pool 20 item type(s)." + 3.0.2 repair line "repaired 1 legacy item name(s) (EXP_BOTTLE -> EXPERIENCE_BOTTLE); NO "not a valid item" warn |
 | OP | wait for noon (or `/chesthunt spawn`) | Broadcast: "A Chest Hunt chest has appeared within 100 blocks of spawn (x, z)!" — ender chest + holo within 100 blocks of spawn |
 | Player | `/chesthunt` | Distance hint + sound (or "next one at noon" if none) |
 | Player | right-click the chest | Shared 27-slot loot GUI opens; vanilla ender-chest GUI does NOT open; chest unbreakable |

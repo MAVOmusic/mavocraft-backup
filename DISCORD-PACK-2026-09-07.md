@@ -1133,3 +1133,12 @@ One block per work item so they stand out. Sentences short. `✅ = done · 🔜 
    so the backup lets you overwrite/copy files normally.
 📈 MAVOCrafting / MAVOChestHunt / MAVOGuide are now 3.0.1 - the bump is the signal.
 ```
+
+### 🎉 v33 — 3.0.2 CONFIG HEAL ROUND (old configs fix themselves!)
+```
+🛠 Chest Hunt + /craft now REPAIR their own old config files at boot:
+   the XP bottle entry and the 2 bad recipe names are renamed automatically.
+🎁 Daily chest = 20/20 loot types · /craft = 100/100 recipes - no config editing needed.
+💰 Wishing Well pool updated for 26.2 (1268 sellable items - 4 old item names fixed).
+📦 MAVOCrafting / MAVOChestHunt / MAVOLuckyCoins / MAVOGuide = 3.0.2 (bump = signal).
+```
