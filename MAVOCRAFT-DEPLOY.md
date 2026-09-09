@@ -205,4 +205,4 @@ damage x1.5), coins/key drops scaled down to event-fair values)." Boot must show
 "MAVOCrafting v3.0.3 ... 100 beginner recipe(s)", "MAVOMiniboss v3.0.3 ... 15 boss
 type(s), 2 arena(s)", "Guide config v24 -> v25". Next boss spawn shows e.g. "Drops:
 100% 9,000 coins - 30% 1x Lucky Coin - 11% 1x Mythic Crate Key. HP 3200".
-All other files stay 3.0.0/3.0.2.
+All other files stay 3.0.0/3.0.2. Pack + `MAVOcraft-backup.zip` already rebuilt: all 59 jars verified in `3.0.0/` (MANIFEST + SHA256SUMS), zip extracts 100% writable (0666). Full checklist: `MAVOCRAFT-CHECKLIST-3.0.3.md`.

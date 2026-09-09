@@ -1150,4 +1150,5 @@ One block per work item so they stand out. Sentences short. `✅ = done · 🔜 
 📖 /craft shows the REAL vanilla recipe for every one of the 100 basics - right
    amounts, output counts and the exact 3x3 grid (white bed = wool + planks!).
 📦 MAVOCrafting / MAVOMiniboss / MAVOGuide = 3.0.3 (bump = signal).
+📦 Pack + backup zip rebuilt: all 59 jars verified, zip extracts fully writable (0666).
 ```
