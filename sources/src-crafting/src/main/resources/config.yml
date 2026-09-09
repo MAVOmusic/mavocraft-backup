@@ -63,411 +63,514 @@ recipes:
 
 # ---------------------------------------------------------------
 # BEGINNER RECIPE LIST (/craft) - HOTFIX 35, now 100 recipes (HOTFIX 40)
+# ---------------------------------------------------------------
 # /craft is open to EVERYONE (no permission) and shows these 100 basic recipes.
 # Clicking shows the recipe preview + unlocks it in the recipe book - it never
 # crafts or consumes anything. Separate from the normal crafting table.
-# ingredients: "MATERIAL:amount"
-# recipes-version: 3 - old configs carrying the 50-recipe list get replaced at boot.
+# ingredients: "MATERIAL:amount" (total needed) | count: result amount
+# layout: the REAL vanilla 3x3 grid (row by row, AIR = empty slot) - the
+# preview uses this, so it never shows dye/alt recipes.
+# recipes-version: 4 - old configs with wrong/altered lists get replaced at boot.
 # ---------------------------------------------------------------
-recipes-version: 3
+recipes-version: 4
 beginner-recipes:
-  planks:
-    result: OAK_PLANKS
-    count: 4
-    ingredients: ["OAK_LOG:1"]
-  stick:
-    result: STICK
-    count: 4
-    ingredients: ["OAK_PLANKS:2"]
-  crafting_table:
-    result: CRAFTING_TABLE
-    count: 1
-    ingredients: ["OAK_PLANKS:4"]
-  torch:
-    result: TORCH
-    count: 4
-    ingredients: ["COAL:1", "STICK:1"]
-  furnace:
-    result: FURNACE
-    count: 1
-    ingredients: ["COBBLESTONE:8"]
-  chest:
-    result: CHEST
-    count: 1
-    ingredients: ["OAK_PLANKS:8"]
-  bed:
-    result: WHITE_BED
-    count: 1
-    ingredients: ["WHITE_WOOL:3", "OAK_PLANKS:3"]
-  wooden_pickaxe:
-    result: WOODEN_PICKAXE
-    count: 1
-    ingredients: ["OAK_PLANKS:3", "STICK:2"]
-  wooden_axe:
-    result: WOODEN_AXE
-    count: 1
-    ingredients: ["OAK_PLANKS:3", "STICK:2"]
-  wooden_shovel:
-    result: WOODEN_SHOVEL
-    count: 1
-    ingredients: ["OAK_PLANKS:1", "STICK:2"]
-  wooden_sword:
-    result: WOODEN_SWORD
-    count: 1
-    ingredients: ["OAK_PLANKS:2", "STICK:1"]
-  wooden_hoe:
-    result: WOODEN_HOE
-    count: 1
-    ingredients: ["OAK_PLANKS:2", "STICK:2"]
-  stone_pickaxe:
-    result: STONE_PICKAXE
-    count: 1
-    ingredients: ["COBBLESTONE:3", "STICK:2"]
-  stone_axe:
-    result: STONE_AXE
-    count: 1
-    ingredients: ["COBBLESTONE:3", "STICK:2"]
-  stone_shovel:
-    result: STONE_SHOVEL
-    count: 1
-    ingredients: ["COBBLESTONE:1", "STICK:2"]
-  stone_sword:
-    result: STONE_SWORD
-    count: 1
-    ingredients: ["COBBLESTONE:2", "STICK:1"]
-  stone_hoe:
-    result: STONE_HOE
-    count: 1
-    ingredients: ["COBBLESTONE:2", "STICK:2"]
-  iron_pickaxe:
-    result: IRON_PICKAXE
-    count: 1
-    ingredients: ["IRON_INGOT:3", "STICK:2"]
-  iron_axe:
-    result: IRON_AXE
-    count: 1
-    ingredients: ["IRON_INGOT:3", "STICK:2"]
-  iron_shovel:
-    result: IRON_SHOVEL
-    count: 1
-    ingredients: ["IRON_INGOT:1", "STICK:2"]
-  iron_sword:
-    result: IRON_SWORD
-    count: 1
-    ingredients: ["IRON_INGOT:2", "STICK:1"]
-  iron_hoe:
-    result: IRON_HOE
-    count: 1
-    ingredients: ["IRON_INGOT:2", "STICK:2"]
-  oak_stairs:
-    result: OAK_STAIRS
-    count: 4
-    ingredients: ["OAK_PLANKS:6"]
-  oak_slab:
-    result: OAK_SLAB
-    count: 6
-    ingredients: ["OAK_PLANKS:3"]
-  oak_door:
-    result: OAK_DOOR
-    count: 3
-    ingredients: ["OAK_PLANKS:6"]
-  oak_trapdoor:
-    result: OAK_TRAPDOOR
-    count: 2
-    ingredients: ["OAK_PLANKS:6"]
-  oak_fence:
-    result: OAK_FENCE
-    count: 3
-    ingredients: ["OAK_PLANKS:4", "STICK:2"]
-  oak_fence_gate:
-    result: OAK_FENCE_GATE
-    count: 1
-    ingredients: ["OAK_PLANKS:4", "STICK:2"]
-  oak_sign:
-    result: OAK_SIGN
-    count: 3
-    ingredients: ["OAK_PLANKS:6", "STICK:1"]
-  ladder:
-    result: LADDER
-    count: 3
-    ingredients: ["STICK:7"]
-  glass:
-    result: GLASS
-    count: 8
-    ingredients: ["SAND:8"]
-  glass_pane:
-    result: GLASS_PANE
-    count: 16
-    ingredients: ["GLASS:6"]
-  bread:
-    result: BREAD
-    count: 1
-    ingredients: ["WHEAT:3"]
-  cookie:
-    result: COOKIE
-    count: 8
-    ingredients: ["WHEAT:2", "COCOA_BEANS:1"]
-  cake:
-    result: CAKE
-    count: 1
-    ingredients: ["WHEAT:3", "MILK_BUCKET:3", "SUGAR:2", "EGG:1"]
-  paper:
-    result: PAPER
-    count: 3
-    ingredients: ["SUGAR_CANE:3"]
-  book:
-    result: BOOK
-    count: 1
-    ingredients: ["PAPER:3", "LEATHER:1"]
-  bookshelf:
-    result: BOOKSHELF
-    count: 1
-    ingredients: ["OAK_PLANKS:6", "BOOK:3"]
-  bucket:
-    result: BUCKET
-    count: 1
-    ingredients: ["IRON_INGOT:3"]
-  shield:
-    result: SHIELD
-    count: 1
-    ingredients: ["OAK_PLANKS:6", "IRON_INGOT:1"]
-  arrow:
-    result: ARROW
-    count: 4
-    ingredients: ["FLINT:1", "STICK:1", "FEATHER:1"]
-  bow:
-    result: BOW
-    count: 1
-    ingredients: ["STICK:3", "STRING:3"]
-  fishing_rod:
-    result: FISHING_ROD
-    count: 1
-    ingredients: ["STICK:3", "STRING:2"]
-  rail:
-    result: RAIL
-    count: 16
-    ingredients: ["IRON_INGOT:6", "STICK:1"]
-  minecart:
-    result: MINECART
-    count: 1
-    ingredients: ["IRON_INGOT:5"]
-  redstone_torch:
-    result: REDSTONE_TORCH
-    count: 1
-    ingredients: ["REDSTONE:1", "STICK:1"]
-  lever:
-    result: LEVER
-    count: 1
-    ingredients: ["STICK:1", "COBBLESTONE:1"]
-  stone_button:
-    result: STONE_BUTTON
-    count: 1
-    ingredients: ["STONE:1"]
-  stone_pressure_plate:
-    result: STONE_PRESSURE_PLATE
-    count: 1
-    ingredients: ["STONE:2"]
-  campfire:
-    result: CAMPFIRE
-    count: 1
-    ingredients: ["STICK:3", "COAL:1", "OAK_LOG:3"]
-  spruce_planks:
-    result: SPRUCE_PLANKS
-    count: 4
-    ingredients: ["SPRUCE_LOG:1"]
-  birch_planks:
-    result: BIRCH_PLANKS
-    count: 4
-    ingredients: ["BIRCH_LOG:1"]
-  jungle_planks:
-    result: JUNGLE_PLANKS
-    count: 4
-    ingredients: ["JUNGLE_LOG:1"]
   acacia_planks:
     result: ACACIA_PLANKS
     count: 4
     ingredients: ["ACACIA_LOG:1"]
-  dark_oak_planks:
-    result: DARK_OAK_PLANKS
+    layout: ["ACACIA_LOG", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  arrow:
+    result: ARROW
     count: 4
-    ingredients: ["DARK_OAK_LOG:1"]
-  spruce_stairs:
-    result: SPRUCE_STAIRS
-    count: 4
-    ingredients: ["SPRUCE_PLANKS:6"]
-  birch_stairs:
-    result: BIRCH_STAIRS
-    count: 4
-    ingredients: ["BIRCH_PLANKS:6"]
-  spruce_slab:
-    result: SPRUCE_SLAB
-    count: 6
-    ingredients: ["SPRUCE_PLANKS:3"]
-  birch_slab:
-    result: BIRCH_SLAB
-    count: 6
-    ingredients: ["BIRCH_PLANKS:3"]
-  spruce_door:
-    result: SPRUCE_DOOR
-    count: 3
-    ingredients: ["SPRUCE_PLANKS:6"]
-  birch_door:
-    result: BIRCH_DOOR
-    count: 3
-    ingredients: ["BIRCH_PLANKS:6"]
-  spruce_trapdoor:
-    result: SPRUCE_TRAPDOOR
-    count: 2
-    ingredients: ["SPRUCE_PLANKS:6"]
-  birch_trapdoor:
-    result: BIRCH_TRAPDOOR
-    count: 2
-    ingredients: ["BIRCH_PLANKS:6"]
-  iron_helmet:
-    result: IRON_HELMET
-    count: 1
-    ingredients: ["IRON_INGOT:5"]
-  iron_chestplate:
-    result: IRON_CHESTPLATE
-    count: 1
-    ingredients: ["IRON_INGOT:8"]
-  iron_leggings:
-    result: IRON_LEGGINGS
-    count: 1
-    ingredients: ["IRON_INGOT:7"]
-  iron_boots:
-    result: IRON_BOOTS
-    count: 1
-    ingredients: ["IRON_INGOT:4"]
-  iron_door:
-    result: IRON_DOOR
-    count: 3
-    ingredients: ["IRON_INGOT:6"]
-  iron_trapdoor:
-    result: IRON_TRAPDOOR
-    count: 4
-    ingredients: ["IRON_INGOT:4"]
-  iron_bars:
-    result: IRON_BARS
-    count: 16
-    ingredients: ["IRON_INGOT:6"]
-  cauldron:
-    result: CAULDRON
-    count: 1
-    ingredients: ["IRON_INGOT:7"]
-  shears:
-    result: SHEARS
-    count: 1
-    ingredients: ["IRON_INGOT:2"]
-  compass:
-    result: COMPASS
-    count: 1
-    ingredients: ["IRON_INGOT:4", "REDSTONE:1"]
-  clock:
-    result: CLOCK
-    count: 1
-    ingredients: ["GOLD_INGOT:4", "REDSTONE:1"]
-  empty_map:
-    result: MAP
-    count: 1
-    ingredients: ["PAPER:8", "COMPASS:1"]
-  painting:
-    result: PAINTING
-    count: 1
-    ingredients: ["STICK:8", "WHITE_WOOL:1"]
-  item_frame:
-    result: ITEM_FRAME
-    count: 1
-    ingredients: ["STICK:8", "LEATHER:1"]
-  flower_pot:
-    result: FLOWER_POT
-    count: 1
-    ingredients: ["BRICK:3"]
-  bricks:
-    result: BRICKS
-    count: 4
-    ingredients: ["BRICK:4"]
-  stone_bricks:
-    result: STONE_BRICKS
-    count: 4
-    ingredients: ["STONE:4"]
-  stone_slab:
-    result: STONE_SLAB
-    count: 6
-    ingredients: ["STONE:3"]
-  cobblestone_stairs:
-    result: COBBLESTONE_STAIRS
-    count: 4
-    ingredients: ["COBBLESTONE:6"]
-  cobblestone_slab:
-    result: COBBLESTONE_SLAB
-    count: 6
-    ingredients: ["COBBLESTONE:3"]
-  sandstone:
-    result: SANDSTONE
-    count: 1
-    ingredients: ["SAND:4"]
-  sandstone_stairs:
-    result: SANDSTONE_STAIRS
-    count: 4
-    ingredients: ["SANDSTONE:6"]
-  terracotta:
-    result: TERRACOTTA
-    count: 1
-    ingredients: ["CLAY:8"]
-  lantern:
-    result: LANTERN
-    count: 1
-    ingredients: ["IRON_NUGGET:8", "TORCH:1"]
+    ingredients: ["FLINT:1", "STICK:1", "FEATHER:1"]
+    layout: ["FLINT", "AIR", "AIR", "STICK", "AIR", "AIR", "FEATHER", "AIR", "AIR"]
   barrel:
     result: BARREL
     count: 1
     ingredients: ["OAK_PLANKS:6", "OAK_SLAB:2"]
-  composter:
-    result: COMPOSTER
+    layout: ["OAK_PLANKS", "OAK_SLAB", "OAK_PLANKS", "OAK_PLANKS", "AIR", "OAK_PLANKS", "OAK_PLANKS", "OAK_SLAB", "OAK_PLANKS"]
+  bed:
+    result: WHITE_BED
     count: 1
-    ingredients: ["OAK_SLAB:7"]
-  lectern:
-    result: LECTERN
-    count: 1
-    ingredients: ["OAK_SLAB:4", "BOOKSHELF:1"]
-  grindstone:
-    result: GRINDSTONE
-    count: 1
-    ingredients: ["STICK:2", "STONE_SLAB:1", "OAK_PLANKS:2"]
-  stonecutter:
-    result: STONECUTTER
-    count: 1
-    ingredients: ["IRON_INGOT:1", "STONE:3"]
-  smoker:
-    result: SMOKER
-    count: 1
-    ingredients: ["FURNACE:1", "OAK_LOG:4"]
+    ingredients: ["WHITE_WOOL:3", "OAK_PLANKS:3"]
+    layout: ["WHITE_WOOL", "WHITE_WOOL", "WHITE_WOOL", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "AIR", "AIR", "AIR"]
+  birch_door:
+    result: BIRCH_DOOR
+    count: 3
+    ingredients: ["BIRCH_PLANKS:6"]
+    layout: ["BIRCH_PLANKS", "BIRCH_PLANKS", "AIR", "BIRCH_PLANKS", "BIRCH_PLANKS", "AIR", "BIRCH_PLANKS", "BIRCH_PLANKS", "AIR"]
+  birch_planks:
+    result: BIRCH_PLANKS
+    count: 4
+    ingredients: ["BIRCH_LOG:1"]
+    layout: ["BIRCH_LOG", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  birch_slab:
+    result: BIRCH_SLAB
+    count: 6
+    ingredients: ["BIRCH_PLANKS:3"]
+    layout: ["BIRCH_PLANKS", "BIRCH_PLANKS", "BIRCH_PLANKS", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  birch_stairs:
+    result: BIRCH_STAIRS
+    count: 4
+    ingredients: ["BIRCH_PLANKS:6"]
+    layout: ["BIRCH_PLANKS", "AIR", "AIR", "BIRCH_PLANKS", "BIRCH_PLANKS", "AIR", "BIRCH_PLANKS", "BIRCH_PLANKS", "BIRCH_PLANKS"]
+  birch_trapdoor:
+    result: BIRCH_TRAPDOOR
+    count: 2
+    ingredients: ["BIRCH_PLANKS:6"]
+    layout: ["BIRCH_PLANKS", "BIRCH_PLANKS", "BIRCH_PLANKS", "BIRCH_PLANKS", "BIRCH_PLANKS", "BIRCH_PLANKS", "AIR", "AIR", "AIR"]
   blast_furnace:
     result: BLAST_FURNACE
     count: 1
-    ingredients: ["FURNACE:1", "IRON_INGOT:5", "SMOOTH_STONE:3"]
+    ingredients: ["IRON_INGOT:5", "FURNACE:1", "SMOOTH_STONE:3"]
+    layout: ["IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "FURNACE", "IRON_INGOT", "SMOOTH_STONE", "SMOOTH_STONE", "SMOOTH_STONE"]
+  book:
+    result: BOOK
+    count: 1
+    ingredients: ["PAPER:3", "LEATHER:1"]
+    layout: ["PAPER", "PAPER", "PAPER", "LEATHER", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  bookshelf:
+    result: BOOKSHELF
+    count: 1
+    ingredients: ["OAK_PLANKS:6", "BOOK:3"]
+    layout: ["OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "BOOK", "BOOK", "BOOK", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS"]
+  bow:
+    result: BOW
+    count: 1
+    ingredients: ["STICK:3", "STRING:3"]
+    layout: ["AIR", "STICK", "STRING", "STICK", "AIR", "STRING", "AIR", "STICK", "STRING"]
+  bread:
+    result: BREAD
+    count: 1
+    ingredients: ["WHEAT:3"]
+    layout: ["WHEAT", "WHEAT", "WHEAT", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
   brewing_stand:
     result: BREWING_STAND
     count: 1
     ingredients: ["BLAZE_ROD:1", "COBBLESTONE:3"]
-  hopper:
-    result: HOPPER
+    layout: ["AIR", "BLAZE_ROD", "AIR", "COBBLESTONE", "COBBLESTONE", "COBBLESTONE", "AIR", "AIR", "AIR"]
+  bricks:
+    result: BRICKS
     count: 1
-    ingredients: ["IRON_INGOT:5", "CHEST:1"]
+    ingredients: ["BRICK:4"]
+    layout: ["BRICK", "BRICK", "AIR", "BRICK", "BRICK", "AIR", "AIR", "AIR", "AIR"]
+  bucket:
+    result: BUCKET
+    count: 1
+    ingredients: ["IRON_INGOT:3"]
+    layout: ["IRON_INGOT", "AIR", "IRON_INGOT", "AIR", "IRON_INGOT", "AIR", "AIR", "AIR", "AIR"]
+  cake:
+    result: CAKE
+    count: 1
+    ingredients: ["MILK_BUCKET:3", "SUGAR:2", "EGG:1", "WHEAT:3"]
+    layout: ["MILK_BUCKET", "MILK_BUCKET", "MILK_BUCKET", "SUGAR", "EGG", "SUGAR", "WHEAT", "WHEAT", "WHEAT"]
+  campfire:
+    result: CAMPFIRE
+    count: 1
+    ingredients: ["STICK:3", "COAL:1", "OAK_LOG:3"]
+    layout: ["AIR", "STICK", "AIR", "STICK", "COAL", "STICK", "OAK_LOG", "OAK_LOG", "OAK_LOG"]
+  cauldron:
+    result: CAULDRON
+    count: 1
+    ingredients: ["IRON_INGOT:7"]
+    layout: ["IRON_INGOT", "AIR", "IRON_INGOT", "IRON_INGOT", "AIR", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT"]
+  chest:
+    result: CHEST
+    count: 1
+    ingredients: ["OAK_PLANKS:8"]
+    layout: ["OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "AIR", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS"]
+  clock:
+    result: CLOCK
+    count: 1
+    ingredients: ["GOLD_INGOT:4", "REDSTONE:1"]
+    layout: ["AIR", "GOLD_INGOT", "AIR", "GOLD_INGOT", "REDSTONE", "GOLD_INGOT", "AIR", "GOLD_INGOT", "AIR"]
+  cobblestone_slab:
+    result: COBBLESTONE_SLAB
+    count: 6
+    ingredients: ["COBBLESTONE:3"]
+    layout: ["COBBLESTONE", "COBBLESTONE", "COBBLESTONE", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  cobblestone_stairs:
+    result: COBBLESTONE_STAIRS
+    count: 4
+    ingredients: ["COBBLESTONE:6"]
+    layout: ["COBBLESTONE", "AIR", "AIR", "COBBLESTONE", "COBBLESTONE", "AIR", "COBBLESTONE", "COBBLESTONE", "COBBLESTONE"]
+  compass:
+    result: COMPASS
+    count: 1
+    ingredients: ["IRON_INGOT:4", "REDSTONE:1"]
+    layout: ["AIR", "IRON_INGOT", "AIR", "IRON_INGOT", "REDSTONE", "IRON_INGOT", "AIR", "IRON_INGOT", "AIR"]
+  composter:
+    result: COMPOSTER
+    count: 1
+    ingredients: ["OAK_SLAB:7"]
+    layout: ["OAK_SLAB", "AIR", "OAK_SLAB", "OAK_SLAB", "AIR", "OAK_SLAB", "OAK_SLAB", "OAK_SLAB", "OAK_SLAB"]
+  cookie:
+    result: COOKIE
+    count: 8
+    ingredients: ["WHEAT:2", "COCOA_BEANS:1"]
+    layout: ["WHEAT", "COCOA_BEANS", "WHEAT", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  crafting_table:
+    result: CRAFTING_TABLE
+    count: 1
+    ingredients: ["OAK_PLANKS:4"]
+    layout: ["OAK_PLANKS", "OAK_PLANKS", "AIR", "OAK_PLANKS", "OAK_PLANKS", "AIR", "AIR", "AIR", "AIR"]
+  dark_oak_planks:
+    result: DARK_OAK_PLANKS
+    count: 4
+    ingredients: ["DARK_OAK_LOG:1"]
+    layout: ["DARK_OAK_LOG", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
   dispenser:
     result: DISPENSER
     count: 1
     ingredients: ["COBBLESTONE:7", "BOW:1", "REDSTONE:1"]
-  note_block:
-    result: NOTE_BLOCK
+    layout: ["COBBLESTONE", "COBBLESTONE", "COBBLESTONE", "COBBLESTONE", "BOW", "COBBLESTONE", "COBBLESTONE", "REDSTONE", "COBBLESTONE"]
+  empty_map:
+    result: MAP
     count: 1
-    ingredients: ["OAK_PLANKS:8", "REDSTONE:1"]
-  jukebox:
-    result: JUKEBOX
-    count: 1
-    ingredients: ["OAK_PLANKS:8", "DIAMOND:1"]
+    ingredients: ["PAPER:8", "COMPASS:1"]
+    layout: ["PAPER", "PAPER", "PAPER", "PAPER", "COMPASS", "PAPER", "PAPER", "PAPER", "PAPER"]
   ender_chest:
     result: ENDER_CHEST
     count: 1
     ingredients: ["OBSIDIAN:8", "ENDER_EYE:1"]
+    layout: ["OBSIDIAN", "OBSIDIAN", "OBSIDIAN", "OBSIDIAN", "ENDER_EYE", "OBSIDIAN", "OBSIDIAN", "OBSIDIAN", "OBSIDIAN"]
+  fishing_rod:
+    result: FISHING_ROD
+    count: 1
+    ingredients: ["STICK:3", "STRING:2"]
+    layout: ["AIR", "AIR", "STICK", "AIR", "STICK", "STRING", "STICK", "AIR", "STRING"]
+  flower_pot:
+    result: FLOWER_POT
+    count: 1
+    ingredients: ["BRICK:3"]
+    layout: ["BRICK", "AIR", "BRICK", "AIR", "BRICK", "AIR", "AIR", "AIR", "AIR"]
+  furnace:
+    result: FURNACE
+    count: 1
+    ingredients: ["COBBLESTONE:8"]
+    layout: ["COBBLESTONE", "COBBLESTONE", "COBBLESTONE", "COBBLESTONE", "AIR", "COBBLESTONE", "COBBLESTONE", "COBBLESTONE", "COBBLESTONE"]
+  glass_bottle:
+    result: GLASS_BOTTLE
+    count: 3
+    ingredients: ["GLASS:3"]
+    layout: ["GLASS", "AIR", "GLASS", "AIR", "GLASS", "AIR", "AIR", "AIR", "AIR"]
+  glass_pane:
+    result: GLASS_PANE
+    count: 16
+    ingredients: ["GLASS:6"]
+    layout: ["GLASS", "GLASS", "GLASS", "GLASS", "GLASS", "GLASS", "AIR", "AIR", "AIR"]
+  grindstone:
+    result: GRINDSTONE
+    count: 1
+    ingredients: ["STICK:2", "STONE_SLAB:1", "OAK_PLANKS:2"]
+    layout: ["STICK", "STONE_SLAB", "STICK", "OAK_PLANKS", "AIR", "OAK_PLANKS", "AIR", "AIR", "AIR"]
+  hopper:
+    result: HOPPER
+    count: 1
+    ingredients: ["IRON_INGOT:5", "CHEST:1"]
+    layout: ["IRON_INGOT", "AIR", "IRON_INGOT", "IRON_INGOT", "CHEST", "IRON_INGOT", "AIR", "IRON_INGOT", "AIR"]
+  iron_axe:
+    result: IRON_AXE
+    count: 1
+    ingredients: ["IRON_INGOT:3", "STICK:2"]
+    layout: ["IRON_INGOT", "IRON_INGOT", "AIR", "IRON_INGOT", "STICK", "AIR", "AIR", "STICK", "AIR"]
+  iron_bars:
+    result: IRON_BARS
+    count: 16
+    ingredients: ["IRON_INGOT:6"]
+    layout: ["IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "AIR", "AIR", "AIR"]
+  iron_boots:
+    result: IRON_BOOTS
+    count: 1
+    ingredients: ["IRON_INGOT:4"]
+    layout: ["IRON_INGOT", "AIR", "IRON_INGOT", "IRON_INGOT", "AIR", "IRON_INGOT", "AIR", "AIR", "AIR"]
+  iron_chestplate:
+    result: IRON_CHESTPLATE
+    count: 1
+    ingredients: ["IRON_INGOT:8"]
+    layout: ["IRON_INGOT", "AIR", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT"]
+  iron_door:
+    result: IRON_DOOR
+    count: 3
+    ingredients: ["IRON_INGOT:6"]
+    layout: ["IRON_INGOT", "IRON_INGOT", "AIR", "IRON_INGOT", "IRON_INGOT", "AIR", "IRON_INGOT", "IRON_INGOT", "AIR"]
+  iron_helmet:
+    result: IRON_HELMET
+    count: 1
+    ingredients: ["IRON_INGOT:5"]
+    layout: ["IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "AIR", "IRON_INGOT", "AIR", "AIR", "AIR"]
+  iron_hoe:
+    result: IRON_HOE
+    count: 1
+    ingredients: ["IRON_INGOT:2", "STICK:2"]
+    layout: ["IRON_INGOT", "IRON_INGOT", "AIR", "AIR", "STICK", "AIR", "AIR", "STICK", "AIR"]
+  iron_leggings:
+    result: IRON_LEGGINGS
+    count: 1
+    ingredients: ["IRON_INGOT:7"]
+    layout: ["IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "AIR", "IRON_INGOT", "IRON_INGOT", "AIR", "IRON_INGOT"]
+  iron_pickaxe:
+    result: IRON_PICKAXE
+    count: 1
+    ingredients: ["IRON_INGOT:3", "STICK:2"]
+    layout: ["IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "AIR", "STICK", "AIR", "AIR", "STICK", "AIR"]
+  iron_shovel:
+    result: IRON_SHOVEL
+    count: 1
+    ingredients: ["IRON_INGOT:1", "STICK:2"]
+    layout: ["IRON_INGOT", "AIR", "AIR", "STICK", "AIR", "AIR", "STICK", "AIR", "AIR"]
+  iron_sword:
+    result: IRON_SWORD
+    count: 1
+    ingredients: ["IRON_INGOT:2", "STICK:1"]
+    layout: ["IRON_INGOT", "AIR", "AIR", "IRON_INGOT", "AIR", "AIR", "STICK", "AIR", "AIR"]
+  iron_trapdoor:
+    result: IRON_TRAPDOOR
+    count: 1
+    ingredients: ["IRON_INGOT:4"]
+    layout: ["IRON_INGOT", "IRON_INGOT", "AIR", "IRON_INGOT", "IRON_INGOT", "AIR", "AIR", "AIR", "AIR"]
+  item_frame:
+    result: ITEM_FRAME
+    count: 1
+    ingredients: ["STICK:8", "LEATHER:1"]
+    layout: ["STICK", "STICK", "STICK", "STICK", "LEATHER", "STICK", "STICK", "STICK", "STICK"]
+  jukebox:
+    result: JUKEBOX
+    count: 1
+    ingredients: ["OAK_PLANKS:8", "DIAMOND:1"]
+    layout: ["OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "DIAMOND", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS"]
+  jungle_planks:
+    result: JUNGLE_PLANKS
+    count: 4
+    ingredients: ["JUNGLE_LOG:1"]
+    layout: ["JUNGLE_LOG", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  ladder:
+    result: LADDER
+    count: 3
+    ingredients: ["STICK:7"]
+    layout: ["STICK", "AIR", "STICK", "STICK", "STICK", "STICK", "STICK", "AIR", "STICK"]
+  lantern:
+    result: LANTERN
+    count: 1
+    ingredients: ["IRON_NUGGET:8", "TORCH:1"]
+    layout: ["IRON_NUGGET", "IRON_NUGGET", "IRON_NUGGET", "IRON_NUGGET", "TORCH", "IRON_NUGGET", "IRON_NUGGET", "IRON_NUGGET", "IRON_NUGGET"]
+  lectern:
+    result: LECTERN
+    count: 1
+    ingredients: ["OAK_SLAB:4", "BOOKSHELF:1"]
+    layout: ["OAK_SLAB", "OAK_SLAB", "OAK_SLAB", "AIR", "BOOKSHELF", "AIR", "AIR", "OAK_SLAB", "AIR"]
+  lever:
+    result: LEVER
+    count: 1
+    ingredients: ["STICK:1", "COBBLESTONE:1"]
+    layout: ["STICK", "AIR", "AIR", "COBBLESTONE", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  minecart:
+    result: MINECART
+    count: 1
+    ingredients: ["IRON_INGOT:5"]
+    layout: ["IRON_INGOT", "AIR", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "IRON_INGOT", "AIR", "AIR", "AIR"]
+  note_block:
+    result: NOTE_BLOCK
+    count: 1
+    ingredients: ["OAK_PLANKS:8", "REDSTONE:1"]
+    layout: ["OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "REDSTONE", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS"]
+  oak_door:
+    result: OAK_DOOR
+    count: 3
+    ingredients: ["OAK_PLANKS:6"]
+    layout: ["OAK_PLANKS", "OAK_PLANKS", "AIR", "OAK_PLANKS", "OAK_PLANKS", "AIR", "OAK_PLANKS", "OAK_PLANKS", "AIR"]
+  oak_fence:
+    result: OAK_FENCE
+    count: 3
+    ingredients: ["OAK_PLANKS:4", "STICK:2"]
+    layout: ["OAK_PLANKS", "STICK", "OAK_PLANKS", "OAK_PLANKS", "STICK", "OAK_PLANKS", "AIR", "AIR", "AIR"]
+  oak_fence_gate:
+    result: OAK_FENCE_GATE
+    count: 1
+    ingredients: ["STICK:4", "OAK_PLANKS:2"]
+    layout: ["STICK", "OAK_PLANKS", "STICK", "STICK", "OAK_PLANKS", "STICK", "AIR", "AIR", "AIR"]
+  oak_sign:
+    result: OAK_SIGN
+    count: 3
+    ingredients: ["OAK_PLANKS:6", "STICK:1"]
+    layout: ["OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "AIR", "STICK", "AIR"]
+  oak_slab:
+    result: OAK_SLAB
+    count: 6
+    ingredients: ["OAK_PLANKS:3"]
+    layout: ["OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  oak_stairs:
+    result: OAK_STAIRS
+    count: 4
+    ingredients: ["OAK_PLANKS:6"]
+    layout: ["OAK_PLANKS", "AIR", "AIR", "OAK_PLANKS", "OAK_PLANKS", "AIR", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS"]
+  oak_trapdoor:
+    result: OAK_TRAPDOOR
+    count: 2
+    ingredients: ["OAK_PLANKS:6"]
+    layout: ["OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "AIR", "AIR", "AIR"]
+  painting:
+    result: PAINTING
+    count: 1
+    ingredients: ["STICK:8", "WHITE_WOOL:1"]
+    layout: ["STICK", "STICK", "STICK", "STICK", "WHITE_WOOL", "STICK", "STICK", "STICK", "STICK"]
+  paper:
+    result: PAPER
+    count: 3
+    ingredients: ["SUGAR_CANE:3"]
+    layout: ["SUGAR_CANE", "SUGAR_CANE", "SUGAR_CANE", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  planks:
+    result: OAK_PLANKS
+    count: 4
+    ingredients: ["OAK_LOG:1"]
+    layout: ["OAK_LOG", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  rail:
+    result: RAIL
+    count: 16
+    ingredients: ["IRON_INGOT:6", "STICK:1"]
+    layout: ["IRON_INGOT", "AIR", "IRON_INGOT", "IRON_INGOT", "STICK", "IRON_INGOT", "IRON_INGOT", "AIR", "IRON_INGOT"]
+  redstone_torch:
+    result: REDSTONE_TORCH
+    count: 1
+    ingredients: ["REDSTONE:1", "STICK:1"]
+    layout: ["REDSTONE", "AIR", "AIR", "STICK", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  sandstone:
+    result: SANDSTONE
+    count: 1
+    ingredients: ["SAND:4"]
+    layout: ["SAND", "SAND", "AIR", "SAND", "SAND", "AIR", "AIR", "AIR", "AIR"]
+  sandstone_stairs:
+    result: SANDSTONE_STAIRS
+    count: 4
+    ingredients: ["SANDSTONE:6"]
+    layout: ["SANDSTONE", "AIR", "AIR", "SANDSTONE", "SANDSTONE", "AIR", "SANDSTONE", "SANDSTONE", "SANDSTONE"]
+  shears:
+    result: SHEARS
+    count: 1
+    ingredients: ["IRON_INGOT:2"]
+    layout: ["AIR", "IRON_INGOT", "AIR", "IRON_INGOT", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  shield:
+    result: SHIELD
+    count: 1
+    ingredients: ["OAK_PLANKS:6", "IRON_INGOT:1"]
+    layout: ["OAK_PLANKS", "IRON_INGOT", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "AIR", "OAK_PLANKS", "AIR"]
+  smoker:
+    result: SMOKER
+    count: 1
+    ingredients: ["OAK_LOG:4", "FURNACE:1"]
+    layout: ["AIR", "OAK_LOG", "AIR", "OAK_LOG", "FURNACE", "OAK_LOG", "AIR", "OAK_LOG", "AIR"]
+  spruce_door:
+    result: SPRUCE_DOOR
+    count: 3
+    ingredients: ["SPRUCE_PLANKS:6"]
+    layout: ["SPRUCE_PLANKS", "SPRUCE_PLANKS", "AIR", "SPRUCE_PLANKS", "SPRUCE_PLANKS", "AIR", "SPRUCE_PLANKS", "SPRUCE_PLANKS", "AIR"]
+  spruce_planks:
+    result: SPRUCE_PLANKS
+    count: 4
+    ingredients: ["SPRUCE_LOG:1"]
+    layout: ["SPRUCE_LOG", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  spruce_slab:
+    result: SPRUCE_SLAB
+    count: 6
+    ingredients: ["SPRUCE_PLANKS:3"]
+    layout: ["SPRUCE_PLANKS", "SPRUCE_PLANKS", "SPRUCE_PLANKS", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  spruce_stairs:
+    result: SPRUCE_STAIRS
+    count: 4
+    ingredients: ["SPRUCE_PLANKS:6"]
+    layout: ["SPRUCE_PLANKS", "AIR", "AIR", "SPRUCE_PLANKS", "SPRUCE_PLANKS", "AIR", "SPRUCE_PLANKS", "SPRUCE_PLANKS", "SPRUCE_PLANKS"]
+  spruce_trapdoor:
+    result: SPRUCE_TRAPDOOR
+    count: 2
+    ingredients: ["SPRUCE_PLANKS:6"]
+    layout: ["SPRUCE_PLANKS", "SPRUCE_PLANKS", "SPRUCE_PLANKS", "SPRUCE_PLANKS", "SPRUCE_PLANKS", "SPRUCE_PLANKS", "AIR", "AIR", "AIR"]
+  stick:
+    result: STICK
+    count: 4
+    ingredients: ["OAK_PLANKS:2"]
+    layout: ["OAK_PLANKS", "AIR", "AIR", "OAK_PLANKS", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  stone_axe:
+    result: STONE_AXE
+    count: 1
+    ingredients: ["COBBLESTONE:3", "STICK:2"]
+    layout: ["COBBLESTONE", "COBBLESTONE", "AIR", "COBBLESTONE", "STICK", "AIR", "AIR", "STICK", "AIR"]
+  stone_bricks:
+    result: STONE_BRICKS
+    count: 4
+    ingredients: ["STONE:4"]
+    layout: ["STONE", "STONE", "AIR", "STONE", "STONE", "AIR", "AIR", "AIR", "AIR"]
+  stone_button:
+    result: STONE_BUTTON
+    count: 1
+    ingredients: ["STONE:1"]
+    layout: ["STONE", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  stone_hoe:
+    result: STONE_HOE
+    count: 1
+    ingredients: ["COBBLESTONE:2", "STICK:2"]
+    layout: ["COBBLESTONE", "COBBLESTONE", "AIR", "AIR", "STICK", "AIR", "AIR", "STICK", "AIR"]
+  stone_pickaxe:
+    result: STONE_PICKAXE
+    count: 1
+    ingredients: ["COBBLESTONE:3", "STICK:2"]
+    layout: ["COBBLESTONE", "COBBLESTONE", "COBBLESTONE", "AIR", "STICK", "AIR", "AIR", "STICK", "AIR"]
+  stone_pressure_plate:
+    result: STONE_PRESSURE_PLATE
+    count: 1
+    ingredients: ["STONE:2"]
+    layout: ["STONE", "STONE", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  stone_shovel:
+    result: STONE_SHOVEL
+    count: 1
+    ingredients: ["COBBLESTONE:1", "STICK:2"]
+    layout: ["COBBLESTONE", "AIR", "AIR", "STICK", "AIR", "AIR", "STICK", "AIR", "AIR"]
+  stone_slab:
+    result: STONE_SLAB
+    count: 6
+    ingredients: ["STONE:3"]
+    layout: ["STONE", "STONE", "STONE", "AIR", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  stone_sword:
+    result: STONE_SWORD
+    count: 1
+    ingredients: ["COBBLESTONE:2", "STICK:1"]
+    layout: ["COBBLESTONE", "AIR", "AIR", "COBBLESTONE", "AIR", "AIR", "STICK", "AIR", "AIR"]
+  stonecutter:
+    result: STONECUTTER
+    count: 1
+    ingredients: ["IRON_INGOT:1", "STONE:3"]
+    layout: ["AIR", "IRON_INGOT", "AIR", "STONE", "STONE", "STONE", "AIR", "AIR", "AIR"]
+  glowstone:
+    result: GLOWSTONE
+    count: 1
+    ingredients: ["GLOWSTONE_DUST:4"]
+    layout: ["GLOWSTONE_DUST", "GLOWSTONE_DUST", "AIR", "GLOWSTONE_DUST", "GLOWSTONE_DUST", "AIR", "AIR", "AIR", "AIR"]
+  torch:
+    result: TORCH
+    count: 4
+    ingredients: ["COAL:1", "STICK:1"]
+    layout: ["COAL", "AIR", "AIR", "STICK", "AIR", "AIR", "AIR", "AIR", "AIR"]
+  wooden_axe:
+    result: WOODEN_AXE
+    count: 1
+    ingredients: ["OAK_PLANKS:3", "STICK:2"]
+    layout: ["OAK_PLANKS", "OAK_PLANKS", "AIR", "OAK_PLANKS", "STICK", "AIR", "AIR", "STICK", "AIR"]
+  wooden_hoe:
+    result: WOODEN_HOE
+    count: 1
+    ingredients: ["OAK_PLANKS:2", "STICK:2"]
+    layout: ["OAK_PLANKS", "OAK_PLANKS", "AIR", "AIR", "STICK", "AIR", "AIR", "STICK", "AIR"]
+  wooden_pickaxe:
+    result: WOODEN_PICKAXE
+    count: 1
+    ingredients: ["OAK_PLANKS:3", "STICK:2"]
+    layout: ["OAK_PLANKS", "OAK_PLANKS", "OAK_PLANKS", "AIR", "STICK", "AIR", "AIR", "STICK", "AIR"]
+  wooden_shovel:
+    result: WOODEN_SHOVEL
+    count: 1
+    ingredients: ["OAK_PLANKS:1", "STICK:2"]
+    layout: ["OAK_PLANKS", "AIR", "AIR", "STICK", "AIR", "AIR", "STICK", "AIR", "AIR"]
+  wooden_sword:
+    result: WOODEN_SWORD
+    count: 1
+    ingredients: ["OAK_PLANKS:2", "STICK:1"]
+    layout: ["OAK_PLANKS", "AIR", "AIR", "OAK_PLANKS", "AIR", "AIR", "STICK", "AIR", "AIR"]

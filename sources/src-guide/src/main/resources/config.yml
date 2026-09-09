@@ -1,10 +1,23 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 24
+version: 25
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&e&lv25 &7- hard bosses + real /craft recipes (3.0.3)"
+    icon: IRON_SWORD
+    lines:
+      - "&7&eBOSS HUNTS ARE HARD NOW:&7 double HP + attack x1.5 (netherite"
+      - "&7gear helps!) and the drops are event-fair - &fcoins 5k-15k, 1-2"
+      - "&fLucky Coins, 1 crate key&7 (rare 20-25%, mythic 10-12%). Went"
+      - "&7from 90k + 45% Mythic key per kill to a real fight."
+      - "&7&e/craft&7 shows the &fREAL vanilla recipe&7 for all 100 basics -"
+      - "&7correct amounts, output counts and the exact 3x3 grid (no more"
+      - "&7white bed from orange bed + dye!). Glass + terracotta replaced"
+      - "&7by glass bottles + glowstone (those two are smelted, not crafted)."
+      - "&7&33.0.3 jars: &fMAVOCrafting / MAVOMiniboss / MAVOGuide&7."
+      - ""
   - title: "&e&lv24 &7- old configs heal themselves! (3.0.2)"
     icon: IRON_CHAIN
     lines:
@@ -51,8 +64,8 @@ whatsnew:
       - "&7ARENA&7 (340, 1470) - around the center, surface only."
       - "&7The spawn message + 5-min broadcast name the arena so you know"
       - "&7exactly where to go. &e/hunt&7 still drops you ~200 blocks away."
-      - "&7&eNether Overlord&7 got a boost to match live: &f2000 HP, 150k coins,"
-      - "&f6x Lucky Coin @50%, 3x Mythic Key @50%&7 - the richest hunt!"
+      - "&7&eNether Overlord (Hotfix 44)&7 was the richest hunt (&f2000 HP, 150k coins),"
+      - "&7see v25 - &e3.0.3 rebalanced all boss drops down + made them harder."
       - "&7&e/miniboss status&7 now lists both arenas and where bosses are."
       - ""
   - title: "&b&lv20 &7- Fair gem drops + armor gems + crates 2.0 (Hotfix 43)"
@@ -886,7 +899,9 @@ features:
       - "&e/hunt&7 teleports you ~&f200 blocks&7 from a live boss (30s cd)."
       - "&7Spawn chat shows the &fdrop pool %&7 + boss &fHP&7: coins always,"
       - "&7lucky coin % and crate key % - so you know the odds."
-      - "&7Kill drops: coins, Lucky Coins, a crate key, trophy head."
+      - "&7&83.0.3 rebalance:&7 bosses are HARD (double HP, x1.5 damage) and drops"
+      - "&7are event-fair - coins 5k-15k, 1-2 Lucky Coins, 1 key (rare 20-25% /"
+      - "&7mythic 10-12%). No more free 90k + Mythic key per kill."
       - "&e/miniboss status|locate&7 - arenas + what's alive right now."
 
   - id: chesthunt

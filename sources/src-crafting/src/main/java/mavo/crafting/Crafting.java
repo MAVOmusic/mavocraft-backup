@@ -59,7 +59,7 @@ public final class Crafting extends JavaPlugin implements Listener {
             "EXP_BOTTLE", "EXPERIENCE_BOTTLE");
 
     private record Ingredient(Material mat, int amount) {}
-    private record RecipeDef(String id, Material result, int count, List<Ingredient> ingredients) {}
+    private record RecipeDef(String id, Material result, int count, List<Ingredient> ingredients, List<String> layout) {}
 
     @Override public void onEnable() {
         saveDefaultConfig();
@@ -90,14 +90,14 @@ public final class Crafting extends JavaPlugin implements Listener {
             // v3.0 REPAIR (live bug): old configs carry the 50-recipe list and the
             // merge only ADDS missing keys, so the other 50 never appeared
             // ("50 beginner recipe(s)" on live). Replace the whole section once.
-            if (disk.getInt("recipes-version", 0) < 3) {
+            if (disk.getInt("recipes-version", 0) < 4) {
                 Object list = def.get("beginner-recipes");
                 if (list != null) {
-                    disk.set("recipes-version", 3);
+                    disk.set("recipes-version", 4);
                     disk.set("beginner-recipes", list);
                     try { disk.save(f); }
                     catch (Exception ex) { getLogger().warning("could not save recipe upgrade: " + ex.getMessage()); }
-                    getLogger().info("v3.0: beginner recipes upgraded to 100 (/craft guide).");
+                    getLogger().info("v3.0.3: beginner recipes re-verified - 100 real vanilla basics (correct amounts + 3x3 grid).");
                 }
             }
             // 3.0.2: the 3.0.0 upgrade wrote two names Paper no longer knows
@@ -269,7 +269,12 @@ public final class Crafting extends JavaPlugin implements Listener {
                     ings.add(new Ingredient(m, Math.max(1, parts.length > 1 ? Integer.parseInt(parts[1].trim()) : 1)));
                 }
                 if (ings.isEmpty()) continue;
-                beginners.put(id.toLowerCase(Locale.ROOT), new RecipeDef(id, result, count, ings));
+                List<String> layout = null;
+                if (c.contains("layout")) {   // 3.0.3: verified vanilla 3x3 grid, row by row
+                    List<String> l = c.getStringList("layout");
+                    if (l.size() >= 9) layout = new ArrayList<>(l.subList(0, 9));
+                }
+                beginners.put(id.toLowerCase(Locale.ROOT), new RecipeDef(id, result, count, ings, layout));
             } catch (Throwable t) {
                 getLogger().warning("beginner recipe " + id + ": " + t.getMessage() + " - skipped.");
             }
@@ -387,38 +392,49 @@ public final class Crafting extends JavaPlugin implements Listener {
         catch (Throwable t) { return 0; }
     }
 
-    /** HOTFIX 40: GUIDE mode. Clicking a recipe in /craft opens a 3x3 preview of
-     *  the REAL recipe (looked up from the server's recipe registry - same layout
-     *  as the vanilla crafting grid) and unlocks it in the player's recipe book
-     *  (press E). Nothing is crafted and nothing is consumed. */
+    /** 3.0.3: GUIDE mode. Clicking a recipe in /craft opens a 3x3 preview of
+     *  the REAL recipe and unlocks it in the player's recipe book (press E).
+     *  The grid comes from the verified vanilla layout stored in the config -
+     *  the server registry can return ALT recipes for the same result (e.g.
+     *  a white bed from an orange bed + white dye), which is why the registry
+     *  lookup is only a fallback now. Nothing is crafted and nothing is consumed. */
     private void openRecipe(Player p, RecipeDef r, int fromPage) {
         Inventory inv = Bukkit.createInventory(null, 45, C + "1\u2692 " + pretty(r.id()) + " - how to craft");
         ItemStack[] grid = new ItemStack[9];
         Recipe found = null;
-        try {
-            for (Recipe rc : Bukkit.getRecipesFor(new ItemStack(r.result()))) {
-                if (rc instanceof ShapedRecipe sr) {          // exact 3x3 pattern
-                    found = rc;
-                    String[] shape = sr.getShape();
-                    for (int row = 0; row < shape.length && row < 3; row++) {
-                        String s = shape[row];
-                        for (int col = 0; col < s.length() && col < 3; col++) {
-                            char ch = s.charAt(col);
-                            if (ch == ' ') continue;
-                            ItemStack ing = sr.getIngredientMap().get(ch);
-                            if (ing != null) grid[row * 3 + col] = ing.clone();
-                        }
-                    }
-                    break;
-                } else if (rc instanceof ShapelessRecipe sl) { // any order
-                    found = rc;
-                    int i = 0;
-                    for (ItemStack ing : sl.getIngredientList())
-                        if (i < 9) grid[i++] = ing.clone();
-                    break;
-                }
+        if (r.layout() != null) {                                  // verified vanilla grid
+            for (int i = 0; i < 9; i++) {
+                String cell = r.layout().get(i);
+                if (cell == null || cell.equals("AIR")) continue;
+                Material m = Material.matchMaterial(cell);
+                if (m != null) grid[i] = new ItemStack(m);
             }
-        } catch (Throwable ignored) { }
+        } else {
+            try {                                                  // fallback: registry
+                for (Recipe rc : Bukkit.getRecipesFor(new ItemStack(r.result()))) {
+                    if (rc instanceof ShapedRecipe sr) {          // exact 3x3 pattern
+                        found = rc;
+                        String[] shape = sr.getShape();
+                        for (int row = 0; row < shape.length && row < 3; row++) {
+                            String s = shape[row];
+                            for (int col = 0; col < s.length() && col < 3; col++) {
+                                char ch = s.charAt(col);
+                                if (ch == ' ') continue;
+                                ItemStack ing = sr.getIngredientMap().get(ch);
+                                if (ing != null) grid[row * 3 + col] = ing.clone();
+                            }
+                        }
+                        break;
+                    } else if (rc instanceof ShapelessRecipe sl) { // any order
+                        found = rc;
+                        int i = 0;
+                        for (ItemStack ing : sl.getIngredientList())
+                            if (i < 9) grid[i++] = ing.clone();
+                        break;
+                    }
+                }
+            } catch (Throwable ignored) { }
+        }
         if (found != null) {
             try {   // unlock in the vanilla recipe book (press E to see it)
                 for (Recipe rc : Bukkit.getRecipesFor(new ItemStack(r.result())))
@@ -443,7 +459,7 @@ public final class Crafting extends JavaPlugin implements Listener {
         ItemMeta rm = result.getItemMeta();
         rm.setDisplayName(C + "a" + pretty(r.id()) + " x" + r.count());
         List<String> rl = new ArrayList<>();
-        if (found instanceof ShapedRecipe)
+        if (r.layout() != null || found instanceof ShapedRecipe)
             rl.add(C + "7Place the ingredients in this exact pattern in a crafting table.");
         else if (found instanceof ShapelessRecipe)
             rl.add(C + "7Throw the ingredients together in a crafting table (any order).");
@@ -451,7 +467,7 @@ public final class Crafting extends JavaPlugin implements Listener {
             for (Ingredient ing : r.ingredients()) rl.add(C + "7  " + ing.amount() + "x " + pretty2(ing.mat()));
             rl.add(C + "7Craft in a crafting table.");
         }
-        if (found != null) rl.add(C + "8Unlocked in your recipe book too - press E to see it.");
+        rl.add(C + "8Unlocked in your recipe book too - press E to see it.");
         rm.setLore(rl);
         result.setItemMeta(rm);
         inv.setItem(26, result);

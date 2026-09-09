@@ -104,7 +104,9 @@ public final class MiniBoss extends JavaPlugin implements Listener {
 
     /** HOTFIX 44: an existing config.yml already has a "bosses" section with only
      *  the 5 old defs - copyDefaults() cannot add ids inside it. Merge every
-     *  bundled boss id the disk file is missing (live-tuned stats stay untouched). */
+     *  bundled boss id the disk file is missing.
+     *  3.0.3 REBALANCE: old live-tuned stats (90k coins, 45% mythic keys, low HP)
+     *  were far too rich - bosses-version < 2 forces the WHOLE new table. */
     private void mergeBossRoster() {
         File f = new File(getDataFolder(), "config.yml");
         try {
@@ -122,7 +124,13 @@ public final class MiniBoss extends JavaPlugin implements Listener {
                     added++;
                 }
             }
-            if (added > 0) {
+            if (disk.getInt("bosses-version", 0) < 2) {
+                disk.set("bosses-version", 2);
+                disk.set("bosses", def.get("bosses"));
+                disk.save(f);
+                getLogger().info("3.0.3: boss table replaced - hard hunts (HP x2, damage x1.5), "
+                        + "coins/key drops scaled down to event-fair values.");
+            } else if (added > 0) {
                 disk.save(f);
                 getLogger().info("Hotfix 44: " + added + " new boss type(s) added to config.yml.");
             }
@@ -130,6 +138,11 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         } catch (Throwable t) {
             getLogger().warning("boss roster merge failed: " + t.getMessage());
         }
+    }
+
+    /** 3.0.3: boss attack damage multiplier from config (default 1.5). */
+    private double damageMult() {
+        return Math.max(1.0, getConfig().getDouble("boss-damage-multiplier", 1.5));
     }
 
     private void load() {
@@ -233,6 +246,11 @@ public final class MiniBoss extends JavaPlugin implements Listener {
             e.setHealth(d.hp());
             e.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(
                     e.getAttribute(Attribute.MOVEMENT_SPEED).getBaseValue() * 1.15);
+            // 3.0.3: bosses hit harder (default x1.5) - "hard hunt", not free money
+            org.bukkit.attribute.AttributeInstance atk =
+                    e.getAttribute(Attribute.ATTACK_DAMAGE);
+            if (atk != null)
+                atk.setBaseValue(atk.getBaseValue() * damageMult());
         } catch (Throwable ignored) { }
         e.getPersistentDataContainer().set(tag, PersistentDataType.BYTE, (byte) 1);
         e.getPersistentDataContainer().set(bossType, PersistentDataType.STRING, key);

@@ -1,5 +1,5 @@
 name: MAVOCrafting
-version: 3.0.2
+version: 3.0.3
 main: mavo.crafting.Crafting
 api-version: '1.21'
 description: Custom crafting recipes - craft the uncraftables (chainmail, name tag, saddle, lead) (MAVOcraft)

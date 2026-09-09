@@ -10,5 +10,5 @@
   <dependencies>
     <dependency><groupId>io.papermc.paper</groupId><artifactId>paper-api</artifactId><version>26.2.build.48-alpha</version><scope>provided</scope></dependency>
   </dependencies>
-  <build><finalName>MAVOCrafting-3.0.2</finalName></build>
+  <build><finalName>MAVOCrafting-3.0.3</finalName></build>
 </project>

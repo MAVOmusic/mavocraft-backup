@@ -39,169 +39,180 @@ broadcast-radius: 100        # shown in chat as "around x, z (±100 blocks)"
 # the boss HP before the callout. Chances are rolled independently on kill.
 # Hotfix 44: NETHER OVERLORD matches the live production values (150k / 6x @50% /
 # 3x Mythic @50% / 2000 HP) and 10 NEW bosses join the roster (15 total).
+# ---- Boss difficulty + drop pool (3.0.3 REBALANCE - v2) ----
+# User report 2026-09-09: drops were too rich (90k coins + 45% Mythic key per kill)
+# -> bosses are now HARD (HP x2, attack x1.5 via boss-damage-multiplier) and drops
+# are a fair event reward (coins ~10%, 1-2 Lucky Coins @30-35%, 1 key @ 10-25%).
+# bosses-version 2 forces existing configs to take the new table on boot (the old
+# live-tuned values must NOT survive). Chances are rolled independently on kill.
+bosses-version: 2
+
+# 3.0.3: boss attack damage multiplier (hard hunts, not free money).
+boss-damage-multiplier: 1.5
+
 bosses:
   swamp_witch_lord:
     name: "&5&lSWAMP WITCH LORD"
     entity: WITCH
-    hp: 800
-    coins: 50000
-    lucky-coins: 3
-    lucky-chance: 60
+    hp: 1600
+    coins: 5000
+    lucky-coins: 1
+    lucky-chance: 30
     crate-key: "rare"
     crate-keys: 1
-    crate-chance: 50
+    crate-chance: 20
     head: PLAYER_HEAD
   desert_pharaoh:
     name: "&6&lDESERT PHARAOH"
     entity: HUSK
-    hp: 1200
-    coins: 80000
-    lucky-coins: 4
-    lucky-chance: 50
+    hp: 2400
+    coins: 7000
+    lucky-coins: 1
+    lucky-chance: 30
     crate-key: "rare"
-    crate-keys: 2
-    crate-chance: 60
+    crate-keys: 1
+    crate-chance: 22
     head: ZOMBIE_HEAD
   ice_queen:
     name: "&b&lICE QUEEN"
     entity: STRAY
-    hp: 1000
-    coins: 70000
-    lucky-coins: 3
-    lucky-chance: 55
+    hp: 2000
+    coins: 6500
+    lucky-coins: 1
+    lucky-chance: 30
     crate-key: "rare"
-    crate-keys: 2
-    crate-chance: 60
+    crate-keys: 1
+    crate-chance: 22
     head: SKELETON_SKULL
   jungle_shaman:
     name: "&2&lJUNGLE SHAMAN"
     entity: EVOKER
-    hp: 1100
-    coins: 75000
-    lucky-coins: 4
-    lucky-chance: 50
+    hp: 2200
+    coins: 7000
+    lucky-coins: 1
+    lucky-chance: 35
     crate-key: "rare"
-    crate-keys: 2
-    crate-chance: 65
+    crate-keys: 1
+    crate-chance: 25
     head: WITHER_SKELETON_SKULL
   nether_overlord:
     name: "&4&lNETHER OVERLORD"
     entity: PIGLIN_BRUTE
-    hp: 2000
-    coins: 150000
-    lucky-coins: 6
-    lucky-chance: 50
+    hp: 4000
+    coins: 15000
+    lucky-coins: 2
+    lucky-chance: 35
     crate-key: "mythic"
-    crate-keys: 3
-    crate-chance: 50
+    crate-keys: 1
+    crate-chance: 12
     head: PLAYER_HEAD
   spider_queen:
     name: "&d&lSPIDER QUEEN"
     entity: CAVE_SPIDER
-    hp: 900
-    coins: 55000
-    lucky-coins: 3
-    lucky-chance: 55
+    hp: 1800
+    coins: 5500
+    lucky-coins: 1
+    lucky-chance: 30
     crate-key: "rare"
     crate-keys: 1
-    crate-chance: 55
+    crate-chance: 20
     head: PLAYER_HEAD
   plains_titan:
     name: "&e&lPLAINS TITAN"
     entity: RAVAGER
-    hp: 1600
-    coins: 90000
-    lucky-coins: 4
-    lucky-chance: 50
+    hp: 3200
+    coins: 9000
+    lucky-coins: 1
+    lucky-chance: 30
     crate-key: "rare"
-    crate-keys: 2
-    crate-chance: 60
+    crate-keys: 1
+    crate-chance: 20
     head: PLAYER_HEAD
   skeleton_king:
     name: "&f&lSKELETON KING"
     entity: SKELETON
-    hp: 1300
-    coins: 75000
-    lucky-coins: 3
-    lucky-chance: 60
+    hp: 2600
+    coins: 7000
+    lucky-coins: 1
+    lucky-chance: 32
     crate-key: "rare"
     crate-keys: 1
-    crate-chance: 65
+    crate-chance: 22
     head: SKELETON_SKULL
   ocean_tide_king:
     name: "&3&lOCEAN TIDE KING"
     entity: DROWNED
-    hp: 1500
-    coins: 85000
-    lucky-coins: 3
-    lucky-chance: 55
+    hp: 3000
+    coins: 9000
+    lucky-coins: 1
+    lucky-chance: 30
     crate-key: "mythic"
     crate-keys: 1
-    crate-chance: 35
+    crate-chance: 10
     head: ZOMBIE_HEAD
   undead_warlord:
     name: "&8&lUNDEAD WARLORD"
     entity: WITHER_SKELETON
-    hp: 1200
-    coins: 70000
-    lucky-coins: 4
-    lucky-chance: 55
+    hp: 2400
+    coins: 6500
+    lucky-coins: 1
+    lucky-chance: 32
     crate-key: "rare"
-    crate-keys: 2
-    crate-chance: 55
+    crate-keys: 1
+    crate-chance: 22
     head: WITHER_SKELETON_SKULL
   dark_forest_stalker:
     name: "&2&lDARK FOREST STALKER"
     entity: VINDICATOR
-    hp: 1350
-    coins: 80000
-    lucky-coins: 3
-    lucky-chance: 50
+    hp: 2700
+    coins: 7000
+    lucky-coins: 1
+    lucky-chance: 30
     crate-key: "rare"
     crate-keys: 1
-    crate-chance: 70
+    crate-chance: 25
     head: PLAYER_HEAD
   mountain_giant:
     name: "&7&lMOUNTAIN GIANT"
     entity: GIANT
-    hp: 1900
-    coins: 100000
-    lucky-coins: 4
-    lucky-chance: 55
+    hp: 3800
+    coins: 10000
+    lucky-coins: 1
+    lucky-chance: 32
     crate-key: "rare"
-    crate-keys: 2
-    crate-chance: 60
+    crate-keys: 1
+    crate-chance: 22
     head: ZOMBIE_HEAD
   end_crusader:
     name: "&5&lEND CRUSADER"
     entity: ENDERMAN
-    hp: 1700
-    coins: 95000
-    lucky-coins: 4
-    lucky-chance: 50
+    hp: 3400
+    coins: 9500
+    lucky-coins: 1
+    lucky-chance: 30
     crate-key: "mythic"
     crate-keys: 1
-    crate-chance: 40
+    crate-chance: 12
     head: PLAYER_HEAD
   crimson_behemoth:
     name: "&4&lCRIMSON BEHEMOTH"
     entity: ZOGLIN
-    hp: 1600
-    coins: 90000
-    lucky-coins: 4
-    lucky-chance: 50
+    hp: 3200
+    coins: 9000
+    lucky-coins: 1
+    lucky-chance: 30
     crate-key: "mythic"
     crate-keys: 1
-    crate-chance: 45
+    crate-chance: 11
     head: PLAYER_HEAD
   ancient_golem:
     name: "&6&lANCIENT GOLEM"
     entity: IRON_GOLEM
-    hp: 2400
-    coins: 130000
-    lucky-coins: 5
-    lucky-chance: 55
+    hp: 4800
+    coins: 13000
+    lucky-coins: 2
+    lucky-chance: 35
     crate-key: "mythic"
-    crate-keys: 2
-    crate-chance: 40
+    crate-keys: 1
+    crate-chance: 12
     head: PLAYER_HEAD
