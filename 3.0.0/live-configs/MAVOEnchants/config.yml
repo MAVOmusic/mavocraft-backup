@@ -1,0 +1,22 @@
+shop-enabled: true
+shop-prices:
+  '1': 1000000
+  '2': 2000000
+  '3': 4000000
+  '4': 8000000
+mine-gem-enabled: true
+mine-gem-base-chance: 1.0
+mine-gem-levels: 10
+# MAVOEnchants - custom enchant gems
+# Apply: hold the GEM in main hand and the TOOL in offhand, right-click (uses the gem).
+# Max 1 gem per tool? No - up to 3 gems, each type once, tier 1-3.
+max-gems-per-tool: 3
+max-tier: 10
+vein-blocks-per-tier: 6
+lifesteal-hearts: 1
+xpboost-percent-per-tier: 50
+gem-charges: {}
+smelt-bonus-per-tier: 10
+drop-version: 2
+mine-gem-max-tier: 3
+mine-gem-chances: {}

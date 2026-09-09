@@ -1,0 +1,155 @@
+# MAVOQuests v1.2 - random rotating quest board
+#
+# Every refresh-days MINECRAFT day(s) (default: DAILY), board-size quests are picked at RANDOM
+# from the pool below (repeats across cycles are possible - it's random).
+#
+# REWARDS are rolled per completion using reward-weights:
+#   coins-only : just the quest's reward-coins
+#   item-only  : a random 1-64 stack of a random mystery item (no coins)
+#   both       : coins AND a mystery stack
+# The reward is a surprise revealed on turn-in.
+
+refresh-days: 1
+board-size: 10
+
+reward-weights:
+  coins-only: 40
+  item-only: 30
+  both: 30
+
+# Pool for random mystery item stacks (amount rolled 1 to max stack, capped 64)
+# Villager-economy pass: no DIAMOND / EMERALD / GOLDEN_APPLE / ENDER_PEARL -
+# those bypass the villager + profession grind. Mystery = fun, not jackpot.
+mystery-items:
+  - GOLDEN_CARROT
+  - IRON_INGOT
+  - GOLD_INGOT
+  - ARROW
+  - COOKED_BEEF
+  - BREAD
+  - EXPERIENCE_BOTTLE
+  - COAL_BLOCK
+  - OAK_LOG
+  - OBSIDIAN
+  - LAPIS_LAZULI
+  - REDSTONE
+  - NAME_TAG
+  - SADDLE
+  - BOOK
+
+# Quest pool (19 quests - the board shows a random 10)
+quests:
+  wheat_run:
+    display: "&e🌾 Bread Basket"
+    item: WHEAT
+    amount: 64
+    reward-coins: 90
+    stock: 3
+  iron_delivery:
+    display: "&f⛏ Iron Delivery"
+    item: IRON_INGOT
+    amount: 32
+    reward-coins: 262
+    stock: 2
+  fish_feast:
+    display: "&b🐟 Fish Feast"
+    item: COD
+    amount: 24
+    reward-coins: 112
+    stock: 3
+  ender_hunt:
+    display: "&9👁 Ender Hunt"
+    item: ENDER_PEARL
+    amount: 8
+    reward-coins: 600
+    stock: 1
+  golden_gift:
+    display: "&6🍎 Golden Gift"
+    item: GOLD_INGOT
+    amount: 16
+    reward-coins: 300
+    stock: 2
+  lumber_job:
+    display: "&2🪓 Lumber Order"
+    item: OAK_LOG
+    amount: 64
+    reward-coins: 75
+    stock: 4
+  wool_drive:
+    display: "&f🐑 Wool Drive"
+    item: WHITE_WOOL
+    amount: 32
+    reward-coins: 135
+    stock: 3
+  bone_collector:
+    display: "&7💀 Bone Collector"
+    item: BONE
+    amount: 32
+    reward-coins: 150
+    stock: 3
+  gunpowder_run:
+    display: "&8💥 Powder Keg"
+    item: GUNPOWDER
+    amount: 16
+    reward-coins: 225
+    stock: 2
+  string_theory:
+    display: "&f🕸 String Theory"
+    item: STRING
+    amount: 24
+    reward-coins: 120
+    stock: 3
+  sweet_tooth:
+    display: "&d🍬 Sweet Tooth"
+    item: SUGAR
+    amount: 32
+    reward-coins: 90
+    stock: 3
+  leather_works:
+    display: "&6🐄 Leather Works"
+    item: LEATHER
+    amount: 16
+    reward-coins: 188
+    stock: 2
+  redstone_engineer:
+    display: "&c🔴 Redstone Order"
+    item: REDSTONE
+    amount: 48
+    reward-coins: 165
+    stock: 3
+  coal_haul:
+    display: "&8⚫ Coal Haul"
+    item: COAL
+    amount: 48
+    reward-coins: 112
+    stock: 4
+  slime_time:
+    display: "&a🟢 Slime Time"
+    item: SLIME_BALL
+    amount: 8
+    reward-coins: 338
+    stock: 2
+  cactus_farm:
+    display: "&2🌵 Prickly Delivery"
+    item: CACTUS
+    amount: 32
+    reward-coins: 105
+    stock: 3
+  egg_hunt:
+    display: "&e🥚 Egg Hunt"
+    item: EGG
+    amount: 16
+    reward-coins: 98
+    stock: 3
+  deep_dark_diver:
+    display: "&3🔷 Deep Diver"
+    item: DIAMOND
+    amount: 4
+    reward-coins: 450
+    stock: 1
+  feather_light:
+    display: "&f🪶 Feather Light"
+    item: FEATHER
+    amount: 24
+    reward-coins: 105
+    stock: 3

@@ -1,0 +1,33 @@
+# MAVOBossRaid - weekly server-wide boss raid
+timezone: Europe/London
+world: world
+arena:                      # /boss setarena writes these (centre of the boss arena)
+  x: 0
+  y: 64
+  z: 0
+radius: 30                  # arena visual check-in radius (info only)
+spawn-radius: 12            # players appear in a circle around the boss
+
+schedule:
+  enabled: true
+  day-of-week: SATURDAY
+  hour: 20
+  minute: 0
+  join-open-minutes: 10     # /boss join opens this many minutes before start
+  require-queue: true       # false = raid starts with whoever is online
+
+boss:
+  type: ZOMBIE              # any LivingEntity type (WITHER needs care: can grief)
+  name: "&c&lMAVO WARDEN OF THE WILDS"
+  hp-base: 2000
+  hp-per-player: 100
+  no-ai: false              # true = stationary statue boss (safe arena)
+
+rewards:
+  coins-per-player: 2500    # every participant at the kill
+  coins-per-1000-damage: 50 # extra coins for total damage dealt
+  lucky-coins: 2            # MAVOLuckyCoins items (2 = 1 coin item x2, not 2 coins)
+  trophy: GOLD_BLOCK        # top damage helper item
+  trophy-name: "&6&lMAVO BOSS TROPHY"
+  crate-key: "mythic"       # MAVOCrates crate id (empty = none)
+  crate-keys: 1

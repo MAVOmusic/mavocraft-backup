@@ -1,0 +1,62 @@
+# MAVOPets 2.0.0 - companions with passive abilities
+# Prices are coins (Vault). One active pet per player.
+pets:
+  cat:
+    display: "&eCat"
+    entity: CAT
+    price: 25000
+    abilities:
+      xorb: true          # pulls nearby XP orbs to you while active
+      carry: true         # /pet menu -> one bonus carry slot
+    lore:
+      - "&7A cozy companion."
+  dog:
+    display: "&6Dog"
+    entity: WOLF
+    price: 25000
+    abilities:
+      xorb: true
+      carry: true
+    lore:
+      - "&7Loyal to the end."
+  fox:
+    display: "&cFox"
+    entity: FOX
+    price: 40000
+    abilities:
+      xorb: true
+      carry: true
+    lore:
+      - "&7Sneaky little friend."
+  parrot:
+    display: "&aParrot"
+    entity: PARROT
+    price: 40000
+    abilities:
+      xorb: true
+      carry: true
+    lore:
+      - "&7Mimics nobody (yet)."
+  axolotl:
+    display: "&dAxolotl"
+    entity: AXOLOTL
+    price: 60000
+    abilities:
+      xorb: true
+      carry: true
+    lore:
+      - "&7Actually optional."
+  turtle:
+    display: "&2Turtle"
+    entity: TURTLE
+    price: 60000
+    abilities:
+      xorb: true
+      carry: true
+    lore:
+      - "&7Slow and steady."
+# pet XP: +1 per minute active. level = xp / xp-per-level
+xp-per-level: 100
+max-level: 100
+follow-range: 10           # pet teleports to you when further than this
+xorb-radius: 8             # XP orbs pulled to you while the ability is on

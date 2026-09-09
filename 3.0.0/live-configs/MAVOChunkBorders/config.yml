@@ -1,0 +1,22 @@
+# MAVO ChunkBorders v1.1
+# 1) /borders — client-side visual borders (world never modified)
+# 2) Buffer protection — nobody can build/break in UNCLAIMED chunks
+#    within `radius` chunks of someone else's claim (owner unaffected).
+
+# ---------- visuals ----------
+border-block: RED_STAINED_GLASS
+corner-block: SEA_LANTERN
+buffer-block: ORANGE_STAINED_GLASS
+corners-only: false
+show-others: true
+refresh-ticks: 40
+
+# ---------- buffer protection ----------
+buffer:
+  enabled: true
+  # chunks of protected gap around every claim (1 = the 8 chunks surrounding each claim)
+  radius: 1
+  # show buffer zones (orange, sparse dots) in /borders display
+  show-in-borders: true
+  # %owner% and %radius% are replaced
+  message: "&c⛔ You are too close to &6%owner%&c's land! Keep &e%radius% chunk(s)&c distance."

@@ -1,0 +1,86 @@
+# MAVOVault - paid-access rooms + personal vault chests
+#
+# SETUP (in-game, as OP):
+#   1. Stand in one corner of the room/doorway zone:  /vaultroom pos1
+#   2. Stand/fly to the OPPOSITE corner (cover full height): /vaultroom pos2
+#   3. /vaultroom gate vault        (or: portalroom)
+#   Repeat for the second room. The region is the KEEP-OUT zone: players
+#   without access are bounced back and shown the unlock GUI.
+#
+# Prices are one-time. Change live with /vaultroom price <gate> <coins>.
+gates:
+  vault:
+    price: 50000
+  portalroom:
+    price: 25000
+
+# Price to CLAIM a private vault room (door + 15 chest slots). One room per player.
+# Slot unlock ladder is fixed in the plugin: #1 FREE, #2-3 1000, #4-6 2500,
+# #7-10 5000, #11-15 10000 (total 76,500 for a full room).
+chest-price: 5000
+# Fee to rename a vault chest (0 = free).
+rename-price: 0
+portals:
+  vault:
+    world: world
+    x1: -2630.0
+    y1: 200.0
+    z1: -1686.0
+    x2: -2630.0
+    y2: 203.0
+    z2: -1684.0
+  vault_return:
+    world: world
+    x1: -2701.0
+    y1: 200.0
+    z1: -1684.0
+    x2: -2701.0
+    y2: 203.0
+    z2: -1686.0
+  portalroom:
+    world: world
+    x1: -2525.0
+    y1: 200.0
+    z1: -1684.0
+    x2: -2527.0
+    y2: 202.0
+    z2: -1686.0
+  portalroom_return:
+    world: world
+    x1: -2449.0
+    y1: 200.0
+    z1: -1686.0
+    x2: -2449.0
+    y2: 203.0
+    z2: -1684.0
+return-spawn:
+  world: world
+  x: -2578.4085526516715
+  y: 200.0
+  z: -1684.5758160330201
+  yaw: -90.42352294921875
+
+# PLAZA PORTALS (ACTIVE - jump into the rooms):
+#   1. Stand at the BOTTOM corner of the portal opening: /vaultroom pos1
+#   2. Fly to the OPPOSITE TOP corner:                   /vaultroom pos2
+#   3. /vaultroom portal vault      (or: portalroom)
+# Effects: vault = black veil + white sparkles; portalroom = red veil + yellow
+# sparkles. Standing inside: if the player has NOT unlocked the gate, the
+# unlock GUI opens (50k/25k one-time). If unlocked: 3s countdown (step-out
+# cancels instantly, monsters within 12 blocks block it, creative instant),
+# then teleport into the room.
+#   Arrival spot: stand inside the room where players should land, then
+#   /vaultroom portaldest vault   (or: portalroom). Falls back to just inside
+#   the room doorway if unset. Written as portal-dest.<id>.world/x/y/z/yaw.
+#   Remove/redo any portal: /vaultroom portalremove <id>  (kills FX + holo),
+#   then pos1/pos2 + /vaultroom portal <id> again.
+# Regions are written here by the command (portals.vault / portals.portalroom).
+#
+# RETURN PORTALS (inside the rooms -> back to spawn):
+#   Same pos1/pos2 flow, then:  /vaultroom portal vault_return
+#                          or:  /vaultroom portal portalroom_return
+# Green/gold FX (Home Portal theme). Stand inside 3s (step-out cancels
+# instantly, blocked if monsters within 12 blocks, creative = instant)
+# then teleport to the return point.
+#   Set the destination by standing at spawn and running: /vaultroom returnspawn
+# (falls back to world spawn if unset). Written as return-spawn.world/x/y/z/yaw.

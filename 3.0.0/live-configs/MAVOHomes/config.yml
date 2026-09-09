@@ -1,0 +1,12 @@
+# MAVOHomes - chunk-bound bed homes
+# A home is created by RIGHT-CLICKING A BED inside a chunk the player OWNS (ClaimChunk).
+# One home per owned chunk. If the chunk is unclaimed/lost, the home stops working.
+
+# Maximum number of homes per player (one per owned chunk).
+max-homes: 5
+
+# Seconds a player must stand still before /home teleports them. 0 = instant.
+warmup-seconds: 3
+
+# /home is blocked/cancelled if hostile monsters are within this many blocks.
+monster-radius: 12

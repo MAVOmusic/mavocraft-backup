@@ -1,0 +1,348 @@
+beginner-recipes:
+  planks:
+    result: OAK_PLANKS
+    count: 4
+    ingredients:
+    - OAK_LOG:1
+  stick:
+    result: STICK
+    count: 4
+    ingredients:
+    - OAK_PLANKS:2
+  crafting_table:
+    result: CRAFTING_TABLE
+    count: 1
+    ingredients:
+    - OAK_PLANKS:4
+  torch:
+    result: TORCH
+    count: 4
+    ingredients:
+    - COAL:1
+    - STICK:1
+  furnace:
+    result: FURNACE
+    count: 1
+    ingredients:
+    - COBBLESTONE:8
+  chest:
+    result: CHEST
+    count: 1
+    ingredients:
+    - OAK_PLANKS:8
+  bed:
+    result: WHITE_BED
+    count: 1
+    ingredients:
+    - WHITE_WOOL:3
+    - OAK_PLANKS:3
+  wooden_pickaxe:
+    result: WOODEN_PICKAXE
+    count: 1
+    ingredients:
+    - OAK_PLANKS:3
+    - STICK:2
+  wooden_axe:
+    result: WOODEN_AXE
+    count: 1
+    ingredients:
+    - OAK_PLANKS:3
+    - STICK:2
+  wooden_shovel:
+    result: WOODEN_SHOVEL
+    count: 1
+    ingredients:
+    - OAK_PLANKS:1
+    - STICK:2
+  wooden_sword:
+    result: WOODEN_SWORD
+    count: 1
+    ingredients:
+    - OAK_PLANKS:2
+    - STICK:1
+  wooden_hoe:
+    result: WOODEN_HOE
+    count: 1
+    ingredients:
+    - OAK_PLANKS:2
+    - STICK:2
+  stone_pickaxe:
+    result: STONE_PICKAXE
+    count: 1
+    ingredients:
+    - COBBLESTONE:3
+    - STICK:2
+  stone_axe:
+    result: STONE_AXE
+    count: 1
+    ingredients:
+    - COBBLESTONE:3
+    - STICK:2
+  stone_shovel:
+    result: STONE_SHOVEL
+    count: 1
+    ingredients:
+    - COBBLESTONE:1
+    - STICK:2
+  stone_sword:
+    result: STONE_SWORD
+    count: 1
+    ingredients:
+    - COBBLESTONE:2
+    - STICK:1
+  stone_hoe:
+    result: STONE_HOE
+    count: 1
+    ingredients:
+    - COBBLESTONE:2
+    - STICK:2
+  iron_pickaxe:
+    result: IRON_PICKAXE
+    count: 1
+    ingredients:
+    - IRON_INGOT:3
+    - STICK:2
+  iron_axe:
+    result: IRON_AXE
+    count: 1
+    ingredients:
+    - IRON_INGOT:3
+    - STICK:2
+  iron_shovel:
+    result: IRON_SHOVEL
+    count: 1
+    ingredients:
+    - IRON_INGOT:1
+    - STICK:2
+  iron_sword:
+    result: IRON_SWORD
+    count: 1
+    ingredients:
+    - IRON_INGOT:2
+    - STICK:1
+  iron_hoe:
+    result: IRON_HOE
+    count: 1
+    ingredients:
+    - IRON_INGOT:2
+    - STICK:2
+  oak_stairs:
+    result: OAK_STAIRS
+    count: 4
+    ingredients:
+    - OAK_PLANKS:6
+  oak_slab:
+    result: OAK_SLAB
+    count: 6
+    ingredients:
+    - OAK_PLANKS:3
+  oak_door:
+    result: OAK_DOOR
+    count: 3
+    ingredients:
+    - OAK_PLANKS:6
+  oak_trapdoor:
+    result: OAK_TRAPDOOR
+    count: 2
+    ingredients:
+    - OAK_PLANKS:6
+  oak_fence:
+    result: OAK_FENCE
+    count: 3
+    ingredients:
+    - OAK_PLANKS:4
+    - STICK:2
+  oak_fence_gate:
+    result: OAK_FENCE_GATE
+    count: 1
+    ingredients:
+    - OAK_PLANKS:4
+    - STICK:2
+  oak_sign:
+    result: OAK_SIGN
+    count: 3
+    ingredients:
+    - OAK_PLANKS:6
+    - STICK:1
+  ladder:
+    result: LADDER
+    count: 3
+    ingredients:
+    - STICK:7
+  glass:
+    result: GLASS
+    count: 8
+    ingredients:
+    - SAND:8
+  glass_pane:
+    result: GLASS_PANE
+    count: 16
+    ingredients:
+    - GLASS:6
+  bread:
+    result: BREAD
+    count: 1
+    ingredients:
+    - WHEAT:3
+  cookie:
+    result: COOKIE
+    count: 8
+    ingredients:
+    - WHEAT:2
+    - COCOA_BEANS:1
+  cake:
+    result: CAKE
+    count: 1
+    ingredients:
+    - WHEAT:3
+    - MILK_BUCKET:3
+    - SUGAR:2
+    - EGG:1
+  paper:
+    result: PAPER
+    count: 3
+    ingredients:
+    - SUGAR_CANE:3
+  book:
+    result: BOOK
+    count: 1
+    ingredients:
+    - PAPER:3
+    - LEATHER:1
+  bookshelf:
+    result: BOOKSHELF
+    count: 1
+    ingredients:
+    - OAK_PLANKS:6
+    - BOOK:3
+  bucket:
+    result: BUCKET
+    count: 1
+    ingredients:
+    - IRON_INGOT:3
+  shield:
+    result: SHIELD
+    count: 1
+    ingredients:
+    - OAK_PLANKS:6
+    - IRON_INGOT:1
+  arrow:
+    result: ARROW
+    count: 4
+    ingredients:
+    - FLINT:1
+    - STICK:1
+    - FEATHER:1
+  bow:
+    result: BOW
+    count: 1
+    ingredients:
+    - STICK:3
+    - STRING:3
+  fishing_rod:
+    result: FISHING_ROD
+    count: 1
+    ingredients:
+    - STICK:3
+    - STRING:2
+  rail:
+    result: RAIL
+    count: 16
+    ingredients:
+    - IRON_INGOT:6
+    - STICK:1
+  minecart:
+    result: MINECART
+    count: 1
+    ingredients:
+    - IRON_INGOT:5
+  redstone_torch:
+    result: REDSTONE_TORCH
+    count: 1
+    ingredients:
+    - REDSTONE:1
+    - STICK:1
+  lever:
+    result: LEVER
+    count: 1
+    ingredients:
+    - STICK:1
+    - COBBLESTONE:1
+  stone_button:
+    result: STONE_BUTTON
+    count: 1
+    ingredients:
+    - STONE:1
+  stone_pressure_plate:
+    result: STONE_PRESSURE_PLATE
+    count: 1
+    ingredients:
+    - STONE:2
+  campfire:
+    result: CAMPFIRE
+    count: 1
+    ingredients:
+    - STICK:3
+    - COAL:1
+    - OAK_LOG:3
+# MAVOCrafting - custom recipes for uncraftable items.
+# shape: up to 3 rows of 3 chars. ingredients: letter -> material.
+# result: material | result-count optional.
+recipes:
+  name_tag:
+    shape:
+    - ' P '
+    - ' S '
+    - ' S '
+    ingredients:
+      P: PAPER
+      S: STRING
+    result: NAME_TAG
+  saddle:
+    shape:
+    - LLL
+    - LIL
+    - I I
+    ingredients:
+      L: LEATHER
+      I: IRON_INGOT
+    result: SADDLE
+  lead:
+    shape:
+    - ' S '
+    - SBS
+    - ' S '
+    ingredients:
+      S: STRING
+      B: SLIME_BALL
+    result: LEAD
+  chainmail_helmet:
+    shape:
+    - III
+    - I I
+    ingredients:
+      I: IRON_BARS
+    result: CHAINMAIL_HELMET
+  chainmail_chestplate:
+    shape:
+    - I I
+    - III
+    - III
+    ingredients:
+      I: IRON_BARS
+    result: CHAINMAIL_CHESTPLATE
+  chainmail_leggings:
+    shape:
+    - III
+    - I I
+    - I I
+    ingredients:
+      I: IRON_BARS
+    result: CHAINMAIL_LEGGINGS
+  chainmail_boots:
+    shape:
+    - I I
+    - I I
+    ingredients:
+      I: IRON_BARS
+    result: CHAINMAIL_BOOTS

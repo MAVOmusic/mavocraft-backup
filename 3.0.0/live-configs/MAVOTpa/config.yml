@@ -1,0 +1,5 @@
+# MAVOTpa - teleport requests
+cooldown-seconds: 30
+expire-seconds: 120
+warmup-seconds: 3
+monster-radius: 12

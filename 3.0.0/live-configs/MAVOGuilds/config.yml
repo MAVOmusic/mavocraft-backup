@@ -1,0 +1,16 @@
+# MAVOGuilds - guilds + claimed territory (idea 20, inspired by Factions/Kingdoms)
+create-cost: 500            # coins (Vault) to create a guild - 0 = free
+claim-cost: 100             # coins per claimed chunk - 0 = free
+max-guilds: 50
+max-members: 12             # per guild
+max-claims: 8               # per guild
+max-name-length: 16
+# Territory protection
+pvp-in-claims: false        # false = no PvP inside claimed chunks
+protect-blocks: true        # block place/break by outsiders
+protect-interact: true      # chests, doors, furnaces, buttons, etc
+protect-explosions: true    # creeper/TNT/block explosions inside claims
+protect-animals: true       # outsiders cannot hurt passive mobs inside claims
+# Default role you can invite: leader + officers
+worlds:
+  - world

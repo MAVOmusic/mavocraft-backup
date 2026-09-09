@@ -1,0 +1,347 @@
+players:
+  53322438-a7a2-4eb2-bb2b-1c648a43dccf:
+    travel:
+      count: 78511
+      level: 19
+    museum:
+      count: 18
+      level: 2
+    kill_stray:
+      count: 0
+      level: 1
+    kill_rabbit:
+      count: 0
+      level: 1
+    building:
+      count: 1653
+      level: 1
+    kill_goat:
+      count: 0
+      level: 1
+    kill_pillager:
+      count: 0
+      level: 1
+    kill_squid:
+      count: 0
+      level: 1
+    kill_fox:
+      count: 0
+      level: 1
+    kill_phantom:
+      count: 0
+      level: 1
+    kill_witch:
+      count: 0
+      level: 1
+    kill_guardian:
+      count: 0
+      level: 1
+    kill_hoglin:
+      count: 0
+      level: 1
+    kill_cave_spider:
+      count: 0
+      level: 1
+    kill_iron_golem:
+      count: 0
+      level: 1
+    kill_slime:
+      count: 0
+      level: 1
+    kill_zombie:
+      count: 36
+      level: 1
+    kill_silverfish:
+      count: 0
+      level: 1
+    kill_villager:
+      count: 0
+      level: 1
+    kill_frog:
+      count: 0
+      level: 1
+    kill_husk:
+      count: 0
+      level: 1
+    mining:
+      count: 2057
+      level: 1
+    kill_llama:
+      count: 0
+      level: 1
+    kill_shulker:
+      count: 0
+      level: 1
+    kill_drowned:
+      count: 0
+      level: 1
+    kill_wither_skeleton:
+      count: 0
+      level: 1
+    kill_blaze:
+      count: 0
+      level: 1
+    luckywins:
+      count: 0
+      level: 1
+    kill_chicken:
+      count: 0
+      level: 1
+    kill_ghast:
+      count: 0
+      level: 1
+    kill_sheep:
+      count: 107
+      level: 1
+    kill_magma_cube:
+      count: 0
+      level: 1
+    kill_creeper:
+      count: 0
+      level: 1
+    combat:
+      count: 126
+      level: 1
+    luckybets:
+      count: 0
+      level: 1
+    kill_bee:
+      count: 0
+      level: 1
+    kill_skeleton:
+      count: 1
+      level: 1
+    farming:
+      count: 7
+      level: 1
+    kill_pig:
+      count: 0
+      level: 1
+    kill_cow:
+      count: 0
+      level: 1
+    kill_piglin:
+      count: 0
+      level: 1
+    kill_panda:
+      count: 0
+      level: 1
+    fortune:
+      count: 3394
+      level: 1
+    fishing:
+      count: 0
+      level: 1
+    kill_sniffer:
+      count: 0
+      level: 1
+    betting:
+      count: 691
+      level: 1
+    winnings:
+      count: 1175
+      level: 2
+    woodcutting:
+      count: 204
+      level: 1
+    kill_enderman:
+      count: 0
+      level: 1
+    kill_spider:
+      count: 0
+      level: 1
+    kill_glow_squid:
+      count: 0
+      level: 1
+    luckyhoard:
+      count: 0
+      level: 1
+  110d8222-cac8-4543-8a5e-d06e9fab3573:
+    travel:
+      count: 60548
+      level: 16
+    building:
+      count: 3521
+      level: 3
+    mining:
+      count: 5897
+      level: 7
+    woodcutting:
+      count: 473
+      level: 1
+    combat:
+      count: 172
+      level: 1
+    kill_sheep:
+      count: 43
+      level: 1
+    kill_fox:
+      count: 1
+      level: 1
+    farming:
+      count: 106
+      level: 1
+    kill_cow:
+      count: 32
+      level: 1
+    kill_zombie:
+      count: 61
+      level: 1
+    kill_skeleton:
+      count: 2
+      level: 1
+    kill_chicken:
+      count: 6
+      level: 1
+    kill_pig:
+      count: 18
+      level: 1
+    kill_spider:
+      count: 4
+      level: 1
+    kill_squid:
+      count: 2
+      level: 1
+    kill_pillager:
+      count: 1
+      level: 1
+    kill_rabbit:
+      count: 1
+      level: 1
+  5dca9587-d866-4609-97ec-dd50d64b056d:
+    travel:
+      count: 44580
+      level: 14
+    woodcutting:
+      count: 267
+      level: 1
+    mining:
+      count: 2816
+      level: 1
+    kill_zombie:
+      count: 106
+      level: 2
+    combat:
+      count: 196
+      level: 1
+    building:
+      count: 2069
+      level: 1
+    kill_sheep:
+      count: 6
+      level: 1
+    kill_skeleton:
+      count: 19
+      level: 1
+    kill_cow:
+      count: 30
+      level: 1
+    fishing:
+      count: 83
+      level: 1
+    kill_creeper:
+      count: 3
+      level: 1
+    kill_drowned:
+      count: 1
+      level: 1
+    kill_spider:
+      count: 12
+      level: 1
+    farming:
+      count: 92
+      level: 1
+    betting:
+      count: 10
+      level: 1
+    fortune:
+      count: 393
+      level: 1
+    luckyhoard:
+      count: 0
+    winnings:
+      count: 4
+      level: 1
+    kill_stray:
+      count: 6
+      level: 1
+    kill_pillager:
+      count: 10
+      level: 1
+  183dd54c-9e69-4101-9f58-b5dd91392b40:
+    travel:
+      count: 31510
+      level: 11
+    mining:
+      count: 6679
+      level: 8
+    woodcutting:
+      count: 132
+      level: 1
+    building:
+      count: 3950
+      level: 4
+    kill_zombie:
+      count: 28
+      level: 1
+    combat:
+      count: 87
+      level: 1
+    kill_cow:
+      count: 7
+      level: 1
+    kill_skeleton:
+      count: 7
+      level: 1
+    kill_rabbit:
+      count: 1
+      level: 1
+    kill_spider:
+      count: 15
+      level: 1
+    kill_chicken:
+      count: 9
+      level: 1
+    kill_pillager:
+      count: 3
+      level: 1
+    kill_pig:
+      count: 6
+      level: 1
+    kill_sheep:
+      count: 4
+      level: 1
+    kill_enderman:
+      count: 1
+      level: 1
+    kill_drowned:
+      count: 1
+      level: 1
+    kill_cave_spider:
+      count: 2
+      level: 1
+    farming:
+      count: 7
+      level: 1
+  4c4d6293-4088-43de-b403-468b1583ec92:
+    travel:
+      count: 2100
+      level: 1
+    mining:
+      count: 417
+      level: 1
+    woodcutting:
+      count: 28
+      level: 1
+    building:
+      count: 35
+      level: 1
+    kill_creeper:
+      count: 1
+      level: 1
+    combat:
+      count: 4
+      level: 1
+    kill_sheep:
+      count: 3
+      level: 1

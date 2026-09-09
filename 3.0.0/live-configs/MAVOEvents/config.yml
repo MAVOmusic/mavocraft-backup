@@ -1,0 +1,4 @@
+auto-events: true
+min-minutes-between: 45
+max-minutes-between: 90
+event-minutes: 15

@@ -1,0 +1,21 @@
+# MAVOPortalRoom - 26 jump portals inside the Portal Room.
+# Portal frames are placed by the builder datapack (function mavocraft:portal_frames);
+# this plugin adds FX, holograms, payment and the actual jumps. No in-game setup needed:
+# regions are derived from the same fixed geometry as the frames.
+#
+# NORTH wall = 13 biome portals. SOUTH wall = 13 danger portals.
+# Every jump lands at a RANDOM far-away coordinate (min/max distance below).
+# Each portal remembers its last 50 landing zones and never lands within
+# blacklist-radius blocks of any of them, so zones are effectively never reused.
+#
+# Payment: price shown on the holo; balance checked BEFORE the countdown starts,
+# coins are only taken AFTER a successful teleport (cancelling is free).
+# Countdown: 7 seconds, step-out cancels instantly, monsters within 12 blocks block it,
+# creative (admins) jump instantly and free.
+
+world: world
+min-distance: 25000
+max-distance: 400000
+blacklist-radius: 100
+blacklist-size: 50
+countdown-seconds: 7

@@ -1,0 +1,16 @@
+players:
+  53322438-a7a2-4eb2-bb2b-1c648a43dccf:
+    coinwindow: 190
+    coinleft: 0
+    luckywindow: 190
+    luckyleft: 10
+  5dca9587-d866-4609-97ec-dd50d64b056d:
+    coinwindow: 244
+    coinleft: 0
+    luckywindow: 244
+    luckyleft: 10
+  110d8222-cac8-4543-8a5e-d06e9fab3573:
+    coinwindow: 200
+    coinleft: 10
+    luckywindow: 200
+    luckyleft: 10

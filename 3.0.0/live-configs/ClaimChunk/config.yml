@@ -1,0 +1,67 @@
+basic:
+  disablePermissions: false
+  checkForUpdates: false
+log:
+  debugSpam: false
+  anonymousMetrics: true
+titles:
+  useTitlesInsteadOfChat: true
+  useActionBar: true
+  titleFadeInTime: 20
+  titleStayTime: 140
+  titleFadeOutTime: 20
+  # Delay in ticks between "you have entered" or "you have exited" messages
+  # emitted by the server to prevent chat spam.
+  chunkEnterExitSpamDelay: 20
+colors:
+  infoColor: GOLD
+  errorColor: RED
+chunks:
+  maxChunksClaimed: 51
+  particlesWhenClaiming: true
+  hideAlertsForVanishedPlayers: true
+  automaticUnclaimSeconds: -1
+  unclaimCheckIntervalTicks: 1200
+  displayNameOfOwner: true
+  defaultSendAlertsToOwner: true
+  maxPerListPage: 5
+  disabledWorlds: []
+  nearChunkSearch: 3
+  # Anything higher than 25 runs the risk of crashing your server
+  maxScanRange: 20
+chunkOutline:
+  name: SMOKE_LARGE
+  durationSeconds: 5
+  spawnsPerSecond: 2
+  particlesPerSpawn: 2
+  heightRadius: 3
+worldguard:
+  allowClaimsInRegionsByDefault: true
+  allowClaimingInNonGuardedWorlds: true
+  allowAdminOverride: true
+economy:
+  useEconomy: false
+  claimPrice: 100.0
+  unclaimReward: 10.0
+  firstFreeChunks: 1
+data:
+  saveDataIntervalInMinutes: 10
+  keepJsonBackups: true
+  minBackupIntervalInMinutes: 120
+  deleteOldBackupsAfterMinutes: 10080
+database:
+  useDatabase: false
+  groupRequests: true
+  convertOldData: true
+  hostname: 127.0.0.1
+  port: 3306
+  database: MyServer
+  username: root
+  password: root
+  printDebug: false
+  useSsl: false
+  allowPublicKeyRetrieval: false
+floodclaim:
+  enabled: true
+  maximumIterations: 6
+  maximumArea: 41

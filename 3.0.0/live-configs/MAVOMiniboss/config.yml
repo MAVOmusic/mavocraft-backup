@@ -1,0 +1,192 @@
+spawn-locations:
+- name: '&4&lNORTHERN ARENA'
+  world: world
+  x: -2700
+  z: 560
+  jitter: 120
+- name: '&6&lSOUTHERN ARENA'
+  world: world
+  x: 340
+  z: 1470
+  jitter: 120
+hunt-enabled: true
+hunt-cooldown-seconds: 30
+hunt-boss-radius: 60
+hunt-bare-min: 500
+hunt-bare-max: 2000
+broadcast-locations: true
+broadcast-interval-minutes: 5
+broadcast-radius: 100
+# MAVOMiniboss - rare biome bosses
+spawn-interval-minutes: 45
+max-alive: 3
+spawn-min-distance: 1000 # from spawn (-2579,-1685)
+spawn-max-distance: 5000
+spawn-surface: true # only on the surface (y>50)
+
+bosses:
+  spider_queen:
+    name: '&d&lSPIDER QUEEN'
+    entity: CAVE_SPIDER
+    hp: 900
+    coins: 55000
+    lucky-coins: 3
+    lucky-chance: 55
+    crate-key: rare
+    crate-keys: 1
+    crate-chance: 55
+    head: PLAYER_HEAD
+  plains_titan:
+    name: '&e&lPLAINS TITAN'
+    entity: RAVAGER
+    hp: 1600
+    coins: 90000
+    lucky-coins: 4
+    lucky-chance: 50
+    crate-key: rare
+    crate-keys: 2
+    crate-chance: 60
+    head: PLAYER_HEAD
+  skeleton_king:
+    name: '&f&lSKELETON KING'
+    entity: SKELETON
+    hp: 1300
+    coins: 75000
+    lucky-coins: 3
+    lucky-chance: 60
+    crate-key: rare
+    crate-keys: 1
+    crate-chance: 65
+    head: SKELETON_SKULL
+  ocean_tide_king:
+    name: '&3&lOCEAN TIDE KING'
+    entity: DROWNED
+    hp: 1500
+    coins: 85000
+    lucky-coins: 3
+    lucky-chance: 55
+    crate-key: mythic
+    crate-keys: 1
+    crate-chance: 35
+    head: ZOMBIE_HEAD
+  undead_warlord:
+    name: '&8&lUNDEAD WARLORD'
+    entity: WITHER_SKELETON
+    hp: 1200
+    coins: 70000
+    lucky-coins: 4
+    lucky-chance: 55
+    crate-key: rare
+    crate-keys: 2
+    crate-chance: 55
+    head: WITHER_SKELETON_SKULL
+  dark_forest_stalker:
+    name: '&2&lDARK FOREST STALKER'
+    entity: VINDICATOR
+    hp: 1350
+    coins: 80000
+    lucky-coins: 3
+    lucky-chance: 50
+    crate-key: rare
+    crate-keys: 1
+    crate-chance: 70
+    head: PLAYER_HEAD
+  mountain_giant:
+    name: '&7&lMOUNTAIN GIANT'
+    entity: GIANT
+    hp: 1900
+    coins: 100000
+    lucky-coins: 4
+    lucky-chance: 55
+    crate-key: rare
+    crate-keys: 2
+    crate-chance: 60
+    head: ZOMBIE_HEAD
+  end_crusader:
+    name: '&5&lEND CRUSADER'
+    entity: ENDERMAN
+    hp: 1700
+    coins: 95000
+    lucky-coins: 4
+    lucky-chance: 50
+    crate-key: mythic
+    crate-keys: 1
+    crate-chance: 40
+    head: PLAYER_HEAD
+  crimson_behemoth:
+    name: '&4&lCRIMSON BEHEMOTH'
+    entity: ZOGLIN
+    hp: 1600
+    coins: 90000
+    lucky-coins: 4
+    lucky-chance: 50
+    crate-key: mythic
+    crate-keys: 1
+    crate-chance: 45
+    head: PLAYER_HEAD
+  ancient_golem:
+    name: '&6&lANCIENT GOLEM'
+    entity: IRON_GOLEM
+    hp: 2400
+    coins: 130000
+    lucky-coins: 5
+    lucky-chance: 55
+    crate-key: mythic
+    crate-keys: 2
+    crate-chance: 40
+    head: PLAYER_HEAD
+  swamp_witch_lord:
+    lucky-chance: 60
+    crate-chance: 50
+    name: '&5&lSWAMP WITCH LORD'
+    entity: WITCH
+    hp: 800
+    coins: 50000
+    lucky-coins: 3
+    crate-key: rare
+    crate-keys: 1
+    head: PLAYER_HEAD
+  desert_pharaoh:
+    lucky-chance: 50
+    crate-chance: 60
+    name: '&6&lDESERT PHARAOH'
+    entity: HUSK
+    hp: 1200
+    coins: 80000
+    lucky-coins: 4
+    crate-key: rare
+    crate-keys: 2
+    head: ZOMBIE_HEAD
+  ice_queen:
+    lucky-chance: 55
+    crate-chance: 60
+    name: '&b&lICE QUEEN'
+    entity: STRAY
+    hp: 1000
+    coins: 70000
+    lucky-coins: 3
+    crate-key: mythic
+    crate-keys: 1
+    head: SKELETON_SKULL
+  jungle_shaman:
+    lucky-chance: 50
+    crate-chance: 65
+    name: '&a&lJUNGLE SHAMAN'
+    entity: EVOKER
+    hp: 1500
+    coins: 100000
+    lucky-coins: 5
+    crate-key: mythic
+    crate-keys: 2
+    head: WITHER_SKELETON_SKULL
+  nether_overlord:
+    lucky-chance: 65
+    crate-chance: 40
+    name: '&4&lNETHER OVERLORD'
+    entity: PIGLIN_BRUTE
+    hp: 2000
+    coins: 150000
+    lucky-coins: 6
+    crate-key: mythic
+    crate-keys: 3
+    head: PIGLIN_HEAD

@@ -1,0 +1,38 @@
+# MAVOChunkPrices - tiered chunk costs
+# IMPORTANT: disable ClaimChunk's own economy (useEconomy: false) or players pay twice!
+#
+# Tiers are consumed in order. amount = how many chunks at this price.
+# Total below = 51 chunks.
+tiers:
+  - amount: 1
+    price: 0
+  - amount: 5
+    price: 100
+  - amount: 5
+    price: 250
+  - amount: 5
+    price: 500
+  - amount: 5
+    price: 1000
+  - amount: 10
+    price: 1500
+  - amount: 10
+    price: 2000
+  - amount: 10
+    price: 2500
+
+# /chunk auto would claim chunks while walking, skipping price checks - keep blocked.
+block-auto-claim: true
+
+# If true, claiming past the last tier is blocked (hard cap at table total).
+# If false, every chunk past the table costs the last tier price forever.
+block-beyond-last-tier: true
+
+messages:
+  cannot-afford: "&cChunk #%num% costs &e%price%&c but you only have &e%balance%&c."
+  claimed: "&aClaimed chunk #%num% for &e%price%&a."
+  claimed-free: "&aClaimed chunk #%num% - &e&lFREE&a! Welcome home."
+  refunded: "&7Claim didn't go through - &e%price%&7 refunded."
+  auto-blocked: "&cAuto-claim is disabled here - each chunk has its own price. Use &e/chunk claim&c."
+  max-reached: "&cYou already own the maximum of &e%max%&c chunks!"
+  next-price: "&7Next chunk (#%num%) will cost &e%price%&7."

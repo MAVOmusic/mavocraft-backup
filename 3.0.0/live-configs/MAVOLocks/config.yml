@@ -1,0 +1,5 @@
+# MAVOLocks - chest/door locks
+# Lockable blocks: chests, trapped chests, barrels, shulkers, furnaces,
+# blast furnaces, smokers, doors, trapdoors, hoppers, droppers, dispensers.
+max-locks-per-player: 50
+protect-from-explosion: true

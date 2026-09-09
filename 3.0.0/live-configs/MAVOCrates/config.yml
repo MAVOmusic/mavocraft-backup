@@ -1,0 +1,76 @@
+# MAVOCrates - custom reward crates + keys
+# Rewards format: "TYPE:AMOUNT:WEIGHT" - TYPE = material (DIAMOND) | coins | lucky
+# Keys: right-click any crate block with the matching key -> roll once.
+crates:
+  common:
+    display: '&a&lCOMMON CRATE'
+    holo:
+    - '&a&lCOMMON CRATE'
+    - '&7Right-click to open (1 key)'
+    key-material: TRIPWIRE_HOOK
+    key-name: '&aCommon Crate Key'
+    key-lore:
+    - '&7Right-click a &aCommon&7 crate.'
+    - '&7Found while farming, mining or fishing.'
+    cooldown-seconds: 60
+    rewards:
+    - coins:2500:30
+    - COAL:16:15
+    - IRON_INGOT:8:15
+    - GOLD_INGOT:6:10
+    - DIAMOND:3:8
+    - EMERALD:6:6
+    - lucky:1:5
+    - OAK_LOG:32:5
+    - NETHERITE_INGOT:1:3
+    - coins:10000:3
+  rare:
+    display: '&9&lRARE CRATE'
+    holo:
+    - '&9&lRARE CRATE'
+    - '&7Right-click to open (1 key)'
+    key-material: TRIPWIRE_HOOK
+    key-name: '&9Rare Crate Key'
+    key-lore:
+    - '&7Right-click a &9Rare&7 crate.'
+    - '&7Found while farming, mining or fishing.'
+    cooldown-seconds: 120
+    rewards:
+    - coins:15000:25
+    - DIAMOND:8:12
+    - EMERALD:12:10
+    - GOLD_INGOT:32:10
+    - lucky:2:10
+    - ENCHANTED_GOLDEN_APPLE:1:8
+    - NETHERITE_INGOT:4:8
+    - DIAMOND_BLOCK:1:6
+    - ENDER_PEARL:8:6
+    - coins:50000:5
+  mythic:
+    display: '&d&lMYTHIC CRATE'
+    holo:
+    - '&d&lMYTHIC CRATE'
+    - '&7Right-click to open (1 key)'
+    key-material: TRIPWIRE_HOOK
+    key-name: '&dMythic Crate Key'
+    key-lore:
+    - '&7Right-click a &dMythic&7 crate.'
+    - '&7Found while farming, mining or fishing.'
+    cooldown-seconds: 300
+    rewards:
+    - coins:100000:25
+    - lucky:5:12
+    - NETHERITE_INGOT:8:12
+    - ENCHANTED_GOLDEN_APPLE:3:10
+    - DIAMOND_BLOCK:2:10
+    - NETHERITE_BLOCK:1:8
+    - NETHERITE_PICKAXE:1:8
+    - TOTEM_OF_UNDYING:1:7
+    - coins:250000:5
+    - ELYTRA:1:3
+pool-version: 2
+key-drops:
+  enabled: true
+  common: 1.0 # % per action
+  rare: 0.05 # % per action
+  mythic: 0.01 # % per action

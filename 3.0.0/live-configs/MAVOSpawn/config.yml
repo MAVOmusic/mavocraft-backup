@@ -1,0 +1,23 @@
+# MAVOSpawn - spawn region protection
+# Protects a cuboid: center +/- radius. Nobody can build/break inside except
+# players with mavospawn.bypass (ops) - and only while in CREATIVE mode
+# (so you don't accidentally break spawn while playing survival).
+
+world: world
+center:
+  x: -2578
+  y: 200
+  z: -1684
+radius:
+  horizontal: 60   # blocks N/S/E/W from center
+  vertical: 60     # blocks up AND down from center
+
+# If true, even ops must be in creative mode to build at spawn.
+bypass-requires-creative: true
+
+# Players can't hurt each other inside the region.
+no-pvp: true
+
+# Natural hostile mob spawns are blocked inside the region
+# (eggs, commands and plugin spawns still work).
+no-hostile-spawns: true

@@ -1,0 +1,46 @@
+npcs:
+  Profession_Master:
+    uuid: 274db5a1-8dfe-45ee-97eb-c8a1c225c463
+    command: prof
+    world: world
+    x: -2573.4414519143384
+    y: 200.0
+    z: -1684.5729555119196
+    holo-uuid: 93a809bc-56b0-4cfc-9e89-18cf7dca640e
+    holo-text: '&a&l⚒ PROFESSIONS|&fJobs, tools & mastery'
+  Update_Crier:
+    uuid: 5675e1dd-a34b-42b4-ab76-30b85a6357e2
+    command: updates
+    world: world
+    x: -2573.7486397408434
+    y: 200.0
+    z: -1688.4975152723719
+    holo-uuid: 5de0e807-61da-4ec5-9e79-c9f4a7091e79
+    holo-text: '&b&l★ UPDATES|&fSee what''s new on MAVOcraft'
+  Tutorial_Guide:
+    uuid: 1dc591a2-8b82-47bc-8ae5-4fc4d6e1fba0
+    command: tutorial
+    world: world
+    x: -2573.448948246407
+    y: 200.0
+    z: -1680.4661280251596
+    holo-uuid: 1ef8e554-0266-487f-a74d-b1f5b27924e2
+    holo-text: '&a&l✎ TUTORIAL|&fNew here? Right-click me!'
+  Lucky_Louie:
+    uuid: 068ce146-7ece-40fc-b83b-05da8404c173
+    command: casino
+    world: world
+    x: -2586.654570720509
+    y: 200.0
+    z: -1679.5893120561416
+    holo-uuid: a5193064-3354-4d97-a9dc-1b047525f958
+    holo-text: '&c&l♣ LOUIS ♠|&f10 games - coins & lucky coins'
+  The_Curator:
+    uuid: aad3410e-3b7c-49e8-96bc-8b6c98a931ec
+    command: museum
+    world: world
+    x: -2586.10265342893
+    y: 200.0
+    z: -1689.3727365872178
+    holo-uuid: 1f60a0d3-3bb6-457a-86cf-0ceb63ce5486
+    holo-text: '&d&l✦ MUSEUM ✦|&fBring me one of everything'

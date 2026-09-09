@@ -1,0 +1,59 @@
+# MAVOTavern 1.1 - 20x20 inn, 4 beds, bar
+price: 100
+wake-time: 1000
+night-only: true
+currency-symbol: ⛃
+# Primary bed (setbed) - also used as build origin corner-ish
+bed:
+  enabled: true
+  world: world
+  x: -2562
+  y: 200
+  z: -1647
+# Bar trades (1 per player per MC day each) - soulbound, not shop-sellable
+bar:
+  enabled: true
+  food-price: 50
+  drink-price: 75
+  food-heal: 8
+  drink-effects-seconds: 120
+holo:
+  enabled: true
+  y-offset: 7.5
+  scale: 1.6
+  uuid: e82b2fe8-510f-4cd9-bb8e-3abb3cf435e0
+  door-x: -2554.0
+  door-y: 200.0
+  door-z: -1654.0
+messages:
+  prefix: '&c&lTAVERN &r&8» &r'
+extra-beds:
+- z: 4
+  x: 0
+  y: 0
+- z: 0
+  x: 14
+  y: 0
+- z: 4
+  x: 14
+  y: 0
+last-inn:
+  world: world
+  min-x: -2565
+  y: 200
+  min-z: -1654
+  size: 20
+  height: 6
+beds:
+- z: -1647
+  x: -2562
+  y: 200
+- z: -1643
+  x: -2562
+  y: 200
+- z: -1647
+  x: -2548
+  y: 200
+- z: -1643
+  x: -2548
+  y: 200

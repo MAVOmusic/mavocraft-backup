@@ -1,0 +1,12 @@
+drop-cadence-seconds: 20
+drop-chance: 0.001
+free-coin-every-days: 10
+survival-only: true
+wishing-well:
+  radius: 2
+  enabled: true
+  world: world
+  x: -2589
+  y: 200
+  z: -1685
+  holo-uuid: 5dad2127-0db4-41e2-a0ce-08d090821679

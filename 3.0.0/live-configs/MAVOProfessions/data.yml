@@ -1,0 +1,241 @@
+p:
+  53322438-a7a2-4eb2-bb2b-1c648a43dccf:
+    guardian:
+      started: true
+      level: 0
+      xp: 66.0
+      pending: false
+    miner:
+      started: true
+      level: 2
+      xp: 543.0
+      pending: false
+    hunter:
+      started: true
+      level: 0
+      xp: 182.2
+      pending: false
+    archer:
+      started: true
+      level: 0
+      xp: 64.0
+      pending: false
+    lumberjack:
+      started: true
+      level: 2
+      xp: 87.0
+      pending: false
+    excavator:
+      started: true
+      level: 3
+      xp: 2.0
+      pending: false
+      ench:
+        silk:
+          efficiency: 1
+    farmer:
+      started: true
+      level: 0
+      xp: 74.5
+      pending: false
+    fisherman:
+      started: true
+      level: 0
+      xp: 75.0
+      pending: false
+    gambler:
+      started: true
+      level: 7
+      xp: 0
+      pending: false
+    sleeper:
+      started: true
+      level: 1
+      xp: 34.0
+      pending: false
+  110d8222-cac8-4543-8a5e-d06e9fab3573:
+    lumberjack:
+      started: true
+      level: 2
+      xp: 200.5
+      pending: false
+    miner:
+      started: true
+      level: 5
+      xp: 474.0
+      pending: false
+      ench:
+        fortune:
+          unbreaking: 1
+        silk:
+          efficiency: 1
+          unbreaking: 1
+    excavator:
+      started: true
+      level: 2
+      xp: 46.0
+      pending: false
+    farmer:
+      started: true
+      level: 0
+      xp: 4.0
+      pending: false
+    hunter:
+      started: true
+      level: 0
+      xp: 118.0
+      pending: false
+    guardian:
+      started: true
+      level: 0
+      xp: 16.0
+      pending: false
+    archer:
+      started: true
+      level: 1
+      xp: 4.0
+      pending: false
+    fisherman:
+      started: true
+      level: 1
+      xp: 4.0
+      pending: false
+    gambler:
+      started: true
+      level: 1
+      xp: 4.0
+      pending: false
+    sleeper:
+      started: true
+      level: 1
+      xp: 3.0
+      pending: false
+  5dca9587-d866-4609-97ec-dd50d64b056d:
+    guardian:
+      started: true
+      level: 12
+      xp: 116.0
+      pending: false
+      ench:
+        main:
+          unbreaking: 4
+    miner:
+      started: true
+      level: 2
+      xp: 325.0
+      pending: false
+      ench:
+        fortune:
+          unbreaking: 1
+    lumberjack:
+      started: true
+      level: 1
+      xp: 260.0
+      pending: false
+    excavator:
+      started: true
+      level: 2
+      xp: 220.0
+      pending: false
+    farmer:
+      started: true
+      level: 1
+      xp: 60.0
+      pending: false
+    hunter:
+      started: true
+      level: 1
+      xp: 201.0
+      pending: false
+    archer:
+      started: true
+      level: 1
+      xp: 48.0
+      pending: false
+    fisherman:
+      started: true
+      level: 2
+      xp: 34.0
+      pending: false
+    gambler:
+      started: true
+      level: 2
+      xp: 28.0
+      pending: false
+    sleeper:
+      started: true
+      level: 1
+      xp: 23.0
+      pending: false
+  183dd54c-9e69-4101-9f58-b5dd91392b40:
+    guardian:
+      started: true
+      level: 2
+      xp: 78.0
+      pending: false
+    gambler:
+      started: true
+      level: 1
+      xp: 30.0
+      pending: false
+    sleeper:
+      started: true
+      level: 1
+      xp: 22.0
+      pending: false
+    lumberjack:
+      started: true
+      level: 1
+      xp: 558.5
+      pending: false
+    miner:
+      started: true
+      level: 6
+      xp: 400.0
+      pending: false
+      ench:
+        fortune:
+          unbreaking: 1
+          efficiency: 1
+        silk:
+          unbreaking: 2
+    excavator:
+      started: true
+      level: 4
+      xp: 142.0
+      pending: false
+      ench:
+        silk:
+          silk_touch: 1
+          unbreaking: 1
+    farmer:
+      started: true
+      level: 1
+      xp: 40.5
+      pending: false
+    hunter:
+      started: true
+      level: 1
+      xp: 117.0
+      pending: false
+    archer:
+      started: true
+      level: 1
+      xp: 30.0
+      pending: false
+    fisherman:
+      started: true
+      level: 1
+      xp: 30.0
+      pending: false
+bed:
+  53322438-a7a2-4eb2-bb2b-1c648a43dccf:
+    world: world
+    x: 66663.0
+    y: 66.0
+    z: 66668.0
+  183dd54c-9e69-4101-9f58-b5dd91392b40:
+    world: world
+    x: 307268.0
+    y: 71.0
+    z: 85610.0

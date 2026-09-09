@@ -1,0 +1,48 @@
+# MAVOCommunityGoals 1.2 - multi-tier dirt / cobble / treasury
+# Each goal has levels: when complete, target jumps to next tier and amplifier may rise.
+# shop-bonus-category: ESGUI category key for buy/sell % (applied via data flag for shop plugin / docs)
+
+reward-broadcast: true
+
+goals:
+  dirt_haste:
+    display: "&6⛏ The Great Dirt Pile"
+    type: ITEM
+    material: DIRT
+    # tier targets: 1M, 5M, 10M, 50M, 100M then doubles
+    tiers: [1000000, 5000000, 10000000, 50000000, 100000000]
+    daily-limit-per-player: 25000
+    effect: haste
+    amplifier: 0
+    amplifier-per-tier: 1
+    permanent: false
+    duration-days: 500
+    shop-bonus: blocks_building
+    shop-bonus-pct-per-tier: 5
+
+  cobble_speed:
+    display: "&7🪨 Cobble Mountain"
+    type: ITEM
+    material: COBBLESTONE
+    tiers: [1000000, 5000000, 10000000, 50000000, 100000000]
+    daily-limit-per-player: 25000
+    effect: speed
+    amplifier: 0
+    amplifier-per-tier: 1
+    permanent: false
+    duration-days: 500
+    shop-bonus: resources
+    shop-bonus-pct-per-tier: 5
+
+  coin_luck:
+    display: "&e💰 Server Treasury"
+    type: COINS
+    tiers: [1000000, 5000000, 10000000, 50000000, 100000000]
+    daily-limit-per-player: 5000
+    effect: luck
+    amplifier: 0
+    amplifier-per-tier: 1
+    permanent: true
+    duration-days: 0
+    shop-bonus: all_except_blocks_resources_spawners
+    shop-bonus-pct-per-tier: 5

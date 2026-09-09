@@ -1,0 +1,5 @@
+# MAVOMail - player mail
+max-mail: 100            # per player (oldest deleted first)
+expiry-days: 7           # unclaimed mail expires
+attach-hand: true        # /mail send <player> [coins] also attaches the item you hold
+send-fee: 0              # coins charged per send (0 = free)

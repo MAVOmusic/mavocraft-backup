@@ -1,0 +1,9 @@
+built: true
+community:
+  coins: 63
+  target: 1000000
+  stack: 2
+players:
+  53322438-a7a2-4eb2-bb2b-1c648a43dccf:
+    last-mob: zombie
+disabled: []

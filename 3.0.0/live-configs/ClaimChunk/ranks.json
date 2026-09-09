@@ -1,0 +1,13 @@
+# This file lists all of the ranks for claimchunk.
+# For more information, see this wiki page:
+# https://github.com/cjburkey01/ClaimChunk/wiki/Ranks-System
+[
+  {
+    "claims": 100,
+    "name": "some_random_example_rank"
+  },
+  {
+    "claims": 200,
+    "name": "another_random_example_rank"
+  }
+]

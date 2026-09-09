@@ -1,0 +1,21 @@
+goals:
+  dirt_haste:
+    progress: 0
+    completed: false
+    tier: 0
+    expires-day: -1
+  cobble_speed:
+    progress: 0
+    completed: false
+    tier: 0
+    expires-day: -1
+  coin_luck:
+    progress: 20
+    completed: false
+    tier: 0
+    expires-day: -1
+daily:
+  53322438-a7a2-4eb2-bb2b-1c648a43dccf:
+    coin_luck:
+      day: 111
+      amount: 20

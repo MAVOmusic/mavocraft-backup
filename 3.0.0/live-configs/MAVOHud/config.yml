@@ -1,0 +1,6 @@
+# MAVOHud 2.0 - day/time/coords as PlaceholderAPI values for the TAB sidebar:
+#   %mavohud_day%  %mavohud_time%  %mavohud_coords%
+# The optional action-bar line is OFF by default; players can /hud to enable it.
+# Refresh for the action bar only (sidebar refresh is set in TAB's config):
+update-ticks: 20
+day-offset: 108

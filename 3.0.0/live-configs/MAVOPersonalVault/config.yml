@@ -1,0 +1,13 @@
+# MAVOPersonalVault 1.0 — unlock packs of 5 slots
+# First pack (slots 1-5): normal coins
+first-pack-coins: 25000
+# Later packs cost Lucky Coins (physical sunflower items from MAVOLuckyCoins)
+# pack index 1 (slots 6-10) = 250 LC, then +250 each pack
+lc-base: 250
+lc-increment: 250
+slots-per-pack: 5
+# GUI shows 45 storage slots per page (5 rows) + bottom control row
+page-size: 45
+max-packs: 200
+title-locked: "&8Personal Vault &7— &cLOCKED"
+title-open: "&8Personal Vault &7p{page} &8| &e{slots} slots"
