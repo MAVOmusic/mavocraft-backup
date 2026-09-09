@@ -1,10 +1,20 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 23
+version: 24
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&e&lv24 &7- old configs heal themselves! (3.0.2)"
+    icon: IRON_CHAIN
+    lines:
+      - "&7&eChest Hunt&7 + &e/craft&7 now FIX their own old configs on boot:"
+      - "&7the XP bottle entry and the 2 bad recipe names are renamed"
+      - "&7automatically - &f20/20 loot types&7 next chest, &f100/100 recipes&7."
+      - "&7Wishing Well pool also updated (&f1268 sellable items&7, the 4"
+      - "&7old item names were replaced with the new 26.2 ones)."
+      - "&7&33.0.2 jars: &fMAVOCrafting / MAVOChestHunt / MAVOLuckyCoins / MAVOGuide&7."
+      - ""
   - title: "&e&lv23 &7- 100 basics + Chest Hunt fixed (3.0.1)"
     icon: EXPERIENCE_BOTTLE
     lines:

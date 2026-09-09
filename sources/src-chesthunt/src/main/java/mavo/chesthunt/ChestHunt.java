@@ -52,6 +52,11 @@ public final class ChestHunt extends JavaPlugin implements Listener {
 
     private static final char C = '\u00a7';
 
+    /** Paper renamed these in old MC versions - heal them in the live config so the
+     *  loot pool really loads every entry (3.0.2: live configs carried EXP_BOTTLE). */
+    private static final Map<String,String> LEGACY = Map.of(
+            "EXP_BOTTLE", "EXPERIENCE_BOTTLE");
+
     private record LootEntry(Material mat, int amount, int weight) {}
 
     private boolean enabled = true;
@@ -76,6 +81,7 @@ public final class ChestHunt extends JavaPlugin implements Listener {
 
     @Override public void onEnable() {
         saveDefaultConfig();
+        repairLegacyItems();
         load();
         dataFile = new File(getDataFolder(), "chest.yml");
         data = YamlConfiguration.loadConfiguration(dataFile);
@@ -107,7 +113,7 @@ public final class ChestHunt extends JavaPlugin implements Listener {
         if (cs != null) for (String k : cs.getKeys(false)) {
             ConfigurationSection c = cs.getConfigurationSection(k);
             if (c == null) continue;
-            Material m = Material.matchMaterial(k.toUpperCase(Locale.ROOT));
+            Material m = Material.matchMaterial(LEGACY.getOrDefault(k.toUpperCase(Locale.ROOT), k.toUpperCase(Locale.ROOT)));
             if (m == null || !m.isItem()) {
                 getLogger().warning("loot entry " + k + " is not a valid item - skipped.");
                 continue;
@@ -120,6 +126,36 @@ public final class ChestHunt extends JavaPlugin implements Listener {
         if (pool.isEmpty()) {
             pool.add(new LootEntry(Material.GOLD_INGOT, 4, 1));
             totalWeight = 1;
+        }
+    }
+
+    /** 3.0.2: old configs (and old bundled defaults) used EXP_BOTTLE; Paper 26.x
+     *  does not know that name, so the entry was skipped and the pool had 19 items.
+     *  Rename legacy loot keys in the disk config once and save. */
+    private void repairLegacyItems() {
+        try {
+            File f = new File(getDataFolder(), "config.yml");
+            YamlConfiguration disk = YamlConfiguration.loadConfiguration(f);
+            ConfigurationSection loot = disk.getConfigurationSection("loot");
+            if (loot == null) return;
+            int fixed = 0;
+            StringBuilder detail = new StringBuilder();
+            for (String k : new ArrayList<>(loot.getKeys(false))) {
+                String nk = LEGACY.get(k.toUpperCase(Locale.ROOT));
+                if (nk == null) continue;
+                Object val = loot.get(k);
+                loot.set(nk, val);
+                loot.set(k, null);
+                fixed++;
+                detail.append(k).append(" -> ").append(nk).append(' ');
+            }
+            if (fixed > 0) {
+                disk.save(f);
+                reloadConfig();
+                getLogger().info("3.0.2: repaired " + fixed + " legacy item name(s) in config.yml: " + detail);
+            }
+        } catch (Throwable t) {
+            getLogger().warning("could not repair legacy loot names: " + t.getMessage());
         }
     }
 

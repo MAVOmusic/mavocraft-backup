@@ -51,6 +51,13 @@ public final class Crafting extends JavaPlugin implements Listener {
     private final Map<UUID, Long> lastCraft = new ConcurrentHashMap<>();
     private final Map<UUID, Inventory> openGuis = new ConcurrentHashMap<>();   // HOTFIX 38: scope clicks to OUR /craft menu only
 
+    /** Paper renamed these; the 3.0.0 upgrade wrote the old names into live configs
+     *  (EMPTY_MAP, TERRA_COTTA), so /craft loaded 98 instead of 100. 3.0.2 heals them. */
+    private static final java.util.Map<String,String> LEGACY = java.util.Map.of(
+            "EMPTY_MAP", "MAP",
+            "TERRA_COTTA", "TERRACOTTA",
+            "EXP_BOTTLE", "EXPERIENCE_BOTTLE");
+
     private record Ingredient(Material mat, int amount) {}
     private record RecipeDef(String id, Material result, int count, List<Ingredient> ingredients) {}
 
@@ -93,6 +100,9 @@ public final class Crafting extends JavaPlugin implements Listener {
                     getLogger().info("v3.0: beginner recipes upgraded to 100 (/craft guide).");
                 }
             }
+            // 3.0.2: the 3.0.0 upgrade wrote two names Paper no longer knows
+            // (EMPTY_MAP, TERRA_COTTA) into the live config -> 98 recipes silently.
+            repairLegacyNames(disk, f);
             reloadConfig();
         } catch (Throwable t) {
             getLogger().warning("config merge failed: " + t.getMessage());
@@ -102,6 +112,42 @@ public final class Crafting extends JavaPlugin implements Listener {
     /** v3.0: flat key merge - the old recursive version built wrong path prefixes
      *  (nested sections stayed empty). Every missing leaf path from the bundled
      *  config is written once. */
+    /** 3.0.2: replace legacy material names in every string leaf of the disk config
+     *  (results AND ingredients, beginner + custom recipes + anything else) and save,
+     *  so the live config heals itself and all 100 recipes really load. */
+    private int repairLegacyNames(ConfigurationSection disk, File f) {
+        int fixed = 0;
+        StringBuilder detail = new StringBuilder();
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(
+                "(?<![A-Z0-9_])(" + String.join("|", LEGACY.keySet()) + ")(?![A-Z0-9_])",
+                java.util.regex.Pattern.CASE_INSENSITIVE);
+        for (String path : disk.getKeys(true)) {
+            Object v = disk.get(path);
+            if (!(v instanceof String s)) continue;
+            java.util.regex.Matcher m = p.matcher(s);
+            if (!m.find()) continue;
+            StringBuffer sb = new StringBuffer();
+            do {
+                m.appendReplacement(sb, LEGACY.get(m.group(1).toUpperCase(Locale.ROOT)));
+                fixed++;
+                if (detail.indexOf(m.group(1).toUpperCase(Locale.ROOT)) < 0)
+                    detail.append(m.group(1).toUpperCase(Locale.ROOT)).append("->")
+                          .append(LEGACY.get(m.group(1).toUpperCase(Locale.ROOT))).append(' ');
+            } while (m.find());
+            m.appendTail(sb);
+            disk.set(path, sb.toString());
+        }
+        if (fixed > 0) {
+            try {
+                disk.save(f);
+                getLogger().info("3.0.2: repaired " + fixed + " legacy material name(s) in config.yml: " + detail);
+            } catch (Exception ex) {
+                getLogger().warning("could not save repaired recipes: " + ex.getMessage());
+            }
+        }
+        return fixed;
+    }
+
     private boolean mergeMissing(ConfigurationSection disk, ConfigurationSection def) {
         boolean changed = false;
         for (String path : def.getKeys(true)) {

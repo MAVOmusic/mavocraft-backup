@@ -1,5 +1,5 @@
 name: MAVOChestHunt
-version: 3.0.1
+version: 3.0.2
 main: mavo.chesthunt.ChestHunt
 api-version: '1.21'
 description: Daily loot chest - every Minecraft day at noon a chest appears near spawn (MAVOcraft)
