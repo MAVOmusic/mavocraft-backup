@@ -1,0 +1,257 @@
+MAVOcraft — OP-ONLY CHECKLIST (text version)
+==========================================
+Server: Paper 26.2 build 119 - Java 25 - 185.206.148.185:25567 (Bedrock UDP 19132)
+How: run every row as OP (or console where marked). Replace [ ] with ✅ or ❌.
+Format per row:  # / Test Name / Command + How / Expected / [tick]
+
+PART A — BOOT & HEALTH
+----------------------
+A-OP-001 / Plugins enabled / /plugins / 59 plugins, none red/disabled: Guide 3.0.4, Miniboss 3.0.4, Crafting 3.0.3, ChestHunt 3.0.2, LuckyCoins 3.0.2, rest 3.0.0 (Tavern 1.4, Vault 1.7.1, Homes 1.2, Spawn 1.0, Quests 1.4, Hud 2.2, PortalRoom 1.2, Trades 1.0, Streaks 1.0, Goals 1.2.1, Borders 1.2, Prices 1.0.1, PersonalVault 1.0.0) / [ ]
+A-OP-002 / Boot log clean / read console after restart / No stack traces; one-time lines (boss table replaced, guide v25->v26) must NOT repeat on 2nd+ boot / [ ]
+A-OP-003 / Miniboss boot line / console / "MAVOMiniboss v3.0.4 enabled - 15 boss type(s), 2 arena(s), /hunt on, location broadcast every 5 min." / [ ]
+A-OP-004 / Guide boot line / console / "MAVOGuide enabled" with NO "v25 -> v26" repeat (2nd+ boot) / [ ]
+A-OP-005 / Crafting boot line / console / "MAVOCrafting v3.0.3 enabled - 7 custom recipe(s), 100 beginner recipe(s)." with NO repeat "re-verified" line / [ ]
+A-OP-006 / ChestHunt boot line / console / "MAVOChestHunt v3.0.2 enabled - chest every day at noon, radius 100 blocks, pool 20 item type(s)." / [ ]
+A-OP-007 / LuckyCoins boot line / console / "Wishing well pool loaded: 1268 sellable items (1 skipped)" / [ ]
+A-OP-008 / Vault hooks / console / No "Vault NOT found" from Duels/Guilds/Warps/ChestShops; Essentials Economy hooked / [ ]
+A-OP-009 / Known-fine lines only / console / Only known-fine: Essentials "unsupported server version", Paper "builds behind", CoreProtect "Development branch", BlueMap manual-save WARN, TAB hint, Tavern "?" glyph / [ ]
+A-OP-010 / TPS & memory / /tps and /mem (or spark) / TPS 20.0, no OOM warnings / [ ]
+
+PART B — OP VANILLA / WORLD
+---------------------------
+B-OP-001 / Day/night control / /time set day then /time set midnight / Sky changes; mobs burn/spawn accordingly / [ ]
+B-OP-002 / Weather control / /weather rain then /weather clear / Rain starts then stops / [ ]
+B-OP-003 / Gamemode for tests / /gamemode creative, test, /gamemode survival back / Mode switches; remember to switch back before player-observable tests / [ ]
+B-OP-004 / Teleport to arenas / /tp -2700 100 560 and /tp 340 100 1470 / Both miniboss arena areas exist and are safe surface / [ ]
+B-OP-005 / Give test gear / /give @s diamond_sword 1 etc. / Items received (use for kill-tests, then /clear) / [ ]
+B-OP-006 / Clear test items / /clear @s / Inventory cleared / [ ]
+
+PART C — THIRD-PARTY (OP SIDE)
+------------------------------
+C-OP-001 / TAB reload / /tab reload / No errors; sidebar + tablist still correct / [ ]
+C-OP-002 / TAB placeholders live / look at sidebar: day, time, coords, profession placeholders / Values match reality (%mavohud_day/time/coords%, %mavoprof_…%) / [ ]
+C-OP-003 / LuckPerms user check / /lp user <name> parent list / Correct group(s) shown / [ ]
+C-OP-004 / LuckPerms default perms / /lp group default permission info / Default players have NO mav* admin nodes / [ ]
+C-OP-005 / LuckPerms editor / /lp editor (open briefly, close) / Web editor link prints / [ ]
+C-OP-006 / Economy give / /eco give <player> 1000 then /bal <player> / Balance +1000 exactly / [ ]
+C-OP-007 / Economy take / /eco take <player> 1000 / Balance -1000 exactly / [ ]
+C-OP-008 / Shop reload / /sreload / EconomyShopGUI reloads, shops still open / [ ]
+C-OP-009 / Shop config scan / check console AH line after boot / "AuctionHouse shop sell: scanned 28 shop yml files (backups skipped) -> 886 prices" / [ ]
+C-OP-010 / ClaimChunk claim (OP) / /chunk claim on wild chunk / Claimed, NO charge (useEconomy=false; MAVOChunkPrices charges instead) / [ ]
+C-OP-011 / ClaimChunk unclaim / /chunk unclaim on it / Unclaimed / [ ]
+C-OP-012 / CoreProtect inspect / /co i, break+place a block, /co i off / Inspector shows your block history / [ ]
+C-OP-013 / CoreProtect lookup / /co lookup u:<name> t:1h r:10 / Results listed / [ ]
+C-OP-014 / CoreProtect rollback+undo / /co rollback u:<name> t:1h r:5 then /co undo / Blocks restored then undo works / [ ]
+C-OP-015 / Essentials spawn set / /setspawn (only if spawn moved!) / Spawn point set — SKIP unless needed / [ ]
+C-OP-016 / /tpa belongs to MAVOTpa / /tpa <name> as OP / Output says request-style (ours), NOT EssentialsX text / [ ]
+C-OP-017 / BlueMap status / /bluemap then browser mavocraft.my.pebble.host:8156 / Map renders; Mob Farm marker visible / [ ]
+C-OP-018 / Geyser status / /geyser list (or console "Started Geyser on UDP port 19132") / Geyser online; Bedrock can join / [ ]
+
+PART D — MAVO PLUGINS (OP COMMANDS)
+-----------------------------------
+-- MAVOGuide --
+D-OP-001 / Guide reload / /updates reload / "Reloaded" + no errors; menus still open / [ ]
+D-OP-002 / Guide popup state / delete nothing; ask a player to relog / Player who hasn't seen v26 gets What's New popup once / [ ]
+-- MAVOEvents --
+D-OP-003 / Event list / /event list / All 10 events listed (luckyhour, coinrain, mobhunt, fishingfrenzy, minersrush, harvestbonus, buildbonus, zombiesiege, giftdrop, farmfrenzy) / [ ]
+D-OP-004 / Event start/stop / /event start zombiesiege then /event stop / Start + stop announcements; mobs spawn then stop / [ ]
+D-OP-005 / Each event starts / /event start <each of the other 9> then /event stop each time / All 9 start/stop with announcements, no errors / [ ]
+D-OP-006 / Auto scheduler / wait 45-90 min with players online (or check config) / An event auto-starts roughly on schedule / [ ]
+-- MAVOLuckyCoins --
+D-OP-007 / Set wishing well / look at well block, /wish well / Well position saved (confirm in console/config) / [ ]
+D-OP-008 / Give lucky coins / /ccollect give 5 / You receive 5 Lucky Coins (sunflower items) / [ ]
+D-OP-009 / Give many (test) / /ccollect give 64 / 64 coins received — for economy tests, destroy after / [ ]
+-- MAVODeathChest --
+D-OP-010 / Admin open any grave / have a player die, then open their grave chest as OP / Opens (mavodc.admin); contents intact / [ ]
+D-OP-011 / Grave travel cost check / read victim's /grave GUI cost at their level / Cost = 1000x2^(L-1) coins OR 10x2^(L-1) LC (L1=1000/10, L2=2000/20…) / [ ]
+-- MAVOAchievements --
+D-OP-012 / Ach reload / /ach reload / Reload ok, /ach still opens with 52 categories / [ ]
+-- MAVOProfessions --
+D-OP-013 / Add XP / /profession addxp <player> <prof> 100 (and farming) / XP added; check with /profession check as that player / [ ]
+D-OP-014 / Prof reload / /profession reload / Reload ok / [ ]
+D-OP-015 / Almost-board / /profession almost <prof> / Shows who's about to level / [ ]
+D-OP-016 / Sleeper tavern link / /sleeper tavernset at the plaza bed / Stored; boot log "tavern rest hooked at world …" after restart / [ ]
+-- MAVOWanderer --
+D-OP-017 / Force trader / /wanderer spawn / Trader + 2 llamas + bell spawn nearby, offers usable / [ ]
+D-OP-018 / Spawn at player / /wanderer spawn <player> / Trader spawns near that player / [ ]
+-- MAVOCurator --
+D-OP-019 / Museum reload / /museum reload / "103 sections / 1413 items" reloaded / [ ]
+D-OP-020 / Museum shopsgen / /museum shopsgen (then /sreload if told) / Buy prices re-indexed from normal shops; extras prices look sane / [ ]
+-- MAVOWild --
+D-OP-021 / Set wild portal / look at portal block, /wild portal / Position saved / [ ]
+D-OP-022 / Set home portal / look at portal block, /wild homeportal / Position saved / [ ]
+D-OP-023 / Holoreset / /holoreset 60 / Floating MAVO holos rebuilt, no errors / [ ]
+-- MAVOShopNPC --
+D-OP-024 / NPC list / /shopnpc list / All NPCs listed / [ ]
+D-OP-025 / NPC spawn+setcmd / /shopnpc spawn TestNPC shop then /shopnpc setcmd TestNPC shop / NPC spawns; right-click runs /shop as the player / [ ]
+D-OP-026 / NPC holo+resholo / /shopnpc holo TestNPC then /shopnpc resholo / Floating text appears, correct small size / [ ]
+D-OP-027 / NPC adopt / /shopnpc adopt <pick a village villager> / Villager becomes NPC, keeps place / [ ]
+D-OP-028 / NPC remove / /shopnpc remove TestNPC (+ adopted one) / Removed; holos cleaned / [ ]
+-- MAVOMobFarm --
+D-OP-029 / Farm admin tp / /mobfarm tp / Teleported to hub / [ ]
+D-OP-030 / Farm setcenter / stand at new center, /mobfarm setcenter (x2 per range if needed) / Center moved (confirm in config) / [ ]
+D-OP-031 / Farm build / /mobfarm build / Complex builds, holos appear / [ ]
+D-OP-032 / Farm purge / /mobfarm purge / Spawned mobs removed only, structure stays / [ ]
+D-OP-033 / Farm clearhere / /mobfarm clearhere 80 at a test spot / Old structures around cleared / [ ]
+D-OP-034 / Farm resholo / /mobfarm resholo / Hub + bay holos rebuilt / [ ]
+D-OP-035 / Farm reload / /mobfarm reload / Reload ok, mobs=36 / [ ]
+D-OP-036 / Farm rebuild (DESTRUCTIVE) / ONLY if farm broken: /mobfarm purge -> /mobfarm clear -> setcenter x2 -> /mobfarm build / Full rebuild; SKIP unless needed / [ ]
+-- MAVOCasino --
+D-OP-037 / Casino attempts reset check / check plugins/MAVOCasino/data.yml attempts for a test player / 10 coin + 10 lucky attempts per 10 MC days tracked / [ ]
+-- MAVOCrafting --
+D-OP-038 / Crafting reload / /crafting reload / Reloads; /craft 100 pages + 7 customs still work / [ ]
+-- MAVOEnchants --
+D-OP-039 / Give gem / /maenchant gem <player> VEIN 2 / Player receives Vein II gem / [ ]
+D-OP-040 / Give armor gem / /maenchant gem <player> AQUA 3 / Player receives Aqua III gem / [ ]
+-- MAVOMiniboss --
+D-OP-041 / Miniboss status / /miniboss status / 0-3 alive, 15 types, 45 min, /hunt ON, broadcast 5 min, 2 arenas listed / [ ]
+D-OP-042 / Miniboss reload / edit spawn-locations in config, /miniboss reload, restore after / New coords used; status shows them / [ ]
+D-OP-043 / Force broadcast (ADMIN NOTE) / /miniboss broadcast / Boss spawns if none alive + location broadcast — NOTE: players can also run this (see AUDIT-HIGH-02; retest after fix) / [ ]
+-- MAVOCrates --
+D-OP-044 / Crate set / look at block, /crate set common (+ rare, mythic at their blocks) / Blocks become crates with holos / [ ]
+D-OP-045 / Crate unset/clear / /crate unset looking at one, /crate clear <name> on test type / Removed; holos cleaned / [ ]
+D-OP-046 / Crate givekey / /crate givekey <player> mythic 2 / Player receives 2 mythic keys / [ ]
+D-OP-047 / Crate inspect / /crate inspect <player> / Read-only GUI: inventory+armor+offhand, keys marked [KEY], summary counts ender chest / [ ]
+D-OP-048 / Crate inspect take-tier / click TAKE RARE / Only rare keys removed from inv+ender chest; count message; gems/enchants untouched / [ ]
+D-OP-049 / Crate inspect take-all / click TAKE ALL KEYS / Every MAVOCrate key removed; nothing else touched / [ ]
+D-OP-050 / Crate resholo / /crate resholo / All crate holos rebuilt / [ ]
+D-OP-051 / Crate reload / /crate reload / Pools + key chances reloaded / [ ]
+-- MAVOChestHunt --
+D-OP-052 / Force chest / /chesthunt spawn / Broadcast with coords; ender chest + holo within 100 blocks of spawn / [ ]
+D-OP-053 / ChestHunt reload / edit config (e.g. lifetime), /chesthunt reload, restore / New values used; pool size in reply / [ ]
+D-OP-054 / Hunt persistence / restart server within chest lifetime / Chest block respawns same spot; loot regenerated / [ ]
+-- MAVOTpa --
+D-OP-055 / TPA admin bypass / spam /tpa as OP / No 30s cooldown (mavotpa.admin bypass) / [ ]
+-- MAVOLocks --
+D-OP-056 / Admin open locked / open/break another player's locked chest as OP / Allowed (mavolock.admin) / [ ]
+-- MAVOCouples --
+D-OP-057 / (no OP commands) / — / Confirm: no admin subcommands exist; marriage data in plugins/MAVOCouples/data.yml survives restart / [ ]
+-- MAVOSpawners --
+D-OP-058 / (no OP commands) / — / Confirm: only /spawner info; spawner data/behavior unchanged by restart / [ ]
+-- MAVODuels --
+D-OP-059 / Set duel arena / stand at arena center, /duelarena / "Duel arena set" with radius / [ ]
+-- MAVOGuilds --
+D-OP-060 / Guild reload / /guild reload / Reload ok / [ ]
+D-OP-061 / Guild admin bypass / try build in a player's guild claim as OP / Allowed (mavoguilds.admin bypass) / [ ]
+-- MAVOAuctionHouse --
+D-OP-062 / AH setcenter+build / /ah setcenter at hall site then /ah build / 5 keepers placed, leveled, terrace ok; boot-style "removed N duplicate keeper(s)" if any / [ ]
+D-OP-063 / AH min-price scan / check boot line / "scanned 28 shop yml files (backups skipped) -> 886 prices (netherite ingot 756)" approx / [ ]
+-- MAVOBossRaid --
+D-OP-064 / Raid setarena / stand at arena, /boss setarena / Arena saved / [ ]
+D-OP-065 / Raid force now / /boss now (with 1+ queued or alone) / Raid starts immediately: queue teleported in circle, ONE boss spawns, bossbar on / [ ]
+D-OP-066 / Raid cancel / /boss cancel mid-raid / Raid cancelled safely, players can /boss return / [ ]
+D-OP-067 / Raid reload / /boss reload / Schedule+rewards reloaded / [ ]
+D-OP-068 / Raid natural schedule / wait for Sat 20:00 (or check config) / Queue opens 10 min before, raid fires on time / [ ]
+-- MAVODoubleXp --
+D-OP-069 / XP status / /xpboost status / Shows window Fri 18:00 -> Sun 18:00 x2.0 Europe/London / [ ]
+D-OP-070 / XP force now/off / /xpboost now 5 3 then /xpboost off / Boost x3 for 5 min (bossbar), then cleared / [ ]
+D-OP-071 / XP reload / /xpboost reload / Reload ok / [ ]
+-- MAVOPets --
+D-OP-072 / Pet give / /pet give <player> wolf / Player receives that pet / [ ]
+-- MAVOFishComp --
+D-OP-073 / Fish status / /fishcomp status / Current window shown (Sun 17:00 style) / [ ]
+D-OP-074 / Fish start/end / /fishcomp start then catch a fish then /fishcomp end / Points counted, results broadcast, prizes paid / [ ]
+D-OP-075 / Fish reload / /fishcomp reload / Reload ok / [ ]
+-- MAVOMail --
+D-OP-076 / Mail purge / /mail purge <testplayer> (console also works) / Their mails deleted; count message / [ ]
+-- MAVOSeasonal --
+D-OP-077 / Season status / /season status / Shows seasons (live may show none — see Seasonal note) / [ ]
+D-OP-078 / Season toggle / /season toggle spooky (restore: toggle off) / Season forced on: broadcast + bell; mobs drop candy; toggle off restores / [ ]
+D-OP-079 / Season reload / /season reload / Reload ok / [ ]
+D-OP-080 / Seasonal config restore / copy 3.0.0/live-configs/MAVOSeasonal/config.yml to plugins/MAVOSeasonal/ + restart IF seasons wanted / Boot shows 3 seasons defined / [ ]
+-- MAVOWarps --
+D-OP-081 / Warp admin remove/rename / /warp remove <testwarp>, /warp rename <a> <b> on others' warps / Works as admin (mavowarps.admin) / [ ]
+-- MAVOChestShops --
+D-OP-082 / CShop admin tp/delete / /cshop tp <id> then /cshop delete <id> on a test shop / Teleported; shop deleted / [ ]
+D-OP-083 / CShop reload / /cshop reload / Reload ok / [ ]
+-- MAVOTavern (no source: test-only) --
+D-OP-084 / Tavern info / /tavern info / Status: price 100, night-only, bed coords / [ ]
+D-OP-085 / Tavern setbed / look at bed, /tavern setbed / Primary bed saved (boot: "Tavern beds loaded: primary … + 3 extra(s)") / [ ]
+D-OP-086 / Tavern build/clear / /tavern build at test site then /tavern clear / 20x20 inn builds then clears / [ ]
+D-OP-087 / Tavern reload / /tavern reload / Reload ok / [ ]
+D-OP-088 / Player must be denied / have non-OP run /tavern setbed (and build/clear/reload) / Denied (OP only) — if NOT denied, report as PERM HOLE / [ ]
+-- MAVOVault (no source: test-only) --
+D-OP-089 / Vaultroom info / /vaultroom / Your access info shown / [ ]
+D-OP-090 / Vault gate setup / /vaultroom pos1, pos2, /vaultroom gate vault (then portalroom) / Keep-out zone set; non-payers bounced + unlock GUI / [ ]
+D-OP-091 / Vault prices / /vaultroom price vault 50000, /vaultroom price portalroom 25000, /vaultroom chestprice 5000 / Prices set / [ ]
+D-OP-092 / Vault portal setup / pos1+pos2, /vaultroom portal vault, stand inside room /vaultroom portaldest vault / Portal FX + 3s countdown teleport works / [ ]
+D-OP-093 / Vault return portal / pos1+pos2, /vaultroom portal vault_return, at spawn /vaultroom returnspawn / Green/gold return portal works / [ ]
+D-OP-094 / Vault grant/revoke / /vaultroom grant <player> vault then /vaultroom revoke <player> vault / Access granted then revoked / [ ]
+D-OP-095 / Vault reload / /vaultroom reload / Reload ok / [ ]
+D-OP-096 / Player must be denied / non-OP runs /vaultroom price vault 1 (and grant/gate) / Denied — if NOT denied, report as PERM HOLE / [ ]
+-- MAVOHomes (no source: test-only) --
+D-OP-097 / (no OP commands) / — / Confirm: only /home /sethome /delhome exist; homes data survives restart / [ ]
+-- MAVOSpawn (no source: test-only) --
+D-OP-098 / Spawnprot info / /spawnprot info / Shows world(-2578,200,-1684) r=60/60 / [ ]
+D-OP-099 / Spawnprot sethere/radius / /spawnprot sethere then /spawnprot radius 60 60 (restore!) / Center/radius updated then restored / [ ]
+D-OP-100 / Spawnprot reload / /spawnprot reload / Reload ok / [ ]
+D-OP-101 / OP survival can't break spawn / as OP in SURVIVAL try break a spawn block / Blocked (bypass-requires-creative); creative OP can / [ ]
+-- MAVOQuests (no source: test-only) --
+D-OP-102 / Quest board state / /quest / Board GUI with 10 quests from pool of 19 / [ ]
+D-OP-103 / Quest list / /quest list / Text list of board quests / [ ]
+D-OP-104 / Quest reload / /quest reload / Board rerolled/reloaded, no errors / [ ]
+D-OP-105 / Player must be denied / non-OP runs /quest reload / Denied — if NOT denied, report as PERM HOLE / [ ]
+-- MAVOHud (no source: test-only) --
+D-OP-106 / Hud setday / /hud setday 1 / Day offset set; TAB day shows Day 1 / [ ]
+D-OP-107 / Player must be denied / non-OP runs /hud setday 5 then you check TAB day / Must be denied AND day unchanged — if changed, report as PERM HOLE / [ ]
+-- MAVOPortalRoom (no source: test-only) --
+D-OP-108 / Portal list / /portalroom list / 26 portals listed with prices 1000..5000000 / [ ]
+D-OP-109 / Portal clearzones+reload / /portalroom clearzones then /portalroom reload / Landing blacklist cleared; reload ok / [ ]
+-- MAVOTrades (no source: test-only) --
+D-OP-110 / MTrade spawn/list / /mtrade spawn librarian (+ smith, farmer, collector), /mtrade list / Masters spawn with trades; listed / [ ]
+D-OP-111 / MTrade remove / /mtrade remove <one> / Removed / [ ]
+-- MAVOStreaks (no source: test-only) --
+D-OP-112 / Streak top / /streak top / Leaderboard shows / [ ]
+D-OP-113 / (no OP commands) / — / Confirm: only /streak and /streak top / [ ]
+-- MAVOCommunityGoals (no source: test-only) --
+D-OP-114 / Goal reload / /goal reload / Reload ok, 3 goals (dirt/cobble/treasury) / [ ]
+D-OP-115 / Player must be denied / non-OP runs /goal reload / Denied — if NOT denied, report as PERM HOLE / [ ]
+-- MAVOChunkBorders (no source: test-only) --
+D-OP-116 / Borders reload / /borders reload / Reload ok / [ ]
+D-OP-117 / Player must be denied / non-OP runs /borders reload / Denied — if NOT denied, report as PERM HOLE / [ ]
+-- MAVOChunkPrices (no source: test-only) --
+D-OP-118 / Chunkprice reload / /chunkprice reload / Reload ok, tier table shown / [ ]
+D-OP-119 / Player must be denied / non-OP runs /chunkprice reload / Denied — if NOT denied, report as PERM HOLE / [ ]
+-- MAVOPersonalVault (no source: test-only) --
+D-OP-120 / PVault admin setpacks / /pvault admin setpacks <player> <n> (restore after) / Packs set then restored / [ ]
+D-OP-121 / Player must be denied / non-OP runs /pvault admin setpacks <self> 200 / Denied — if NOT denied, report as PERM HOLE / [ ]
+
+PART E — OP EXPLOIT VERIFICATION (after player tests)
+-----------------------------------------------------
+E-OP-001 / ChestShop buyer-nothing bug / have player buy 1 from a stocked shop, check buyer inv + seller pay + stock / EXPECTED NOW: buyer gets NOTHING (AUDIT-CRIT-01) — confirm, then STOP using shops until fixed / [ ]
+E-OP-002 / Miniboss broadcast farm / have player spam /miniboss broadcast with no boss up / EXPECTED NOW: boss spawns on demand, no cooldown (AUDIT-HIGH-02) — confirm / [ ]
+E-OP-003 / AH full-inbox loss / fill seller inbox to 100, cancel a listing / EXPECTED NOW: item vanishes (AUDIT-MED-03) — confirm with cheap item only / [ ]
+E-OP-004 / Mail grief / fill victim mailbox (100 junk mails), send 1 more, check oldest / EXPECTED NOW: oldest mail deleted (AUDIT-MED-05) — confirm / [ ]
+E-OP-005 / Lock hopper drain / hopper under another player's locked chest with items / EXPECTED NOW: hopper pulls items out (AUDIT-MED-06) — confirm / [ ]
+E-OP-006 / Lock piston push / piston pushes a locked block / EXPECTED NOW: block moves (AUDIT-MED-06) — confirm / [ ]
+E-OP-007 / Couple/guild instant tp / watch player /couple home, /couple tp, /guild home with monsters adjacent / EXPECTED NOW: instant, no warmup (AUDIT-MED-07) — confirm / [ ]
+E-OP-008 / Duel escape hole / duel: loser does /home mid-fight (and ender pearl out) / EXPECTED NOW: no forfeit triggers, fight stuck (AUDIT-SUS-01) — confirm / [ ]
+E-OP-009 / Hud/borders/prices perm holes / results of D-OP-107/117/119 / Record which (if any) let players run admin subs / [ ]
+E-OP-010 / Economy faucet review / review casino payouts, event rewards, streak pay, quest mystery, seasonal candy, mobfarm profits / Note anything paying far above its cost/risk for rebalance / [ ]
+
+PART F — DATAPACKS / LOGO / HUD
+-------------------------------
+F-OP-001 / Datapacks enabled / /datapack list enabled / file/MAVOcraft-75-datapack.zip + file/MAVOcraft-95-datapack.zip shown / [ ]
+F-OP-002 / Logo 95 build / /function mavocraft95:logo_test then logo_build (face WEST at spawn, look up) / Full 24x95 MAVOCRAFT upright left->right (sea lantern, glowstone, lime A) / [ ]
+F-OP-003 / Logo 95 clear / /function mavocraft95:logo_clear / Whole 24x95 canvas removed at Y=249 / [ ]
+F-OP-004 / Logo 75 frozen / /function mavocraft75:logo_test / v4 layout (180° rotated from spawn = intentional frozen) / [ ]
+F-OP-005 / HUD toggle / /hud then /hud again / Action-bar HUD on then off / [ ]
+F-OP-006 / HUD day / /hud day / Current day number shown / [ ]
+
+PART G — PERSISTENCE (restart, then re-check)
+---------------------------------------------
+G-OP-001 / Restart server / restart, wait for Done / Boot clean (Part A again) / [ ]
+G-OP-002 / Data survived / spot-check: locks, marriage, duel stats, guilds+claims, warps, shops, mail, AH listings+inbox, pets+carry, quests board, fishcomp window, seasonal toggle, vault rooms, pvault slots, streaks, goals progress / Everything persists / [ ]
+
+PART H — REPORT (paste back)
+----------------------------
+VERSIONS TESTED: [jars list]
+PART A: ...
+PART B: ...
+PART C: ...
+PART D: ... (each ❌ + what happened + console errors pasted)
+PART E: ... (confirmed holes)
+PART F: ...
+PART G: ...
+CONSOLE ERRORS: [paste any]
+NEEDS JAR-FIX: [plugin + command + what happened]
