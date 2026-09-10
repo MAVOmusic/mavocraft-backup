@@ -253,7 +253,11 @@ public final class Duels extends JavaPlugin implements Listener {
                     if (econ == null || !econ.has(p, bet) || !econ.has(c, bet)) {
                         p.sendMessage(C + "cSomeone can't afford the " + coins(bet) + " bet."); return true;
                     }
-                    if (!econ.withdrawPlayer(p, bet).transactionSuccess() || !econ.withdrawPlayer(c, bet).transactionSuccess()) {
+                    // 3.0.5: if the second withdraw fails, the first is refunded (never half-charged)
+                    boolean w1 = econ.withdrawPlayer(p, bet).transactionSuccess();
+                    boolean w2 = w1 && econ.withdrawPlayer(c, bet).transactionSuccess();
+                    if (!w2) {
+                        if (w1) econ.depositPlayer(p, bet);
                         p.sendMessage(C + "cPayment failed."); return true;
                     }
                 }

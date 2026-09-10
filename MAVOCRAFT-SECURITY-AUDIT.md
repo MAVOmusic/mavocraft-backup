@@ -95,6 +95,17 @@ Severity: 🔴 critical (fix before players use it) · 🟠 high · 🟡 medium 
 
 GUI click-cancel discipline (all menus cancel + holder/track + raw-slot gating; Hotfix-38 pattern in gemshop/crates/chesthunt/casino) · Duels bet escrow (withdraw both at accept, 10% house cut, logout= forfeit, leaver=forfeit) · Casino bet charged at game start, attempts 10+10/10 MC days · DeathChest grave ownership + 30-min expiry · TPA/Locks/Warps/Homes warmup+monster+cooldown standards · Timber survival-gated + grown-trees-only + 10-log cap · Professions/Casino XP survival-gated · AH min-price (shop sell ×110%), bound-no-relist, buy-own blocked, bid escrow + auto-extend · Mail 7-day expiry + offline-safe · FishComp/BossRaid offline payouts queued · All source-plugin admin gates present (`mav*admin`).
 
+## User fix decisions (2026-09-10) → fix round 3.0.5
+
+1. **Shop:** fix buyer-receive (+ NBT stock match + Buy-buttons-only clicks). ChestShops → 3.0.5.
+2. **Miniboss schedule redesign** (replaces HIGH-02 + old 45-min interval): spawns ONLY while ≥1 player online; MAX 1 boss per side (2 total, NORTHERN + SOUTHERN arenas); killing a side's boss puts THAT SIDE on cooldown until next MC day 10:00 (tick 4000); ALL bosses auto-despawn (no drops) at MC day 7:00 (tick 1000); fresh spawns at 10:00 both sides. `/miniboss broadcast` becomes broadcast-only (never spawns) + short anti-spam cooldown. Miniboss → 3.0.5.
+3. **Mail:** REJECT the send when the target has 100 unclaimed (before coins/item are taken). Rationale (user): 100 unclaimed = hoarding mail as a vault; blocking more is correct. Mail → 3.0.5.
+4. **Locks:** hopper drain + piston push protection on locked blocks. Locks → 3.0.5.
+5. **Teleports:** 5s stand-still warmup + 12-block monster check on `/couple home`, `/couple tp`, `/guild home`. Couples + Guilds → 3.0.5.
+6. **AH inbox:** KEEP the item destruction on full inbox (user: hoarder's fault on item 101) — only add an explicit "destroyed, inbox full" message so it is never silent. AuctionHouse → 3.0.5.
+7. **All LOWs fixed:** Duels second-withdraw refund, FishComp pending fallback, withdraw-result checks in Enchants/Curator/Warps. All → 3.0.5.
+- Guide → 3.0.5 (config v27): What's New entry + miniboss schedule page rewrite + teleport/shop/mail notes.
+
 ## Fix order (proposed)
 
 1. CRIT-01 ChestShops buyer give (+ NBT stock match + button-only clicks) — blocks ALL shop use until fixed.

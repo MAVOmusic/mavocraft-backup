@@ -1,5 +1,5 @@
 name: MAVOLocks
-version: 3.0.0
+version: 3.0.5
 main: mavo.locks.Locks
 api-version: '1.21'
 description: Lock chests, doors, furnaces and barrels - /lock, /unlock, /trust, /untrust (MAVOcraft)

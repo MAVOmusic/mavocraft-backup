@@ -1,5 +1,5 @@
 name: MAVOMiniboss
-version: 3.0.4
+version: 3.0.5
 main: mavo.miniboss.MiniBoss
 api-version: '1.21'
 description: "Miniboss status (admin: spawn all, reload); /hunt takes you to the hunt"

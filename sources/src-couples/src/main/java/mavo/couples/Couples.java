@@ -18,8 +18,10 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 /** MAVOCouples 1.0.0 - social marriage (Discord CW#4 idea 16, inspired by MarriageMaster).
  *  /marry <player> -> /accept; /couple sethome + /couplehome; /couple tp; heart particles
@@ -33,6 +35,12 @@ public final class Couples extends JavaPlugin implements Listener {
     private final Map<UUID, UUID> proposals = new HashMap<>();   // target -> suitor
     private int expireSec = 120;
     private boolean particles = true;
+    // 3.0.5: /couple home + /couple tp are no longer instant (combat-escape hole).
+    // Same standard as /tpa: 5s stand-still warmup, 12-block monster check.
+    private int warmupSec = 5, monsterRadius = 12;
+    private final Map<UUID, BukkitTask> warmups = new HashMap<>();
+    private final Map<UUID, Location> warmLoc = new HashMap<>();
+    private final Map<UUID, UUID> warmPartner = new HashMap<>();   // tp target resolved at fire time
 
     @Override public void onEnable() {
         saveDefaultConfig();
@@ -40,12 +48,97 @@ public final class Couples extends JavaPlugin implements Listener {
         data = YamlConfiguration.loadConfiguration(dataFile);
         expireSec = Math.max(10, getConfig().getInt("proposal-expire-seconds", 120));
         particles = getConfig().getBoolean("particles", true);
+        warmupSec = Math.max(0, getConfig().getInt("warmup-seconds", 5));
+        monsterRadius = Math.max(0, getConfig().getInt("monster-radius", 12));
         getServer().getPluginManager().registerEvents(this, this);
         Bukkit.getScheduler().runTaskTimer(this, this::tickParticles, 40L, 20L);
         getLogger().info("MAVOCouples v" + getDescription().getVersion() + " enabled - " + marriages() + " marriage(s).");
     }
 
-    @Override public void onDisable() { saveData(); }
+    @Override public void onDisable() {
+        for (BukkitTask task : warmups.values()) task.cancel();
+        warmups.clear();
+        saveData();
+    }
+
+    private boolean monstersNear(Player pl) {
+        if (monsterRadius <= 0) return false;
+        for (org.bukkit.entity.Entity en : pl.getNearbyEntities(monsterRadius, monsterRadius, monsterRadius))
+            if (en instanceof org.bukkit.entity.Enemy && !en.isDead()) return true;
+        return false;
+    }
+
+    /** 3.0.5: warmup teleport to a fixed spot (/couple home). */
+    private void teleportWithWarmup(Player p, Location dest) {
+        if (monstersNear(p)) { p.sendMessage(C + "cMonsters nearby - you can't teleport right now!"); return; }
+        cancelWarmup(p.getUniqueId());
+        warmLoc.put(p.getUniqueId(), p.getLocation());
+        p.sendMessage(C + "eTeleporting in " + C + "a" + warmupSec + "s" + C + "e - stand still.");
+        if (warmupSec <= 0) { doTeleport(p, dest); return; }
+        warmups.put(p.getUniqueId(), Bukkit.getScheduler().runTaskLater(this, () -> {
+            warmups.remove(p.getUniqueId());
+            warmLoc.remove(p.getUniqueId());
+            if (!p.isOnline()) return;
+            if (monstersNear(p)) { p.sendMessage(C + "cTeleport cancelled - monsters nearby!"); return; }
+            doTeleport(p, dest);
+        }, warmupSec * 20L));
+    }
+
+    /** 3.0.5: warmup teleport to your partner (/couple tp) - partner located at fire time. */
+    private void teleportPartnerWithWarmup(Player p, UUID partner) {
+        if (monstersNear(p)) { p.sendMessage(C + "cMonsters nearby - you can't teleport right now!"); return; }
+        cancelWarmup(p.getUniqueId());
+        warmLoc.put(p.getUniqueId(), p.getLocation());
+        warmPartner.put(p.getUniqueId(), partner);
+        p.sendMessage(C + "eTeleporting in " + C + "a" + warmupSec + "s" + C + "e - stand still.");
+        if (warmupSec <= 0) { firePartnerTp(p); return; }
+        warmups.put(p.getUniqueId(), Bukkit.getScheduler().runTaskLater(this, () -> {
+            warmups.remove(p.getUniqueId());
+            warmLoc.remove(p.getUniqueId());
+            if (!p.isOnline()) return;
+            if (monstersNear(p)) {
+                warmPartner.remove(p.getUniqueId());
+                p.sendMessage(C + "cTeleport cancelled - monsters nearby!");
+                return;
+            }
+            firePartnerTp(p);
+        }, warmupSec * 20L));
+    }
+
+    private void firePartnerTp(Player p) {
+        UUID sp = warmPartner.remove(p.getUniqueId());
+        Player o = sp == null ? null : Bukkit.getPlayer(sp);
+        if (o == null || !o.isOnline()) { p.sendMessage(C + "cYour partner is offline."); return; }
+        doTeleport(p, o.getLocation());
+        p.sendMessage(C + "aTeleported to " + o.getName() + ".");
+    }
+
+    private void doTeleport(Player p, Location dest) {
+        if (dest == null || dest.getWorld() == null) {
+            p.sendMessage(C + "cCouple home is broken - set it again.");
+            return;
+        }
+        p.teleport(dest);
+        p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
+    }
+
+    private void cancelWarmup(UUID u) {
+        BukkitTask old = warmups.remove(u);
+        if (old != null) old.cancel();
+        warmLoc.remove(u);
+        warmPartner.remove(u);
+    }
+
+    @EventHandler public void onMove(PlayerMoveEvent e) {
+        BukkitTask task = warmups.get(e.getPlayer().getUniqueId());
+        if (task == null || e.getTo() == null) return;
+        if (e.getFrom().getBlockX() != e.getTo().getBlockX()
+                || e.getFrom().getBlockZ() != e.getTo().getBlockZ()
+                || e.getFrom().getBlockY() != e.getTo().getBlockY()) {
+            cancelWarmup(e.getPlayer().getUniqueId());
+            e.getPlayer().sendMessage(C + "cTeleport cancelled - you moved!");
+        }
+    }
     private void saveData() { try { data.save(dataFile); } catch (Throwable ignored) { } }
     private int marriages() {
         var s = data.getConfigurationSection("marriages");
@@ -84,7 +177,10 @@ public final class Couples extends JavaPlugin implements Listener {
 
     private String nm(UUID u) { return Bukkit.getOfflinePlayer(u).getName() == null ? "?" : Bukkit.getOfflinePlayer(u).getName(); }
 
-    @EventHandler public void onQuit(PlayerQuitEvent e) { proposals.remove(e.getPlayer().getUniqueId()); }
+    @EventHandler public void onQuit(PlayerQuitEvent e) {
+        proposals.remove(e.getPlayer().getUniqueId());
+        cancelWarmup(e.getPlayer().getUniqueId());
+    }
 
     private void tickParticles() {
         if (!particles) return;
@@ -186,14 +282,13 @@ public final class Couples extends JavaPlugin implements Listener {
                         String h = data.getString("homes." + u);
                         if (h == null && sp != null) h = data.getString("homes." + sp);
                         if (h == null) { p.sendMessage(C + "cNo couple home set - " + C + "e/couple sethome" + C + "c."); return true; }
-                        teleport(p, parseLoc(h));
+                        teleportWithWarmup(p, parseLoc(h));
                     }
                     case "tp" -> {
                         if (sp == null) { p.sendMessage(C + "cYou are not married."); return true; }
                         Player o = Bukkit.getPlayer(sp);
                         if (o == null || !o.isOnline()) { p.sendMessage(C + "cYour partner is offline."); return true; }
-                        p.teleport(o.getLocation());
-                        p.sendMessage(C + "aTeleported to " + o.getName() + ".");
+                        teleportPartnerWithWarmup(p, sp);
                     }
                     default -> p.sendMessage(C + "7/couple info | sethome | home | tp");
                 }
@@ -201,12 +296,6 @@ public final class Couples extends JavaPlugin implements Listener {
             default -> p.sendMessage(C + "7/marry <player> | /accept | /deny | /divorce | /couple");
         }
         return true;
-    }
-
-    private void teleport(Player p, Location l) {
-        if (l == null) { p.sendMessage(C + "cCouple home is broken - set it again."); return; }
-        p.teleport(l);
-        p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
     }
 
     private static String locKey(Location l) {

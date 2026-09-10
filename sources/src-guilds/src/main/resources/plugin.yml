@@ -1,5 +1,5 @@
 name: MAVOGuilds
-version: 3.0.0
+version: 3.0.5
 main: mavo.guilds.Guilds
 api-version: '1.21'
 description: Guilds and claimed territories - /guild create|invite|claim|map and more (MAVOcraft)

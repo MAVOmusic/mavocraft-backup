@@ -1,7 +1,21 @@
 # MAVOMiniboss - arena bosses (Hotfix 44: 15 boss types, 2 fixed spawn locations)
+# 3.0.5: spawn-interval-minutes / max-alive are RETIRED (kept only so old configs
+# still parse) - the schedule below owns all spawning now.
 spawn-interval-minutes: 45
 max-alive: 3
 spawn-surface: true          # only on the surface (y>50)
+
+# ---- BOSS SCHEDULE (3.0.5) ----
+# 1 boss per side max (2 total). Fresh bosses spawn on BOTH sides at spawn-tick
+# (MC 10:00 = tick 4000); every boss VANISHES at despawn-tick (MC 7:00 = tick 1000)
+# with no loot. A side whose boss was KILLED stays empty until the next 10:00.
+# Spawns only happen while at least one player is online (empty-server nights skip).
+spawn-tick: 4000
+despawn-tick: 1000
+schedule-only-online: true
+# /miniboss broadcast is broadcast-only now (it never spawns - that was an
+# unlimited-farm hole) with a short per-player anti-spam cooldown.
+broadcast-cmd-cooldown-seconds: 60
 
 # ---- SPAWN LOCATIONS (Hotfix 44) ----
 # Bosses no longer appear at random wild spots - they spawn at THESE arenas.

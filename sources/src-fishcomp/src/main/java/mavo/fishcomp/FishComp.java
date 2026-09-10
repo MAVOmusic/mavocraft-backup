@@ -217,9 +217,9 @@ public final class FishComp extends JavaPlugin implements Listener {
     private void payOut(UUID u, long coins) {
         if (coins <= 0 || econ == null) return;
         Player p = Bukkit.getPlayer(u);
-        if (p != null && p.isOnline()) {
-            if (econ.depositPlayer(p, coins).transactionSuccess())
-                p.sendMessage(C + "aYou earned " + C + "e" + String.format("%,d", coins) + " coins" + C + "a from the tournament!");
+        // 3.0.5: a failed online deposit queues as pending (winnings can never vanish)
+        if (p != null && p.isOnline() && econ.depositPlayer(p, coins).transactionSuccess()) {
+            p.sendMessage(C + "aYou earned " + C + "e" + String.format("%,d", coins) + " coins" + C + "a from the tournament!");
         } else {
             double pending = data.getDouble("pending." + u, 0);
             data.set("pending." + u, pending + coins);

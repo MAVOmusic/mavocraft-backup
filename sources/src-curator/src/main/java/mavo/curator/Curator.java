@@ -642,7 +642,12 @@ public final class Curator extends JavaPlugin implements Listener {
             p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 0.9f);
             return;
         }
-        econ.withdrawPlayer(p, price);
+        // 3.0.5: never register the item when the charge failed
+        var resp = econ.withdrawPlayer(p, price);
+        if (resp == null || !resp.transactionSuccess()) {
+            p.sendMessage(ChatColor.RED + "Payment failed - nothing bought.");
+            return;
+        }
         register(p, m); // bought item goes STRAIGHT into the museum - nothing to carry, no double buys
         p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.4f);
         p.sendMessage(ChatColor.GOLD + "\u2726 " + ChatColor.GREEN + niceName(m)

@@ -1,5 +1,5 @@
 name: MAVOChestShops
-version: 3.0.0
+version: 3.0.5
 main: mavo.chestshop.ChestShops
 api-version: '1.13'
 description: "Player-run chest shops - set a chest, price it, the server buys it (MAVOcraft)"

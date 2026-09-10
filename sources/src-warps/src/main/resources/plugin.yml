@@ -1,5 +1,5 @@
 name: MAVOWarps
-version: 3.0.0
+version: 3.0.5
 main: mavo.warps.Warps
 api-version: '1.13'
 description: Public player warps - buy a warp slot, share your base (MAVOcraft)

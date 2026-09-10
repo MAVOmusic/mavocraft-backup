@@ -230,7 +230,12 @@ public final class Warps extends JavaPlugin implements Listener {
         if (cost < 0) { p.sendMessage(R + "No warp slots left for you."); return; }
         if (econ != null && p.getGameMode() == org.bukkit.GameMode.SURVIVAL) {
             if (!econ.has(p, cost)) { p.sendMessage(R + "Need " + fmt(cost) + " coins for warp slot " + (slot + 1) + "."); return; }
-            econ.withdrawPlayer(p, cost);
+            // 3.0.5: never create the warp when the charge failed
+            var resp = econ.withdrawPlayer(p, cost);
+            if (resp == null || !resp.transactionSuccess()) {
+                p.sendMessage(R + "Payment failed - warp not created.");
+                return;
+            }
         }
         Location l = p.getLocation();
         data.set("warps." + id + ".owner", p.getUniqueId().toString());

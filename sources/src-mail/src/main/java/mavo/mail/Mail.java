@@ -292,6 +292,14 @@ public final class Mail extends JavaPlugin implements Listener {
                 if (to == null) to = Bukkit.getOfflinePlayer(args[1]);
                 UUID tu = to.getUniqueId();
                 if (tu == null || tu.equals(p.getUniqueId())) { p.sendMessage(C + "cThat player can't receive mail."); return true; }
+                // 3.0.5: full mailbox = REJECT before anything is taken. 100 unclaimed mails
+                // is hoarding, not a vault - and the old code silently DELETED the target's
+                // oldest mail (items + coins) to make room, which was griefable.
+                if (keys(tu).size() >= maxMail) {
+                    p.sendMessage(C + "c" + (to.getName() == null ? args[1] : to.getName())
+                            + " has " + maxMail + " unclaimed mails - they must claim some first. Nothing was taken.");
+                    return true;
+                }
                 int idx = 2;
                 long coins = 0;
                 if (args.length > 2) {

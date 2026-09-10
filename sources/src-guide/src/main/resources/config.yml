@@ -1,10 +1,25 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 26
+version: 27
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&e&lv27 &7- exploit fix round: shops pay out, boss schedule (3.0.5)"
+    icon: EMERALD
+    lines:
+      - "&7&eCHEST SHOPS FIXED:&7 buying used to take your coins and give you"
+      - "&7NOTHING - now you actually receive the item (exact NBT included)."
+      - "&7&eBOSS SCHEDULE:&7 1 boss per side (2 total), fresh spawns at &f10:00&7"
+      - "&7both sides, all bosses vanish at &f7:00&7. A slain side rests until the"
+      - "&7next 10:00. &e/miniboss broadcast&7 never spawns anymore."
+      - "&7&eSAFER TELEPORTS:&7 /couple home, /couple tp and /guild home now"
+      - "&7have a 5s stand-still warmup + 12-block monster check (like /tpa)."
+      - "&7&eLOCKS:&7 hoppers can't drain and pistons can't push locked blocks."
+      - "&7&eMAIL:&7 full mailboxes reject new mail (nothing silently deleted)."
+      - "&7&35.0.5 jars (12): &fChestShops / Miniboss / Mail / Locks / Couples /"
+      - "&fGuilds / AuctionHouse / Duels / FishComp / Enchants / Curator / Warps&7."
+      - ""
   - title: "&e&lv26 &7- boss table upgrade actually lands (3.0.4)"
     icon: DIAMOND_SWORD
     lines:
@@ -904,16 +919,18 @@ features:
       - "&7Crimson Behemoth and Ancient Golem."
       - "&7&eBosses spawn at 2 FIXED ARENAS&7 (no more random wild spots):"
       - "&4NORTHERN ARENA&7 (-2700, 560) and &6SOUTHERN ARENA&7 (340, 1470)."
-      - "&7Every ~45 min one spawns (max 3 alive) at an arena, on the"
-      - "&7surface near its center - the spawn broadcast names the arena."
+      - "&7&eSCHEDULE (3.0.5):&7 1 boss per side (&f2 total&7). Fresh bosses at"
+      - "&f10:00&7 on BOTH sides; every boss &fvanishes at 7:00&7 (no loot). A"
+      - "&7side whose boss was &fslain&7 rests until the next 10:00. Spawns"
+      - "&7only happen while someone is online."
       - "&7Every 5 min the server re-broadcasts &fwhere bosses are&7."
       - "&e/hunt&7 teleports you ~&f200 blocks&7 from a live boss (30s cd)."
       - "&7Spawn chat shows the &fdrop pool %&7 + boss &fHP&7: coins always,"
       - "&7lucky coin % and crate key % - so you know the odds."
-      - "&7&83.0.3 rebalance:&7 bosses are HARD (double HP, x1.5 damage) and drops"
-      - "&7are event-fair - coins 5k-15k, 1-2 Lucky Coins, 1 key (rare 20-25% /"
-      - "&7mythic 10-12%). No more free 90k + Mythic key per kill."
+      - "&7Bosses are HARD (double HP, x1.5 damage) and drops are event-fair:"
+      - "&7coins 5k-15k, 1-2 Lucky Coins, 1 key (rare 20-25% / mythic 10-12%)."
       - "&e/miniboss status|locate&7 - arenas + what's alive right now."
+      - "&e/miniboss broadcast&7 - force the location callout (60s cd, never spawns)."
 
   - id: chesthunt
     icon: ENDER_CHEST

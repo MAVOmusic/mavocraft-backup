@@ -497,16 +497,9 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         EconomyResponse r = econ == null ? null : econ.withdrawPlayer(buyer, price);
         if (r == null || !r.transactionSuccess()) { msg(buyer, "&cYou need &e" + fmt(price) + " coins&c."); return; }
         // refund the current top bidder (their money was held in escrow)
-        if (l.bid() > 0 && l.bidder() != null) {
-            Player outbid = Bukkit.getPlayer(l.bidder());
-            if (outbid != null && outbid.isOnline()) {
-                if (econ.depositPlayer(outbid, l.bid()).transactionSuccess())
-                    msg(outbid, "&eOutbid! " + fmt(l.bid()) + " coins returned (buy-now purchase).");
-            } else {
-                double pend = data.getDouble("players." + l.bidder() + ".pending", 0);
-                data.set("players." + l.bidder() + ".pending", pend + l.bid());
-            }
-        }
+        if (l.bid() > 0 && l.bidder() != null)
+            refundBidder(l.bidder(), l.bid(),
+                    "&eOutbid! " + fmt(l.bid()) + " coins returned (buy-now purchase).");
         double tax = "keeper".equals(l.tier()) ? KEEPER_TAX : COMMAND_TAX;
         long net = (long) Math.round(price * (1 - tax));
         ItemStack bound = bindItem(l.item(), u);
@@ -535,6 +528,17 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         saveData();
         Player lp = Bukkit.getPlayer(seller);
         if (lp != null && lp.isOnline()) msg(lp, "&aYour auction payout &e" + fmt(amount) + " coins &ais waiting (server restarts payout it).");
+    }
+
+    /** 3.0.5: escrow refund that can never vanish - a failed online deposit queues as pending. */
+    private void refundBidder(UUID bidder, long amount, String onlineMsg) {
+        Player o = Bukkit.getPlayer(bidder);
+        if (o != null && o.isOnline() && econ != null && econ.depositPlayer(o, amount).transactionSuccess()) {
+            msg(o, onlineMsg);
+            return;
+        }
+        data.set("players." + bidder + ".pending", data.getDouble("players." + bidder + ".pending", 0) + amount);
+        saveData();
     }
 
     @EventHandler
@@ -567,16 +571,9 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
         EconomyResponse r = econ.withdrawPlayer(p, amount);
         if (r == null || !r.transactionSuccess()) { msg(p, "&cPayment failed."); return; }
         // refund the previous top bidder's escrow
-        if (l.bid() > 0 && l.bidder() != null) {
-            Player old = Bukkit.getPlayer(l.bidder());
-            if (old != null && old.isOnline()) {
-                if (econ.depositPlayer(old, l.bid()).transactionSuccess())
-                    msg(old, "&eYou were outbid on &7(" + l.id() + ")&e - " + fmt(l.bid()) + " coins returned.");
-            } else {
-                double pend = data.getDouble("players." + l.bidder() + ".pending", 0);
-                data.set("players." + l.bidder() + ".pending", pend + l.bid());
-            }
-        }
+        if (l.bid() > 0 && l.bidder() != null)
+            refundBidder(l.bidder(), l.bid(),
+                    "&eYou were outbid on &7(" + l.id() + ")&e - " + fmt(l.bid()) + " coins returned.");
         long bidEnd = l.bidEnd() > 0 ? l.bidEnd() : l.end();
         boolean extended = false;
         if (bidEnd - now < BID_AUTO_EXTEND_MS) { bidEnd = now + BID_EXTEND_MS; extended = true; }
@@ -598,21 +595,15 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
     private void cancelListing(Player p, String id) {
         Listing l = listings.get(id);
         if (l == null || !l.seller().equals(p.getUniqueId())) { msg(p, "&cNo such listing of yours."); return; }
-        if (l.bid() > 0 && l.bidder() != null) {  // return escrow first
-            Player bidder = Bukkit.getPlayer(l.bidder());
-            if (bidder != null && bidder.isOnline()) {
-                if (econ.depositPlayer(bidder, l.bid()).transactionSuccess())
-                    msg(bidder, "&eAuction &7(" + id + ") &ewas cancelled by the seller - " + fmt(l.bid()) + " coins returned.");
-            } else {
-                double pend = data.getDouble("players." + l.bidder() + ".pending", 0);
-                data.set("players." + l.bidder() + ".pending", pend + l.bid());
-            }
-        }
+        if (l.bid() > 0 && l.bidder() != null)  // return escrow first
+            refundBidder(l.bidder(), l.bid(),
+                    "&eAuction &7(" + id + ") &ewas cancelled by the seller - " + fmt(l.bid()) + " coins returned.");
         listings.remove(id);
         data.set("listings." + id, null);
         boolean ok = inboxAdd(l.seller(), l.item(), "auction cancelled");
+        // 3.0.5: full inbox on cancel = the item is DESTROYED (hoarder's fault, never silent).
         msg(p, ok ? "&aCancelled &7(ID &e" + id + "&7)&a - item moved to your &e/inbox&a (tag: auction cancelled)."
-                : "&cInbox full - contact an admin (item stays in the listing data).");
+                : "&cCancelled - but your &e/inbox &cis FULL, so the item was DESTROYED. Clear inbox space first next time!");
         saveData();
         if (p.isOnline()) openMain(p, 0);
     }
@@ -656,6 +647,12 @@ public class AuctionHouse extends org.bukkit.plugin.java.JavaPlugin implements L
                 Player sp = Bukkit.getPlayer(l.seller());
                 if (sp != null && sp.isOnline())
                     msg(sp, "&eYour auction &7(" + l.id() + ") &eexpired - item moved to &e/inbox&7 (tag: auction expired).&8 No tax.");
+            } else {
+                // 3.0.5: full inbox on expiry = the item is DESTROYED (hoarder's fault, never silent).
+                changed = true;
+                Player sp2 = Bukkit.getPlayer(l.seller());
+                if (sp2 != null && sp2.isOnline())
+                    msg(sp2, "&cYour auction &7(" + l.id() + ") &cexpired but your &e/inbox &cis FULL - the item was DESTROYED.");
             }
         }
         if (changed) saveData();

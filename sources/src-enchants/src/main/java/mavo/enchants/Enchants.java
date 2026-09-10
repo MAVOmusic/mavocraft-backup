@@ -724,7 +724,12 @@ public final class Enchants extends JavaPlugin implements Listener {
             p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
             return;
         }
-        econ.withdrawPlayer(p, price);
+        // 3.0.5: never hand over a gem when the charge failed
+        var resp = econ.withdrawPlayer(p, price);
+        if (resp == null || !resp.transactionSuccess()) {
+            p.sendMessage(C + "cPayment failed - no gem given.");
+            return;
+        }
         ItemStack gem = makeGem(parts[0], tier);
         var left = p.getInventory().addItem(gem);
         for (ItemStack l : left.values()) p.getWorld().dropItemNaturally(p.getLocation(), l);

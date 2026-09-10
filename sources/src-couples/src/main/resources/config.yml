@@ -2,3 +2,5 @@
 proposal-expire-seconds: 120
 particles: true
 sethome-cost: 0
+warmup-seconds: 5   # 3.0.5: stand-still warmup on /couple home + /couple tp (no more instant escape)
+monster-radius: 12  # 3.0.5: teleport blocked/cancelled with monsters this close

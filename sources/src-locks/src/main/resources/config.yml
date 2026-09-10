@@ -3,3 +3,4 @@
 # blast furnaces, smokers, doors, trapdoors, hoppers, droppers, dispensers.
 max-locks-per-player: 50
 protect-from-explosion: true
+protect-hopper-piston: true   # 3.0.5: hoppers can't drain, pistons can't push locked blocks

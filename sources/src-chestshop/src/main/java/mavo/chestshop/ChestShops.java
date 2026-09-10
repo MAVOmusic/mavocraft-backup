@@ -54,6 +54,7 @@ public final class ChestShops extends JavaPlugin implements Listener {
     static final class Shop {
         String id, world, item; UUID owner; int x, y, z; long price;
         String stallId; long created;
+        ItemStack ref;   // 3.0.5: exact item sold (NBT included) - stock matches this, buyers get this
     }
 
     static final class Stall {
@@ -90,6 +91,13 @@ public final class ChestShops extends JavaPlugin implements Listener {
             sh.item = s.getString(id + ".item", "AIR");
             sh.stallId = s.getString(id + ".stall", null);
             sh.created = s.getLong(id + ".created", 0);
+            // 3.0.5: reference item (exact NBT). Pre-3.0.5 shops have none: fall back to
+            // a PLAIN item of the shop material, so enchanted stock is never eaten cheaply.
+            sh.ref = s.getItemStack(id + ".ref");
+            if (sh.ref == null) {
+                Material mm = Material.matchMaterial(sh.item);
+                sh.ref = new ItemStack(mm == null || mm.isAir() ? Material.DIRT : mm);
+            }
             shops.put(id, sh);
             byBlock.put(key(sh.world, sh.x, sh.y, sh.z), sh);
         }
@@ -204,12 +212,42 @@ public final class ChestShops extends JavaPlugin implements Listener {
         return null;
     }
 
-    private int stock(Block b, Material mat) {
+    /** 3.0.5: stock counts ONLY stacks exactly like the shop's reference item
+     *  (same NBT) - enchanted/renamed stock is never sold at the base price. */
+    private int stock(Block b, Shop sh) {
         if (!(b.getState() instanceof Chest c)) return 0;
         int n = 0;
         for (ItemStack it : c.getInventory().getContents())
-            if (it != null && it.getType() == mat) n += it.getAmount();
+            if (it != null && sh.ref.isSimilar(it)) n += it.getAmount();
         return n;
+    }
+
+    /** 3.0.5: first stack of the given material in the chest (for /cshop create <price> <item>). */
+    private ItemStack firstOf(Block b, Material mat) {
+        if (!(b.getState() instanceof Chest c)) return null;
+        for (ItemStack it : c.getInventory().getContents())
+            if (it != null && it.getType() == mat) return it.clone();
+        return null;
+    }
+
+    /** 3.0.5: remove up to {@code amount} matching stacks; returns exactly what was taken. */
+    private List<ItemStack> takeStock(Block b, Shop sh, int amount) {
+        List<ItemStack> taken = new ArrayList<>();
+        if (!(b.getState() instanceof Chest c)) return taken;
+        ItemStack[] contents = c.getInventory().getContents();
+        int left = amount;
+        for (int i = 0; i < contents.length && left > 0; i++) {
+            ItemStack it = contents[i];
+            if (it == null || !sh.ref.isSimilar(it)) continue;
+            int take = Math.min(left, it.getAmount());
+            ItemStack got = it.clone();
+            got.setAmount(take);
+            taken.add(got);
+            if (it.getAmount() == take) c.getInventory().setItem(i, null);
+            else it.setAmount(it.getAmount() - take);
+            left -= take;
+        }
+        return taken;
     }
 
     private void renameChest(Block b, Shop sh) {
@@ -319,6 +357,10 @@ public final class ChestShops extends JavaPlugin implements Listener {
         sh.owner = p.getUniqueId(); sh.world = b.getWorld().getName();
         sh.x = b.getX(); sh.y = b.getY(); sh.z = b.getZ();
         sh.price = price; sh.item = mat.name(); sh.created = System.currentTimeMillis();
+        // 3.0.5: lock the EXACT item sold (first stack of that material, else plain)
+        ItemStack sample = firstOf(b, mat);
+        sh.ref = sample != null ? sample : new ItemStack(mat);
+        sh.ref.setAmount(1);
         shops.put(sh.id, sh);
         indexBoth(b, sh);
         saveRegister(sh.id);
@@ -347,6 +389,7 @@ public final class ChestShops extends JavaPlugin implements Listener {
         sh.owner = p.getUniqueId(); sh.world = b.getWorld().getName();
         sh.x = b.getX(); sh.y = b.getY(); sh.z = b.getZ();
         sh.price = itemPrice; sh.item = first.getType().name();
+        sh.ref = first.clone(); sh.ref.setAmount(1);   // 3.0.5: exact item sold
         sh.stallId = st.id; sh.created = System.currentTimeMillis();
         shops.put(sh.id, sh);
         indexBoth(b, sh);
@@ -412,6 +455,7 @@ public final class ChestShops extends JavaPlugin implements Listener {
         data.set("shops." + id + ".z", sh.z);
         data.set("shops." + id + ".price", sh.price);
         data.set("shops." + id + ".item", sh.item);
+        data.set("shops." + id + ".ref", sh.ref);   // 3.0.5: exact item sold (NBT included)
         if (sh.stallId != null) data.set("shops." + id + ".stall", sh.stallId);
         data.set("shops." + id + ".created", sh.created);
         saveData();
@@ -442,7 +486,7 @@ public final class ChestShops extends JavaPlugin implements Listener {
             meta.setDisplayName(GOLD + "" + ChatColor.BOLD + sh.id + " · " + nice(sh.item));
             Block b = Bukkit.getWorld(sh.world).getBlockAt(sh.x, sh.y, sh.z);
             meta.setLore(List.of(GRAY + "Price: " + Y + fmt(sh.price) + "c" + GRAY + " per item",
-                    GRAY + "Stock: " + stock(b, m == null ? Material.CHEST : m),
+                    GRAY + "Stock: " + stock(b, sh),
                     GRAY + "Owner: " + ownerName(sh.owner),
                     GRAY + sh.world + " " + sh.x + " " + sh.y + " " + sh.z));
             it.setItemMeta(meta);
@@ -481,7 +525,7 @@ public final class ChestShops extends JavaPlugin implements Listener {
 
     private void openBuy(Player p, Shop sh, Block b) {
         Material m = Material.matchMaterial(sh.item);
-        int st = stock(b, m == null ? Material.CHEST : m);
+        int st = stock(b, sh);
         Inventory inv = Bukkit.createInventory(null, 27,
                 GOLD + "" + ChatColor.BOLD + "Chest Shop — " + sh.id);
         ItemStack it = new ItemStack(m == null ? Material.BARRIER : m);
@@ -517,7 +561,8 @@ public final class ChestShops extends JavaPlugin implements Listener {
         if (meta == null || !meta.hasDisplayName()) return;
         String name = ChatColor.stripColor(meta.getDisplayName());
         int want = name.startsWith("Buy 64") ? 64 : 1;
-        if (name.startsWith("Buy 1") || name.startsWith("Buy 64") || !name.equals("OUT OF STOCK")) {
+        // 3.0.5: ONLY the Buy buttons buy (info-item clicks used to buy too)
+        if (name.startsWith("Buy 1") || name.startsWith("Buy 64")) {
             String id = t.substring(t.indexOf("—") + 2).trim();
             Shop sh = shops.get(id);
             if (sh == null) { p.closeInventory(); return; }
@@ -529,7 +574,7 @@ public final class ChestShops extends JavaPlugin implements Listener {
     private void buy(Player p, Shop sh, Block b, int want) {
         Material m = Material.matchMaterial(sh.item);
         if (m == null) { p.sendMessage(R + "Shop item is invalid - tell an admin."); p.closeInventory(); return; }
-        int st = stock(b, m);
+        int st = stock(b, sh);
         if (st <= 0) { p.sendMessage(R + "Out of stock!"); openBuy(p, sh, b); return; }
         int amount = Math.min(want, st);
         long cost = sh.price * amount;
@@ -544,13 +589,25 @@ public final class ChestShops extends JavaPlugin implements Listener {
             EconomyResponse er = econ.withdrawPlayer(p, cost);
             if (!er.transactionSuccess()) { p.sendMessage(R + "Payment failed: " + er.errorMessage); return; }
         }
-        // take item(s) from the chest
-        if (b.getState() instanceof Chest c) c.getInventory().removeItem(new ItemStack(m, amount));
+        // take EXACTLY the shop item(s) from the chest (same NBT as the reference)
+        List<ItemStack> taken = takeStock(b, sh, amount);
+        if (taken.isEmpty()) {
+            // stock vanished between check and take (owner pulled it) - refund, no harm
+            if (survival && econ != null) econ.depositPlayer(p, cost);
+            p.sendMessage(R + "Out of stock! (refunded)");
+            openBuy(p, sh, b);
+            return;
+        }
         // pay the seller (tax applies to survival sales only)
         if (survival) {
             int tax = Math.max(0, Math.min(100, getConfig().getInt("tax-percent", 0)));
             long pay = tax > 0 ? (long) Math.floor(cost * (100 - tax) / 100.0) : cost;
             econ.depositPlayer(Bukkit.getOfflinePlayer(sh.owner), pay);
+        }
+        // 3.0.5 CRITICAL FIX: the buyer actually RECEIVES the items (overflow drops at feet)
+        for (ItemStack got : taken) {
+            var left = p.getInventory().addItem(got);
+            for (ItemStack l : left.values()) p.getWorld().dropItemNaturally(p.getLocation(), l);
         }
         p.sendMessage(G + "Bought " + Y + amount + "x " + AQ + nice(sh.item) + G + " for "
                 + Y + fmt(cost) + "c" + G + " from " + AQ + sh.id + G + " (" + ownerName(sh.owner) + ").");
@@ -579,6 +636,21 @@ public final class ChestShops extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPistonExtend(BlockPistonExtendEvent e) {
+        for (Block b : e.getBlocks()) if (shopAt(b) != null) { e.setCancelled(true); return; }
+    }
+
+    @EventHandler
+    public void onPistonRetract(BlockPistonRetractEvent e) {
+        for (Block b : e.getBlocks()) if (shopAt(b) != null) { e.setCancelled(true); return; }
+    }
+
+    private static boolean isChest(Material m) { return m == Material.CHEST || m == Material.TRAPPED_CHEST; }
+
+    private long parsePrice(String s) {
+        try { return Long.parseLong(s.replaceAll("[^0-9]", "")); } catch (Exception e) { return -1; }
+    }
+}
+onExtendEvent e) {
         for (Block b : e.getBlocks()) if (shopAt(b) != null) { e.setCancelled(true); return; }
     }
 

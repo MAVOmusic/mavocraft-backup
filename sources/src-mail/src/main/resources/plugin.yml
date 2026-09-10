@@ -1,5 +1,5 @@
 name: MAVOMail
-version: 3.0.0
+version: 3.0.5
 main: mavo.mail.Mail
 api-version: '1.21'
 description: Player mail - send coins and items to anyone, even offline; claim in a GUI (MAVOcraft)

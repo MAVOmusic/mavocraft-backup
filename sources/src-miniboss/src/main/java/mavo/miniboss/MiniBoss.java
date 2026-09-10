@@ -63,6 +63,14 @@ public final class MiniBoss extends JavaPlugin implements Listener {
     private int broadcastRadius = 100;
     private int bcCounter = 0;                  // minutes since last location broadcast
     private final Map<UUID, Long> huntCooldowns = new HashMap<>();
+    // 3.0.5 schedule state (persisted in config.yml schedule-state, survives restarts)
+    private int spawnTick = 4000;                 // MC 10:00 - fresh bosses, both sides
+    private int despawnTick = 1000;               // MC 7:00 - all bosses vanish, no loot
+    private boolean scheduleOnlyOnline = true;    // no spawns on an empty server
+    private int broadcastCmdCooldown = 60;        // anti-spam on /miniboss broadcast
+    private final Map<String, Long> sideKillDay = new HashMap<>(); // arena -> MC day of last kill
+    private long lastDespawnDay = -1;
+    private final Map<UUID, Long> broadcastCooldowns = new HashMap<>();
     private final Map<String, BossDef> defs = new HashMap<>();
     private final Map<UUID, String> alive = new HashMap<>();
     private final Map<UUID, String> arenaOf = new HashMap<>();  // HOTFIX 44: arena a boss spawned in
@@ -87,11 +95,14 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp != null) econ = rsp.getProvider();
         load();
+        loadScheduleState();
+        cleanOrphanBosses();   // 3.0.5: crash leftovers never linger (schedule respawns)
         Bukkit.getPluginManager().registerEvents(this, this);
         Bukkit.getScheduler().runTaskTimer(this, this::tick, 200L, 1200L);   // once a minute
         tick();
         getLogger().info("MAVOMiniboss v" + getDescription().getVersion() + " enabled - " + defs.size()
-                + " boss type(s), " + arenas.size() + " arena(s), /hunt " + (huntEnabled ? "on" : "off")
+                + " boss type(s), " + arenas.size() + " arena(s), schedule 10:00 spawn / 7:00 despawn,"
+                + " 1 per side, /hunt " + (huntEnabled ? "on" : "off")
                 + ", location broadcast every " + broadcastInterval + " min.");
     }
 
@@ -207,18 +218,95 @@ public final class MiniBoss extends JavaPlugin implements Listener {
     }
 
     private void tick() {
-        // boss location broadcast every N minutes - make sure there IS a boss to hunt,
-        // so the 5-minute callout is never an empty message (HOTFIX 37).
+        scheduleCheck();
+        // boss location broadcast every N minutes (3.0.5: never spawns - schedule owns that)
         if (broadcastLocations) {
             if (++bcCounter >= broadcastInterval) {
                 bcCounter = 0;
-                if (alive.isEmpty()) spawnOne();
-                broadcastLocations();
+                if (!alive.isEmpty()) broadcastLocations();
             }
         }
-        if (alive.size() >= maxAlive) return;
-        if (rnd.nextInt(intervalMin) != 0) return; // ~once per interval
-        spawnOne();
+    }
+
+    /** 3.0.5 schedule: despawn at 7:00, spawn at 10:00 (1 per side, players online). */
+    private void scheduleCheck() {
+        World w = scheduleWorld();
+        if (w == null || defs.isEmpty() || arenas.isEmpty()) return;
+        long day = w.getFullTime() / 24000L;
+        int t = (int) (w.getTime() % 24000L);
+        // 7:00 - every boss vanishes (no loot, no kill cooldown: they were not slain)
+        if (t >= despawnTick && lastDespawnDay != day) {
+            lastDespawnDay = day;
+            despawnAll();
+            saveScheduleState();
+        }
+        // 10:00 - fresh boss per side (skipped while the server is empty)
+        if (t < spawnTick) return;
+        if (scheduleOnlyOnline && Bukkit.getOnlinePlayers().isEmpty()) return;
+        for (SpawnArena a : arenas) {
+            if (aliveIn(a.name()) > 0) continue;                 // 1 per side max
+            if (sideKillDay.getOrDefault(a.name(), -1L) >= day) continue; // killed today: wait for next 10:00
+            spawnForArena(a);
+        }
+    }
+
+    private World scheduleWorld() {
+        for (SpawnArena a : arenas) {
+            World w = Bukkit.getWorld(a.world());
+            if (w != null) return w;
+        }
+        return Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0);
+    }
+
+    private int aliveIn(String arenaName) {
+        int n = 0;
+        for (String a : arenaOf.values()) if (arenaName.equals(a)) n++;
+        return n;
+    }
+
+    private void despawnAll() {
+        if (alive.isEmpty()) return;
+        for (UUID id : new ArrayList<>(alive.keySet())) {
+            var en = Bukkit.getEntity(id);
+            if (en != null) en.remove();   // remove() fires no death event: no loot, no kill credit
+        }
+        alive.clear();
+        arenaOf.clear();
+        Bukkit.broadcastMessage(C + "7\u00bb The minibosses have vanished with the dawn. "
+                + C + "eFresh hunts at 10:00" + C + "7!");
+    }
+
+    /** 3.0.5: entities tagged by a previous run (crash: onDisable never ran) are removed. */
+    private void cleanOrphanBosses() {
+        int n = 0;
+        for (World w : Bukkit.getWorlds()) {
+            for (LivingEntity e : w.getLivingEntities()) {
+                if (e.getPersistentDataContainer().has(tag, PersistentDataType.BYTE)) {
+                    e.remove();
+                    n++;
+                }
+            }
+        }
+        if (n > 0) getLogger().info("3.0.5: removed " + n + " leftover boss entit(y/ies) from a previous run.");
+    }
+
+    private void loadScheduleState() {
+        lastDespawnDay = getConfig().getLong("schedule-state.last-despawn-day", -1L);
+        ConfigurationSection s = getConfig().getConfigurationSection("schedule-state.side-kill-day");
+        if (s != null) for (String k : s.getKeys(false)) sideKillDay.put(k, s.getLong(k, -1L));
+    }
+
+    private void saveScheduleState() {
+        getConfig().set("schedule-state.last-despawn-day", lastDespawnDay);
+        for (Map.Entry<String, Long> e : sideKillDay.entrySet())
+            getConfig().set("schedule-state.side-kill-day." + e.getKey(), e.getValue());
+        saveConfig();
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        // a join right after 10:00 on an empty server should not wait a full minute
+        Bukkit.getScheduler().runTaskLater(this, this::scheduleCheck, 100L);
     }
 
     private void broadcastLocations() {
@@ -234,9 +322,10 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         }
     }
 
-    private void spawnOne() {
-        if (defs.isEmpty() || arenas.isEmpty()) return;
-        SpawnSpot spot = pickSpot();
+    /** 3.0.5: spawn one random boss at a GIVEN arena (schedule calls this per side). */
+    private void spawnForArena(SpawnArena arena) {
+        if (defs.isEmpty()) return;
+        SpawnSpot spot = pickSpot(arena);
         if (spot == null) return;
         World w = spot.loc().getWorld();
         Location l = spot.loc();
@@ -440,15 +529,22 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         String sub = args.length == 0 ? "status" : args[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "status" -> {
-                sender.sendMessage(C + "5\u00bb Minibosses: " + C + "e" + alive.size() + "/" + maxAlive
-                        + C + "5 alive, " + C + "e" + defs.size() + C + "5 types, every " + intervalMin
-                        + " min. /hunt: " + (huntEnabled ? C + "aON" : C + "cOFF")
+                sender.sendMessage(C + "5\u00bb Minibosses: " + C + "e" + alive.size()
+                        + C + "5 alive (1 per side), " + C + "e" + defs.size() + C + "5 types."
+                        + C + "7 Spawn 10:00 both sides, vanish 7:00, killed side rests till next 10:00.");
+                sender.sendMessage(C + "5/hunt: " + (huntEnabled ? C + "aON" : C + "cOFF")
                         + C + "5, locations broadcast every " + broadcastInterval + " min.");
-                StringBuilder sb = new StringBuilder(C + "7Arenas:");
-                for (SpawnArena a : arenas)
-                    sb.append(" ").append(cc(a.name())).append(C + "7 (").append(a.x()).append(",")
-                            .append(a.z()).append(")");
-                sender.sendMessage(sb.toString());
+                World sw = scheduleWorld();
+                long day = sw == null ? -1 : sw.getFullTime() / 24000L;
+                for (SpawnArena a : arenas) {
+                    String state;
+                    if (aliveIn(a.name()) > 0) state = C + "aHUNTABLE NOW";
+                    else if (sideKillDay.getOrDefault(a.name(), -1L) >= day && day >= 0)
+                        state = C + "cslain - back next 10:00";
+                    else state = C + "espawns 10:00";
+                    sender.sendMessage(C + "7 - " + cc(a.name()) + C + "7 (" + a.x() + "," + a.z()
+                            + ") " + state);
+                }
                 for (UUID id : alive.keySet()) {
                     var en = Bukkit.getEntity(id);
                     if (en != null) sender.sendMessage(C + "7 - " + cc(getDef(en).name()) + C + "7 at "
@@ -466,7 +562,23 @@ public final class MiniBoss extends JavaPlugin implements Listener {
                 }
             }
             case "broadcast" -> {
-                if (alive.isEmpty()) spawnOne();     // /miniboss broadcast summons a boss if none is up
+                // 3.0.5: broadcast-only (never spawns - that was an unlimited-farm hole),
+                // short per-player cooldown so chat can't be spammed.
+                if (sender instanceof Player bp && broadcastCmdCooldown > 0) {
+                    long now = System.currentTimeMillis();
+                    Long last = broadcastCooldowns.get(bp.getUniqueId());
+                    if (last != null && now - last < broadcastCmdCooldown * 1000L) {
+                        long left = (broadcastCmdCooldown * 1000L - (now - last)) / 1000L + 1;
+                        bp.sendMessage(C + "cWait " + left + "s - broadcast cooldown.");
+                        return true;
+                    }
+                    broadcastCooldowns.put(bp.getUniqueId(), now);
+                }
+                if (alive.isEmpty()) {
+                    sender.sendMessage(C + "7No miniboss alive right now - fresh hunts spawn at "
+                            + C + "e10:00" + C + "7 on both sides.");
+                    return true;
+                }
                 broadcastLocations();
             }
             case "reload" -> {

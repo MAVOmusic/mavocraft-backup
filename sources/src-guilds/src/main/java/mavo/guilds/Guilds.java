@@ -35,9 +35,11 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 /** MAVOGuilds 1.0.0 - guilds + claimed territory (Discord CW#4 idea 20, inspired by
  *  Factions/Kingdoms). /guild create|invite|accept|claim|map|home|sethome|promote|...
@@ -55,6 +57,10 @@ public final class Guilds extends JavaPlugin implements Listener {
     private long createCost = 500, claimCost = 100;
     private int maxGuilds = 50, maxMembers = 12, maxClaims = 8, maxName = 16;
     private boolean pvpInClaims, protectBlocks, protectInteract, protectExplosions, protectAnimals, requireAdjacent = true;
+    // 3.0.5: /guild home is no longer instant (combat-escape hole): 5s stand-still + 12-block monsters.
+    private int warmupSec = 5, monsterRadius = 12;
+    private final Map<UUID, BukkitTask> warmups = new HashMap<>();
+    private final Map<UUID, Location> warmLoc = new HashMap<>();
     private Set<String> worlds = new HashSet<>();
 
     private static final class Guild {
@@ -93,7 +99,11 @@ public final class Guilds extends JavaPlugin implements Listener {
                 + (econ == null ? " - Vault NOT found (costs disabled)" : ""));
     }
 
-    @Override public void onDisable() { saveAll(); }
+    @Override public void onDisable() {
+        for (BukkitTask task : warmups.values()) task.cancel();
+        warmups.clear();
+        saveAll();
+    }
 
     /* ---------------- config / storage ---------------- */
 
@@ -110,6 +120,8 @@ public final class Guilds extends JavaPlugin implements Listener {
         protectExplosions = getConfig().getBoolean("protect-explosions", true);
         protectAnimals = getConfig().getBoolean("protect-animals", true);
         requireAdjacent = getConfig().getBoolean("require-adjacent", true);
+        warmupSec = Math.max(0, getConfig().getInt("warmup-seconds", 5));
+        monsterRadius = Math.max(0, getConfig().getInt("monster-radius", 12));
         worlds = new HashSet<>(getConfig().getStringList("worlds"));
     }
 
@@ -313,6 +325,53 @@ public final class Guilds extends JavaPlugin implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         invites.remove(e.getPlayer().getUniqueId());
+        cancelWarmup(e.getPlayer().getUniqueId());
+    }
+
+    private boolean monstersNear(Player pl) {
+        if (monsterRadius <= 0) return false;
+        for (org.bukkit.entity.Entity en : pl.getNearbyEntities(monsterRadius, monsterRadius, monsterRadius))
+            if (en instanceof org.bukkit.entity.Enemy && !en.isDead()) return true;
+        return false;
+    }
+
+    /** 3.0.5: warmup teleport for /guild home. */
+    private void teleportHomeWithWarmup(Player p, Location dest, String guildName) {
+        if (monstersNear(p)) { p.sendMessage(C + "cMonsters nearby - you can't teleport right now!"); return; }
+        cancelWarmup(p.getUniqueId());
+        warmLoc.put(p.getUniqueId(), p.getLocation());
+        p.sendMessage(C + "eTeleporting in " + C + "a" + warmupSec + "s" + C + "e - stand still.");
+        if (warmupSec <= 0) {
+            p.teleport(dest);
+            p.sendMessage(C + "aTeleported to " + guildName + "'s home.");
+            return;
+        }
+        warmups.put(p.getUniqueId(), Bukkit.getScheduler().runTaskLater(this, () -> {
+            warmups.remove(p.getUniqueId());
+            warmLoc.remove(p.getUniqueId());
+            if (!p.isOnline()) return;
+            if (monstersNear(p)) { p.sendMessage(C + "cTeleport cancelled - monsters nearby!"); return; }
+            p.teleport(dest);
+            p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
+            p.sendMessage(C + "aTeleported to " + guildName + "'s home.");
+        }, warmupSec * 20L));
+    }
+
+    private void cancelWarmup(UUID u) {
+        BukkitTask old = warmups.remove(u);
+        if (old != null) old.cancel();
+        warmLoc.remove(u);
+    }
+
+    @EventHandler public void onMove(PlayerMoveEvent e) {
+        BukkitTask task = warmups.get(e.getPlayer().getUniqueId());
+        if (task == null || e.getTo() == null) return;
+        if (e.getFrom().getBlockX() != e.getTo().getBlockX()
+                || e.getFrom().getBlockZ() != e.getTo().getBlockZ()
+                || e.getFrom().getBlockY() != e.getTo().getBlockY()) {
+            cancelWarmup(e.getPlayer().getUniqueId());
+            e.getPlayer().sendMessage(C + "cTeleport cancelled - you moved!");
+        }
     }
 
     /* ---------------- commands ---------------- */
@@ -505,8 +564,7 @@ public final class Guilds extends JavaPlugin implements Listener {
                 Guild g = guildOf(p);
                 if (g == null) { p.sendMessage(C + "cYou are not in a guild."); return true; }
                 if (g.home == null) { p.sendMessage(C + "cNo guild home set yet (/guild sethome)."); return true; }
-                p.teleport(g.home);
-                p.sendMessage(C + "aTeleported to " + g.name + "'s home.");
+                teleportHomeWithWarmup(p, g.home.clone(), g.name);
             }
             case "claim" -> {
                 Guild g = guildOf(p);

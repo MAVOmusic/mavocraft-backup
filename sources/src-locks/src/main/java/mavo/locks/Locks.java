@@ -24,7 +24,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -39,6 +42,7 @@ public final class Locks extends JavaPlugin implements Listener {
     private YamlConfiguration data;
     private int maxLocks = 50;
     private boolean protectExplosion = true;
+    private boolean protectHopperPiston = true;   // 3.0.5: hoppers can't drain, pistons can't push locked blocks
 
     private static final List<Material> LOCKABLE = List.of(
             Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL, Material.SHULKER_BOX,
@@ -55,6 +59,7 @@ public final class Locks extends JavaPlugin implements Listener {
         data = YamlConfiguration.loadConfiguration(dataFile);
         maxLocks = Math.max(1, getConfig().getInt("max-locks-per-player", 50));
         protectExplosion = getConfig().getBoolean("protect-from-explosion", true);
+        protectHopperPiston = getConfig().getBoolean("protect-hopper-piston", true);
         getServer().getPluginManager().registerEvents(this, this);
         getLogger().info("MAVOLocks v" + getDescription().getVersion() + " enabled - " + lockCount()
                 + " lock(s) loaded.");
@@ -214,6 +219,32 @@ public final class Locks extends JavaPlugin implements Listener {
 
     @EventHandler public void onExplode(BlockExplodeEvent e) {
         if (protectExplosion) e.blockList().removeIf(b -> ownerOf(b.getLocation()) != null);
+    }
+
+    /** 3.0.5: hoppers (and any inventory mover) can't pull from or push into a locked block. */
+    @EventHandler
+    public void onMoveItem(InventoryMoveItemEvent e) {
+        if (!protectHopperPiston) return;
+        try {
+            if (ownerOf(e.getSource().getLocation()) != null) { e.setCancelled(true); return; }
+        } catch (Throwable ignored) { }
+        try {
+            if (ownerOf(e.getDestination().getLocation()) != null) e.setCancelled(true);
+        } catch (Throwable ignored) { }
+    }
+
+    /** 3.0.5: pistons can't push or pull locked blocks (no push-dupe tricks). */
+    @EventHandler
+    public void onPistonExtend(BlockPistonExtendEvent e) {
+        if (!protectHopperPiston) return;
+        for (Block b : e.getBlocks())
+            if (ownerOf(b.getLocation()) != null) { e.setCancelled(true); return; }
+    }
+    @EventHandler
+    public void onPistonRetract(BlockPistonRetractEvent e) {
+        if (!protectHopperPiston) return;
+        for (Block b : e.getBlocks())
+            if (ownerOf(b.getLocation()) != null) { e.setCancelled(true); return; }
     }
     @EventHandler public void onExplode(EntityExplodeEvent e) {
         if (protectExplosion) e.blockList().removeIf(b -> ownerOf(b.getLocation()) != null);
