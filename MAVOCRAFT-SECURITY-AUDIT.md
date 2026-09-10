@@ -14,7 +14,7 @@ Severity: 🔴 critical (fix before players use it) · 🟠 high · 🟡 medium 
 - **Secondary (same function):** stock counted and removed by `Material` only — enchanted/renamed stock is consumed at base price (owner-side loss).
 - **Also:** `onBuyClick` buys on ANY named item click, not just the Buy buttons (info-item clicks buy too).
 - **Fix:** add the item to the buyer (`addItem` + overflow drop) between payment and message; match stock by full meta or restrict shops to plain items; gate clicks to the two Buy buttons only.
-- **Test rows:** E-OP-001, C-PL-155/156.
+- **Test rows:** E-OP-001, C-PL-216/217 (file B).
 
 ## 🟠 HIGH
 
@@ -22,37 +22,37 @@ Severity: 🔴 critical (fix before players use it) · 🟠 high · 🟡 medium 
 - **File:** `sources/src-miniboss/.../MiniBoss.java`, `onCommand` `case "broadcast"`: `if (alive.isEmpty()) spawnOne();` — **no permission check, no cooldown**.
 - **Impact:** kill boss → `/miniboss broadcast` → next boss instantly. The 45-minute interval is bypassable; unlimited boss farming (coins + Lucky Coins + mythic keys).
 - **Fix (pick one):** (a) gate to `mavominiboss.admin`; or (b) keep public broadcast but add 30-min per-player cooldown and NEVER spawn (broadcast-only). Recommend (b) — keeps the social feature, kills the farm.
-- **Test rows:** E-OP-002, C-PL-098.
+- **Test rows:** E-OP-002, C-PL-098 (file A).
 
 ## 🟡 MEDIUM
 
 ### AUDIT-MED-03 — AuctionHouse: listing item LOST when seller inbox is full
 - **File:** `sources/src-auction/.../AuctionHouse.java` — `cancelListing()` removes the listing from memory AND `data` BEFORE `inboxAdd()`; on full inbox it prints "contact an admin (item stays in the listing data)" but the data was already nulled → item gone. Same pattern in `expireAll()` for the seller return (no message at all there).
 - **Fix:** `inboxAdd` first; only remove the listing when it succeeds; else leave listing + tell seller to clear inbox.
-- **Test rows:** E-OP-003, C-PL-151.
+- **Test rows:** E-OP-003, C-PL-175 (file B).
 
 ### AUDIT-MED-04 — AuctionHouse: escrow refunds can vanish
 - **File:** same, `bidOn()` / `purchaseAt()` / `cancelListing()`: online-bidder refund is `if (depositPlayer(old, bid).transactionSuccess()) msg(...)` — if the deposit fails there is NO pending fallback (offline path has one). Money destroyed.
 - **Fix:** else-branch → add to `players.<uuid>.pending` like the offline path.
-- **Test row:** C-PL-150 (hard to trigger live; fix by inspection).
+- **Test row:** C-PL-167 (file B; hard to trigger live; fix by inspection).
 
 ### AUDIT-MED-05 — Mail: sending to a full mailbox DELETES the victim's oldest mail
 - **File:** `sources/src-mail/.../Mail.java`, `send()`: `while (ks.size() > maxMail) data.set(... oldest ..., null)`.
 - **Impact:** anyone can spam 100 junk mails at a victim and permanently destroy their stored items/coins. Grief + wealth destruction.
 - **Fix:** reject the send ("their mailbox is full") BEFORE withdraw/take-hand; refund path if already taken.
-- **Test rows:** E-OP-004, C-PL-190.
+- **Test rows:** E-OP-004, C-PL-203 (file B).
 
 ### AUDIT-MED-06 — Locks: hoppers drain + pistons push locked blocks
 - **File:** `sources/src-locks/.../Locks.java` — no `InventoryMoveItemEvent`, no piston handlers at all.
 - **Impact:** hopper under a locked chest steals everything; pistons can move locked blocks (door/chest dupes possible via push tricks).
 - **Fix:** cancel hopper pull/push involving locked inventories; cancel piston extend/retract moving locked blocks.
-- **Test rows:** E-OP-005/006, C-PL-126/127.
+- **Test rows:** E-OP-005/006, C-PL-126/127 (file A).
 
 ### AUDIT-MED-07 — Instant combat-escape teleports (no warmup / monster check / cooldown)
 - **Files:** `src-couples` (`teleport()` L206 = bare `p.teleport`, used by `/couple home` + `/couple tp`); `src-guilds` (`/guild home` L508 = bare teleport).
 - **Impact:** free escape from any danger (bosses, duels-adjacent PvP, lava, raids), unlimited, no accept needed for `/couple tp`. Compare: /tpa, /home, /warp, grave travel ALL have warmup + monster radius.
 - **Fix:** same standard as /tpa: 3s stand-still + 12-block monster radius (+ 30s cooldown on `/couple tp`).
-- **Test rows:** E-OP-007, C-PL-132/133/244.
+- **Test rows:** E-OP-007, C-PL-132/133 (file A) + C-PL-156 (file B).
 
 ## 🔵 LOW (fix opportunistically)
 
@@ -74,20 +74,20 @@ Severity: 🔴 critical (fix before players use it) · 🟠 high · 🟡 medium 
 
 | ID | Hypothesis | Test rows |
 |---|---|---|
-| SUS-01 | Duel escape via /home, /tpa, pearl, chorus: no teleport listener → no forfeit, fight stuck, no timeout | E-OP-008, C-PL-144/145 |
+| SUS-01 | Duel escape via /home, /tpa, pearl, chorus: no teleport listener → no forfeit, fight stuck, no timeout | E-OP-008, C-PL-144/145 (file B) |
 | SUS-02 | TPA warmup vs relog/damage edge cases | C-PL-115/116 |
-| SUS-03 | AH post-GUI item lost on crash/restart (postItem lives in memory Holder) | C-PL-149 (`/ah` post then restart before confirm — use junk!) |
-| SUS-04 | Curator deposit-crate items lost on crash mid-open | C-PL-242 |
-| SUS-05 | Pet carry-slot spam/close/relog dupe | C-PL-185 |
+| SUS-03 | AH post-GUI item lost on crash/restart (postItem lives in memory Holder) | C-PL-174 (file B: `/ah` post then restart before confirm — use junk!) |
+| SUS-04 | Curator deposit-crate items lost on crash mid-open | C-PL-267 (file B) |
+| SUS-05 | Pet carry-slot spam/close/relog dupe | C-PL-191 (file B) |
 | SUS-06 | Crate OPEN double-click race consumes 2 keys / pays twice | C-PL-103 |
 | SUS-07 | ChestHunt simultaneous-take dupe (2 players same tick) | C-PL-109 |
-| SUS-08 | Guild claim inside someone's ClaimChunk chunk (grief/protection clash) | C-PL-245 |
-| SUS-09 | ChestShop double-chest half-break desync | C-PL-159/160 |
+| SUS-08 | Guild claim inside someone's ClaimChunk chunk (grief/protection clash) | C-PL-159 (file B) |
+| SUS-09 | ChestShop double-chest half-break desync | C-PL-221/222 (file B) |
 | SUS-10 | MobFarm / spawner-farm profit flood (entry 10k vs loot value) | C-PL-054, C-PL-140 |
-| SUS-11 | Wanderer / master-trader arbitrage vs shop sell prices | C-PL-042, C-PL-230 |
-| SUS-12 | Quest mystery stacks (1-64 incl. name tag/saddle) bypass shop economy | C-PL-210 |
-| SUS-13 | Streak/event/seasonal/casino faucet sizes need numbers from live play | C-PL-166/168/227/229, E-OP-010 |
-| SUS-14 | CommunityGoals shop-bonus does nothing ("applied via data flag for shop plugin / docs") | C-PL-228 |
+| SUS-11 | Wanderer / master-trader arbitrage vs shop sell prices | C-PL-042 (file A), C-PL-252 (file B) |
+| SUS-12 | Quest mystery stacks (1-64 incl. name tag/saddle) bypass shop economy | C-PL-242 (file B) |
+| SUS-13 | Streak/event/seasonal/casino faucet sizes need numbers from live play | C-PL-005/057 (file A), C-PL-206/253 (file B), E-OP-010 |
+| SUS-14 | CommunityGoals shop-bonus does nothing ("applied via data flag for shop plugin / docs") | C-PL-259 (file B) |
 | SUS-15 | Shill bidding via alt accounts (seller can't bid own, alts can) — policy, not code | — |
 | SUS-16 | Bedrock GUI usability (AH/pets/casino click paths) | B-PL-012 |
 

@@ -197,6 +197,5 @@ C-PL-137 / Plain break / break spawner WITHOUT silk / Vanilla (no item) / [ ]
 C-PL-138 / Place spawner / place the silk item / Real spawner of that mob / [ ]
 C-PL-139 / Spawner info / /spawner info looking at spawner / Mob, delay, max nearby, player range, spawn range / [ ]
 C-PL-140 / ATTACK: farm flood / run spawner farm 30 min, sell drops / Profit noted — report if economy-breaking / [ ]
--- MAVODuels --
-C-PL-141 / Duel challenge / (A) /duel (B) 100; (B) /daccept / Both tel
-...[truncated 12571 chars]
+
+(CONTINUED IN CHECKLIST-PLAYER-B.txt — C-PL-141 onward: Duels, Guilds, AuctionHouse, BossRaid, DoubleXp, Pets, FishComp, Mail, Seasonal, Warps, ChestShops, Tavern, Vault, Homes, Quests, Hud, PortalRoom, Trades, Streaks, CommunityGoals, PersonalVault, Curator, perm-denied sweep + report template.)

@@ -1,0 +1,183 @@
+MAVOcraft — PLAYER-ONLY CHECKLIST, FILE B (C-PL-141 onward)
+=========================================================
+Continues CHECKLIST-PLAYER-A.txt (which ends at C-PL-140).
+Same rules: NON-OP survival account, (A)/(B) = 2 players, replace [ ] with ✅ or ❌.
+Format per row:  # / Test Name / Command + How / Expected / [tick]
+
+PART C — MAVO PLUGINS (continued)
+---------------------------------
+-- MAVODuels --
+C-PL-141 / Duel challenge / (A) /duel (B) 100; (B) /daccept / Both teleported into arena; "DUEL START"; 100 withdrawn from EACH / [ ]
+C-PL-142 / Duel fight / fight to the death / First death loses; broadcast + stats; winner +180 (10% house cut); loser respawns at duel entrance / [ ]
+C-PL-143 / Duel forfeit / walk out of the arena mid-fight / "You left the arena - forfeit!" → other wins + pot / [ ]
+C-PL-144 / ATTACK: duel teleport escape / mid-fight: loser does /home (repeat test: ender pearl out, chorus fruit) / EXPECTED NOW: NO forfeit triggers, fight stuck (AUDIT-SUS-01) — report each / [ ]
+C-PL-145 / Duel logout / one side logs out mid-fight / Other wins by forfeit + pot / [ ]
+C-PL-146 / Duel stats / /dstats and /dstats top / Your W/L + win rate; leaderboard top 10 / [ ]
+C-PL-147 / Duel bet limits / (A) /duel (B) 999999999, then /duel (B) -5 / "Bet must be 0-1000000" both times / [ ]
+C-PL-148 / Duel while duelling / challenge someone already in a duel / Refused ("already in a duel") / [ ]
+-- MAVOGuilds --
+C-PL-149 / Guild create / (A) /guild create Ravens / Created, 500 coins charged via Vault / [ ]
+C-PL-150 / Guild invite+chat / (A) /guild invite (B); (B) /guild accept; (B) /g hello / Joined; guild chat works / [ ]
+C-PL-151 / Guild claim / (A) /guild claim in a wild chunk / 1st chunk claimed (100 coins); later claims must touch it / [ ]
+C-PL-152 / Enemy build blocked / (B, no guild) try break in (A)'s claim / Blocked — "claimed by an enemy guild" / [ ]
+C-PL-153 / Enemy chest blocked / (B) open (A)'s chest in claim / Blocked / [ ]
+C-PL-154 / Enemy animals safe / (B) hurt (A)'s animals in claim / Blocked / [ ]
+C-PL-155 / Guild map / /guild map inside/near claims / ASCII map (A=yours, X=others) / [ ]
+C-PL-156 / Guild home / (A) /guild sethome then /guild home / Teleports to guild home (NOTE: instant — see AUDIT-MED-07) / [ ]
+C-PL-157 / Guild promote / (A) /guild promote (B); (B) /guild invite (C) / (B) officer: can invite/claim / [ ]
+C-PL-158 / Guild leave+disband / (B) /guild leave; (A) /guild disband (or promote first) / Member leaves; leader disbands / [ ]
+C-PL-159 / ATTACK: claim inside ClaimChunk / /guild claim a chunk someone owns via /chunk claim / Report what happens (grief/protection clash? AUDIT-SUS-08) / [ ]
+C-PL-160 / Admin denied / /guild reload / Denied (OP only) / [ ]
+-- MAVOAuctionHouse --
+C-PL-161 / AH open+slots / /ah (aliases /auctionhouse /auction), click slots / GUI opens; 1 slot free, unlocks up to 20 (50k/100 LC, 100k/200…) / [ ]
+C-PL-162 / AH post by command / /ah add hand 1 5000 24h / Listed; message says 20% tax (posted by command) / [ ]
+C-PL-163 / AH post at keeper / post via keeper villager at the AH / Listed; message says 5% tax (posted at the AH) / [ ]
+C-PL-164 / AH min price / /ah add hand 1 1 24h on a shop-sellable item / Blocked: minimum = shop sell x110% / [ ]
+C-PL-165 / AH buy / (B) buys (A)'s listing, check /inbox / (B) charged, item in /inbox tagged "auction" (bound); (A) paid net of tax / [ ]
+C-PL-166 / AH buy-own blocked / buy your own listing / "You can't buy your own auction" / [ ]
+C-PL-167 / AH bid+outbid / (B) bids, (C) outbids, check balances / Top bid held in escrow; outbid (B) refunded in full / [ ]
+C-PL-168 / AH buy-now / buy-now a listing with bids / Buyer charged; top bidder refunded; sale completes / [ ]
+C-PL-169 / AH cancel / cancel your bid-less listing / Item to /inbox "auction cancelled", no cost; with bids: bidder refunded / [ ]
+C-PL-170 / AH expire unsold / post 1h, wait out the hour / Item to /inbox "auction expired", NO tax / [ ]
+C-PL-171 / AH slot lock / sell something, try posting in same slot / ONLY that slot locked 10 MC days / [ ]
+C-PL-172 / AH bound no-relist / /ah add hand on an "auction"-tagged item / "Auction-bound items cannot be re-listed" / [ ]
+C-PL-173 / AH offline payout / (B) buys while (A) offline; (A) relogs / (A) paid on join ("Paid you … from past auctions") / [ ]
+C-PL-174 / ATTACK: post+restart loss / open /ah post GUI with item inside, OP restarts before confirm (JUNK ITEM!) / Report: item kept or lost (AUDIT-SUS-03) / [ ]
+C-PL-175 / ATTACK: full-inbox cancel / fill /inbox to 100, cancel a listing (JUNK ITEM!) / EXPECTED NOW: item vanishes (AUDIT-MED-03 = intended: hoarder's fault) — confirm + report message / [ ]
+-- MAVOBossRaid --
+C-PL-176 / Raid status / /boss status (alias /bossraid) / Next raid Sat 20:00, arena, queue state / [ ]
+C-PL-177 / Raid join / /boss join in the 10-min window / Queued for the raid / [ ]
+C-PL-178 / Raid fight / raid starts: teleported, ONE boss, bossbar / Teleported in a circle; boss HP scales +100/player; 45-min timeout exists / [ ]
+C-PL-179 / Raid rewards / kill the boss / 2500 coins + 50/1000 dmg + 2 Lucky Coins + trophy (top dmg) + mythic key; vanilla drops cleared / [ ]
+C-PL-180 / ATTACK: AFK raid reward / /boss join, go AFK, contribute 0 damage / Report: paid full participant share? (faucet?) / [ ]
+C-PL-181 / Raid leave+return / /boss leave then /boss return / Left; return teleports back/out properly / [ ]
+C-PL-182 / Admin denied / /boss setarena and /boss now and /boss cancel / Denied (OP only) / [ ]
+-- MAVODoubleXp --
+C-PL-183 / XP status / /xpboost status (alias /dblxp) / Window Fri 18:00 -> Sun 18:00 x2.0 Europe/London / [ ]
+C-PL-184 / XP applies / during boost: earn profession XP / XP doubled (all professions) / [ ]
+C-PL-185 / Admin denied / /xpboost now 5 3 and /xpboost off / Denied (OP only) / [ ]
+-- MAVOPets --
+C-PL-186 / Pet shop / /pets / 6 types (cat/wolf/fox/parrot/axolotl/turtle), prices 25k-60k / [ ]
+C-PL-187 / Pet buy+follow / buy one, walk away, /pet recall / Follows (teleports if far); invulnerable, silent; recall works / [ ]
+C-PL-188 / Pet xorb / toggle xorb in /pet menu, drop XP orbs nearby / Pulls orbs within 8 blocks when ON / [ ]
+C-PL-189 / Pet carry use / put an item in carry slot, take it back / Stores 1 stack, returns on demand / [ ]
+C-PL-190 / Pet carry persists / item in carry, relog / Still there after relog / [ ]
+C-PL-191 / ATTACK: carry dupe / spam-click carry slot + close + relog combos (JUNK ITEM!) / Report any duplication (AUDIT-SUS-05) / [ ]
+C-PL-192 / Pet XP+levels / /pet xp after active minutes / +1 XP/active min (survival), [Lv n] in name, max 100 / [ ]
+C-PL-193 / Admin denied / /pet give <self> wolf / Denied (OP only) / [ ]
+-- MAVOFishComp --
+C-PL-194 / Fish status+top / /fishcomp status and /fishcomp top (alias /fishing) / Current window + all-time board / [ ]
+C-PL-195 / Fish scores / catch fish during window (try salmon/puffer/tropical) / 1 pt + bonus (SALMON 2, PUFFER 3, TROPICAL 4); survival only / [ ]
+C-PL-196 / Fish results / window ends / Results broadcast; top3 paid 15k/8k/5k; 3+ catches = 500 each; offline queued / [ ]
+C-PL-197 / Fish restart-safe / OP restarts mid-window / Window restored, scores kept / [ ]
+C-PL-198 / Admin denied / /fishcomp start and /fishcomp end / Denied (OP only) / [ ]
+-- MAVOMail --
+C-PL-199 / Mail send+claim / (A) /mail send (B) 500 hello; (B) /mail, claim it / (B) notified with unread count; claims 500 + message / [ ]
+C-PL-200 / Mail attach / (A) hold item, /mail send (B) 0 gift / Item attached; (B) claims it to inventory / [ ]
+C-PL-201 / Mail collect-all / several mails, Collect All / All claimed at once (coins banked, items to inv) / [ ]
+C-PL-202 / Mail expiry / leave a mail 7+ days / Expired and removed / [ ]
+C-PL-203 / ATTACK: full-mailbox grief / fill (B) to 100 mails, (A) sends 1 more with item / EXPECTED NOW: (B)'s OLDEST mail deleted (AUDIT-MED-05) — confirm; fix will REJECT instead / [ ]
+C-PL-204 / Admin denied / /mail purge <self> / Denied (OP only) / [ ]
+-- MAVOSeasonal --
+C-PL-205 / Season status / /season status / Seasons listed (live may show none until config restored) / [ ]
+C-PL-206 / Season candy / during a season: kill mobs / Candy drops (~5-8% per kill); season start = broadcast + bell / [ ]
+C-PL-207 / Admin denied / /season toggle spooky and /season reload / Denied (OP only) / [ ]
+-- MAVOWarps --
+C-PL-208 / Warp list / /warps / Public warp GUI opens / [ ]
+C-PL-209 / Warp create / /warp create mywarp / Created, 25,000 charged for slot 1 / [ ]
+C-PL-210 / Warp visit / /warp mywarp / 3s warmup then teleport; monsters <12 block it / [ ]
+C-PL-211 / Warp extra slot / /warp create second (check cost) / Extra slot costs more (extra-warp-costs) / [ ]
+C-PL-212 / Warp rename+remove / /warp rename mywarp home2 then /warp remove home2 / Renamed then removed (owner only; others' = denied) / [ ]
+C-PL-213 / ATTACK: warp in protection / create warp inside spawn/claim, have (B) visit / Report: bypasses any protection? / [ ]
+-- MAVOChestShops --
+C-PL-214 / Shop create / stock a chest, look at it, /cshop create 100 / Chest renamed [SHOP] item price owner; max 3 shops/player / [ ]
+C-PL-215 / Shop buy GUI / (B) right-clicks the shop / Buy GUI: stock count, Buy 1 / Buy 64 / [ ]
+C-PL-216 / Shop buy-1 / (B) Buy 1 with exact funds / EXPECTED NOW: coins taken, stock removed, seller paid, (B) GETS NOTHING (AUDIT-CRIT-01) — confirm, then stop using shops / [ ]
+C-PL-217 / Shop buy-64 / restock, (B) Buy 64 / Same bug expected (up to stock+affordable); confirm / [ ]
+C-PL-218 / Shop owner storage / owner sneak+right-clicks own shop / Storage view opens / [ ]
+C-PL-219 / Shop price+remove / /cshop price 200 then /cshop remove looking at it / Price updated; shop removed / [ ]
+C-PL-220 / Shop list+info / /cshop list and /cshop info <id> / Paged list + shop detail / [ ]
+C-PL-221 / Shop double chest / create on a double chest; buy; break one half as owner / BOTH halves indexed; break removes shop cleanly / [ ]
+C-PL-222 / ATTACK: enchanted stock / stock an ENCHANTED item of shop material, (B) buys / EXPECTED NOW: enchanted item consumed at base price — report / [ ]
+C-PL-223 / Admin denied / /cshop delete <id> and /cshop reload / Denied (OP only) / [ ]
+-- MAVOTavern (no source: test-only) --
+C-PL-224 / Tavern rent / at night: right-click a free tavern bed / 100 coins charged; night skips; bed locked until next noon / [ ]
+C-PL-225 / Tavern bed taken / rent while another bed is rented / Rented beds blocked, free beds usable; "try another bed" / [ ]
+C-PL-226 / Tavern bar / right-click Innkeeper: buy food (50) + drink (75) / Healed 8 / 120s effects; 1 of each per player per MC day / [ ]
+C-PL-227 / Tavern soulbound / try /shop sell on bar food/drink / NOT sellable (soulbound) / [ ]
+C-PL-228 / Tavern day blocked / right-click bed at day / Blocked (night-only) / [ ]
+-- MAVOVault rooms (no source: test-only) --
+C-PL-229 / Vault unlock / walk into vault/portalroom gate zone without access / Bounced + unlock GUI (vault 50k / portalroom 25k one-time) / [ ]
+C-PL-230 / Vault portal ride / stand in plaza portal 3s (unlocked) / Black/red veil FX, countdown, teleport inside / [ ]
+C-PL-231 / Vault portal cancel / step out mid-countdown; stand with monsters <12 / Step-out cancels instantly (free); monsters block / [ ]
+C-PL-232 / Vault room claim / claim a private room door + unlock chest slots / Room 5000; slots #1 FREE, #2-3 1000, #4-6 2500, #7-10 5000, #11-15 10000 (full = 76,500) / [ ]
+C-PL-233 / Vault return / stand in inside return portal 3s / Green/gold FX, back to spawn return point / [ ]
+-- MAVOHomes (no source: test-only) --
+C-PL-234 / Home bind / right-click a bed inside YOUR claimed chunk / Home bound (1 per owned chunk, max 5) / [ ]
+C-PL-235 / Home unowned blocked / right-click bed in wild/others' chunk / Blocked (must own the chunk) / [ ]
+C-PL-236 / Home teleport / /home <name> (and /home list) / 3s stand-still, monsters <12 cancel, then teleport / [ ]
+C-PL-237 / Home rename+del / /home rename <a> <b>, /delhome <b> / Renamed then deleted / [ ]
+C-PL-238 / Home unclaim kills / /chunk unclaim the home chunk, /home <name> / Home stops working / [ ]
+-- MAVOQuests (no source: test-only) --
+C-PL-239 / Quest board / /quest (aliases /quests /questboard) / Board GUI: 10 quests from pool of 19 / [ ]
+C-PL-240 / Quest complete / turn in full requirements, check reward / Reward surprise: coins-only / item-only (1-64 mystery) / both; stock decrements / [ ]
+C-PL-241 / Quest stock out / complete a quest past its stock / Blocked when stock exhausted / [ ]
+C-PL-242 / ATTACK: quest economy / complete quests with SHOP-BOUGHT items; note mystery loot value / Report profit/loss per quest (faucet? bypass?) / [ ]
+C-PL-243 / Admin denied / /quest reload / Denied (OP only) — if NOT denied, report as PERM HOLE / [ ]
+-- MAVOHud (no source: test-only) --
+C-PL-244 / Hud toggle / /hud (alias /clock) twice / Action-bar HUD on then off / [ ]
+C-PL-245 / Hud day / /hud day / Current day number shown / [ ]
+C-PL-246 / ATTACK: hud setday / /hud setday 99 then check TAB day / MUST be denied + day unchanged — if day changed, PERM HOLE / [ ]
+-- MAVOPortalRoom (no source: test-only) --
+C-PL-247 / Portal jump / step in a biome portal, pay, wait 7s / Price checked first; countdown; teleport 25,000-400,000 out; coins taken AFTER success / [ ]
+C-PL-248 / Portal free cancel / step out mid-countdown / Cancels instantly, NOT charged / [ ]
+C-PL-249 / Portal monsters / stand in portal with monsters <12 / Blocked / [ ]
+C-PL-250 / Portal shipwreck / check shipwreck portal price + jump / Price 25,000; lands near a shipwreck 25k+ out; zones never reused (50-blacklist) / [ ]
+-- MAVOTrades (no source: test-only) --
+C-PL-251 / Master offers / trade with librarian/smith/farmer/collector masters / Offers work as shown / [ ]
+C-PL-252 / ATTACK: master arbitrage / compare every master offer vs /shop buy/sell / NOTHING profitable-flippable — report any (AUDIT-SUS-11) / [ ]
+-- MAVOStreaks (no source: test-only) --
+C-PL-253 / Streak show / /streak (alias /streaks); log in 2 days running / Streak count + base reward + per-day bonus shown/paid / [ ]
+C-PL-254 / Streak top / /streak top / Leaderboard shows / [ ]
+-- MAVOCommunityGoals (no source: test-only) --
+C-PL-255 / Goal view / /goal (aliases /goals /communitygoal) / 3 goals: dirt/cobble/treasury with tiers / [ ]
+C-PL-256 / Goal donate item / /goal donate dirt_haste <n> (and /donate cobble_speed <n>) / Items taken, progress rises / [ ]
+C-PL-257 / Goal donate coins / /donate coin_luck 1000 / Coins taken, treasury rises / [ ]
+C-PL-258 / Goal daily limit / donate past 25k items / 5k coins in a day / "hit today's donation limit" blocks more / [ ]
+C-PL-259 / Goal tier effect / (with OP help) complete a tier / Broadcast + effect (haste/speed/luck); VERIFY shop-bonus actually changes shop prices (may do nothing — AUDIT-SUS-14) / [ ]
+-- MAVOPersonalVault (no source: test-only) --
+C-PL-260 / PVault open / /pvault (aliases /pv /personal /personalvault) / Opens (locked view if 0 packs) / [ ]
+C-PL-261 / PVault first pack / buy pack 1 / 25,000 coins; slots 1-5 unlock / [ ]
+C-PL-262 / PVault LC packs / buy pack 2 with 250 LC in inventory / 250 LC taken (physical sunflowers); +5 slots; pack 3 = 500 LC… / [ ]
+C-PL-263 / Admin denied / /pvault admin setpacks <self> 200 / Denied — if NOT denied, report as PERM HOLE / [ ]
+-- MAVOCurator --
+C-PL-264 / Museum donate / /museum (aliases /curator /collection), click a grey item you hold / 1 donated from inventory; turns green; count rises / [ ]
+C-PL-265 / Museum extras buy / /museum extras, buy a missing item / Charged real shop price, added to museum instantly, drops off list / [ ]
+C-PL-266 / Museum deposit crate / toss items in Deposit Crate, close / Donatables kept, dupes/refused returned; close = donate / [ ]
+C-PL-267 / ATTACK: crate crash loss / crate open with items, OP restarts (JUNK!) / Report: items kept or lost (AUDIT-SUS-04) / [ ]
+C-PL-268 / Museum creative blocked / (if given creative) donate/buy / "only accepts donations from SURVIVAL players" / [ ]
+C-PL-269 / Admin denied / /museum reload and /museum shopsgen / Denied (OP only) / [ ]
+
+PART D — PERM-DENIED SWEEP (every admin command as non-OP player)
+-----------------------------------------------------------------
+D-PL-001 / Guide+Events+Lucky denied / /updates reload; /event start coinrain; /wish well; /ccollect give 1 / ALL denied / [ ]
+D-PL-002 / Ach+Prof+Sleeper denied / /ach reload; /profession addxp mining 99; /profession reload; /sleeper tavernset / ALL denied / [ ]
+D-PL-003 / Wanderer+Curator+Wild denied / /wanderer spawn; /museum reload; /wild portal; /holoreset / ALL denied / [ ]
+D-PL-004 / NPC+Farm+Craft denied / /shopnpc spawn X; /mobfarm build; /mobfarm setcenter; /crafting reload / ALL denied / [ ]
+D-PL-005 / Enchant+Boss+Crate denied / /maenchant gem <self> VEIN 1; /miniboss reload; /crate set common; /crate givekey <self> common 1; /crate inspect <other> / ALL denied / [ ]
+D-PL-006 / Hunt+Lock+Duel+Guild denied / /chesthunt spawn; /duelarena; /guild reload / ALL denied (locks has no admin cmds) / [ ]
+D-PL-007 / Raid+XP+Pet+Fish denied / /boss now; /xpboost now 1; /pet give <self> wolf; /fishcomp start / ALL denied / [ ]
+D-PL-008 / Mail+Season+Shop denied / /mail purge <self>; /season toggle spooky; /cshop delete test / ALL denied / [ ]
+D-PL-009 / Tavern+Vault+Spawn denied / /tavern setbed; /vaultroom grant <self> vault; /spawnprot info / ALL denied (report any that WORK = PERM HOLE) / [ ]
+D-PL-010 / Quest+Hud+Portal+MTrade denied / /quest reload; /hud setday 9; /portalroom list; /mtrade spawn librarian / ALL denied (report any that WORK = PERM HOLE) / [ ]
+D-PL-011 / Goal+Border+Price+PVault denied / /goal reload; /borders reload; /chunkprice reload; /pvault admin setpacks <self> 9 / ALL denied (report any that WORK = PERM HOLE) / [ ]
+
+PART E — REPORT (paste back)
+----------------------------
+VERSIONS TESTED: [jars list]
+PART A (vanilla): ...
+PART B (third-party): ...
+PART C (MAVO): ... (each ❌ + what happened)
+PART D (perm sweep): ...
+ANY ERRORS SEEN IN CHAT: [paste]
+STUCK / NEEDS JAR-FIX: [plugin + command + what happened]
