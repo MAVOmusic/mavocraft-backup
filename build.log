@@ -1,0 +1,1027 @@
+## build log Thu Sep 10 05:15:34 UTC 2026
+== sources/src-achievements ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------------< mavo:mavo-achievements >-----------------------
+[INFO] Building mavo-achievements 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-achievements ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-achievements ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-achievements ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-achievements/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-achievements ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-achievements ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-achievements ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.094 s
+[INFO] Finished at: 2026-09-10T05:15:36Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-auction ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-auction >--------------------------
+[INFO] Building mavo-auction 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-auction ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-auction ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-auction ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-auction/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-auction ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-auction ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-auction ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.113 s
+[INFO] Finished at: 2026-09-10T05:15:38Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-bossraid ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-bossraid >-------------------------
+[INFO] Building mavo-bossraid 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-bossraid ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-bossraid ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-bossraid ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-bossraid/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-bossraid ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-bossraid ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-bossraid ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.074 s
+[INFO] Finished at: 2026-09-10T05:15:41Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-casino ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< mavo:mavo-casino >--------------------------
+[INFO] Building mavo-casino 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-casino ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-casino ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-casino ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-casino/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-casino ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-casino ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-casino ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.057 s
+[INFO] Finished at: 2026-09-10T05:15:43Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-chesthunt ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------------< mavo:mavo-chesthunt >-------------------------
+[INFO] Building mavo-chesthunt 3.0.1
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-chesthunt ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-chesthunt ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-chesthunt ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chesthunt/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-chesthunt ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-chesthunt ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-chesthunt ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.064 s
+[INFO] Finished at: 2026-09-10T05:15:45Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-chestshop ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------------< mavo:mavo-chestshop >-------------------------
+[INFO] Building mavo-chestshop 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-chestshop ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-chestshop ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1 source file with javac [debug release 21] to target/classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chestshop/src/main/java/mavo/chestshop/ChestShops.java:[653,1] class, interface, enum, or record expected
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chestshop/src/main/java/mavo/chestshop/ChestShops.java:[654,86] statements not expected outside of methods and initializers
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chestshop/src/main/java/mavo/chestshop/ChestShops.java:[654,94] class, interface, enum, or record expected
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chestshop/src/main/java/mavo/chestshop/ChestShops.java:[658,12] implicitly declared classes are not supported in -source 21
+  (use -source 25 or higher to enable implicitly declared classes)
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chestshop/src/main/java/mavo/chestshop/ChestShops.java:[667,1] class, interface, enum, or record expected
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chestshop/src/main/java/mavo/chestshop/ChestShops.java:[1,1] compact source file should not have package declaration
+[INFO] 6 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.209 s
+[INFO] Finished at: 2026-09-10T05:15:47Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (default-compile) on project mavo-chestshop: Compilation failure: Compilation failure: 
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chestshop/src/main/java/mavo/chestshop/ChestShops.java:[653,1] class, interface, enum, or record expected
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chestshop/src/main/java/mavo/chestshop/ChestShops.java:[654,86] statements not expected outside of methods and initializers
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chestshop/src/main/java/mavo/chestshop/ChestShops.java:[654,94] class, interface, enum, or record expected
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chestshop/src/main/java/mavo/chestshop/ChestShops.java:[658,12] implicitly declared classes are not supported in -source 21
+[ERROR]   (use -source 25 or higher to enable implicitly declared classes)
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chestshop/src/main/java/mavo/chestshop/ChestShops.java:[667,1] class, interface, enum, or record expected
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-chestshop/src/main/java/mavo/chestshop/ChestShops.java:[1,1] compact source file should not have package declaration
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+== sources/src-couples ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-couples >--------------------------
+[INFO] Building mavo-couples 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-couples ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-couples ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-couples ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-couples/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-couples ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-couples ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-couples ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.051 s
+[INFO] Finished at: 2026-09-10T05:15:50Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-crafting ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-crafting >-------------------------
+[INFO] Building mavo-crafting 3.0.1
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-crafting ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-crafting ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-crafting ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crafting/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-crafting ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-crafting ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-crafting ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.085 s
+[INFO] Finished at: 2026-09-10T05:15:52Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-crates ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< mavo:mavo-crates >--------------------------
+[INFO] Building mavo-crates 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-crates ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-crates ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-crates ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crates/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-crates ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-crates ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-crates ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.100 s
+[INFO] Finished at: 2026-09-10T05:15:54Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-curator ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-curator >--------------------------
+[INFO] Building mavo-curator 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-curator ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-curator ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-curator ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-curator/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-curator ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-curator ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-curator ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.107 s
+[INFO] Finished at: 2026-09-10T05:15:56Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-deathchest ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------------< mavo:mavo-deathchest >------------------------
+[INFO] Building mavo-deathchest 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-deathchest ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-deathchest ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-deathchest ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-deathchest/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-deathchest ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-deathchest ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-deathchest ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.085 s
+[INFO] Finished at: 2026-09-10T05:15:59Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-doublexp ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-doublexp >-------------------------
+[INFO] Building mavo-doublexp 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-doublexp ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-doublexp ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-doublexp ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-doublexp/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-doublexp ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-doublexp ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-doublexp ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.146 s
+[INFO] Finished at: 2026-09-10T05:16:01Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-duels ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< mavo:mavo-duels >---------------------------
+[INFO] Building mavo-duels 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-duels ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-duels ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-duels ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-duels/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-duels ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-duels ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-duels ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.152 s
+[INFO] Finished at: 2026-09-10T05:16:03Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-enchants ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-enchants >-------------------------
+[INFO] Building mavo-enchants 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-enchants ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-enchants ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-enchants ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-enchants/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-enchants ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-enchants ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-enchants ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.157 s
+[INFO] Finished at: 2026-09-10T05:16:06Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-events ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< mavo:mavo-events >--------------------------
+[INFO] Building mavo-events 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-events ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-events ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-events ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-events/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-events ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-events ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-events ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.081 s
+[INFO] Finished at: 2026-09-10T05:16:08Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-fishcomp ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-fishcomp >-------------------------
+[INFO] Building mavo-fishcomp 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-fishcomp ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-fishcomp ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-fishcomp ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-fishcomp/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-fishcomp ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-fishcomp ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-fishcomp ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.088 s
+[INFO] Finished at: 2026-09-10T05:16:10Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-guide ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< mavo:mavo-guide >---------------------------
+[INFO] Building mavo-guide 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-guide ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-guide ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-guide ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guide/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-guide ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-guide ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-guide ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.022 s
+[INFO] Finished at: 2026-09-10T05:16:13Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-guilds ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< mavo:mavo-guilds >--------------------------
+[INFO] Building mavo-guilds 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-guilds ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-guilds ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-guilds ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-guilds/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-guilds ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-guilds ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-guilds ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.071 s
+[INFO] Finished at: 2026-09-10T05:16:15Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-locks ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< mavo:mavo-locks >---------------------------
+[INFO] Building mavo-locks 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-locks ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-locks ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-locks ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-locks/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-locks ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-locks ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-locks ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.076 s
+[INFO] Finished at: 2026-09-10T05:16:17Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-lucky ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< mavo:mavo-lucky >---------------------------
+[INFO] Building mavo-lucky 3.0.2
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-lucky ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-lucky ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-lucky ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-lucky/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-lucky ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-lucky ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-lucky ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.074 s
+[INFO] Finished at: 2026-09-10T05:16:19Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-mail ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------------< mavo:mavo-mail >---------------------------
+[INFO] Building mavo-mail 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-mail ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-mail ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-mail ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mail/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-mail ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-mail ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-mail ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.089 s
+[INFO] Finished at: 2026-09-10T05:16:22Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-miniboss ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-miniboss >-------------------------
+[INFO] Building mavo-miniboss 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-miniboss ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-miniboss ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1 source file with javac [debug release 21] to target/classes
+[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java: /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java uses or overrides a deprecated API.
+[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java: Recompile with -Xlint:deprecation for details.
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java:[307,24] cannot find symbol
+  symbol:   class PlayerJoinEvent
+  location: class mavo.miniboss.MiniBoss
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java:[328,26] method pickSpot in class mavo.miniboss.MiniBoss cannot be applied to given types;
+  required: no arguments
+  found:    mavo.miniboss.MiniBoss.SpawnArena
+  reason: actual and formal argument lists differ in length
+[INFO] 2 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.835 s
+[INFO] Finished at: 2026-09-10T05:16:25Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (default-compile) on project mavo-miniboss: Compilation failure: Compilation failure: 
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java:[307,24] cannot find symbol
+[ERROR]   symbol:   class PlayerJoinEvent
+[ERROR]   location: class mavo.miniboss.MiniBoss
+[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java:[328,26] method pickSpot in class mavo.miniboss.MiniBoss cannot be applied to given types;
+[ERROR]   required: no arguments
+[ERROR]   found:    mavo.miniboss.MiniBoss.SpawnArena
+[ERROR]   reason: actual and formal argument lists differ in length
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+== sources/src-mobfarm ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-mobfarm >--------------------------
+[INFO] Building mavo-mobfarm 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-mobfarm ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ mavo-mobfarm ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-mobfarm ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-mobfarm/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ mavo-mobfarm ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-mobfarm ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-mobfarm ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.083 s
+[INFO] Finished at: 2026-09-10T05:16:27Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-pets ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------------< mavo:mavo-pets >---------------------------
+[INFO] Building mavo-pets 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-pets ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-pets ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-pets ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-pets/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-pets ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-pets ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-pets ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.084 s
+[INFO] Finished at: 2026-09-10T05:16:29Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-professions ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------------< mavo:mavo-professions >------------------------
+[INFO] Building mavo-professions 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-professions ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-professions ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-professions ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-professions/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-professions ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-professions ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-professions ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.114 s
+[INFO] Finished at: 2026-09-10T05:16:31Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-seasonal ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-seasonal >-------------------------
+[INFO] Building mavo-seasonal 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-seasonal ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-seasonal ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-seasonal ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-seasonal/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-seasonal ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-seasonal ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-seasonal ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.040 s
+[INFO] Finished at: 2026-09-10T05:16:34Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-shopnpc ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-shopnpc >--------------------------
+[INFO] Building mavo-shopnpc 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-shopnpc ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-shopnpc ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-shopnpc ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-shopnpc/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-shopnpc ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-shopnpc ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-shopnpc ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.057 s
+[INFO] Finished at: 2026-09-10T05:16:36Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-spawners ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-spawners >-------------------------
+[INFO] Building mavo-spawners 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-spawners ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-spawners ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-spawners ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-spawners/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-spawners ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-spawners ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-spawners ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.052 s
+[INFO] Finished at: 2026-09-10T05:16:38Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-timber ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< mavo:mavo-timber >--------------------------
+[INFO] Building mavo-timber 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-timber ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-timber ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-timber ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-timber/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-timber ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-timber ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-timber ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.056 s
+[INFO] Finished at: 2026-09-10T05:16:40Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-tpa ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------------< mavo:mavo-tpa >----------------------------
+[INFO] Building mavo-tpa 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-tpa ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-tpa ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-tpa ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-tpa/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-tpa ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-tpa ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-tpa ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.063 s
+[INFO] Finished at: 2026-09-10T05:16:43Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-wanderer ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< mavo:mavo-wanderer >-------------------------
+[INFO] Building mavo-wanderer 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-wanderer ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-wanderer ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-wanderer ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-wanderer/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-wanderer ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-wanderer ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-wanderer ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.082 s
+[INFO] Finished at: 2026-09-10T05:16:45Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-warps ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< mavo:mavo-warps >---------------------------
+[INFO] Building mavo-warps 3.0.5
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-warps ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-warps ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-warps ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-warps/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-warps ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-warps ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-warps ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.057 s
+[INFO] Finished at: 2026-09-10T05:16:47Z
+[INFO] ------------------------------------------------------------------------
+== sources/src-wild ==
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------------< mavo:mavo-wild >---------------------------
+[INFO] Building mavo-wild 3.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mavo-wild ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-wild ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-wild ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-wild/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-wild ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-wild ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-wild ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.051 s
+[INFO] Finished at: 2026-09-10T05:16:49Z
+[INFO] ------------------------------------------------------------------------
