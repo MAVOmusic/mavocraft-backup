@@ -5,19 +5,19 @@ It contains **59 jars** in `plugins/`, numbered so they always load in a safe or
 plus `live-configs/` (the config/data snapshot running on the server) and
 `MANIFEST.md` (every jar checked: file ↔ `plugin.yml` name ↔ version ↔ sha256).
 
-**Current state: 41 MAVO jars at 3.0.0, 2 MAVO jars at 3.0.2
+**Current state: 30 MAVO jars at 3.0.0, 2 MAVO jars at 3.0.2
 (MAVOChestHunt, MAVOLuckyCoins — config-heal round), 1 MAVO jar at 3.0.3
-(MAVOCrafting — balance round) and 2 MAVO jars at 3.0.4
-(MAVOGuide, MAVOMiniboss — boss-table upgrade fix).
+(MAVOCrafting — balance round) and 13 MAVO jars at 3.0.5
+(exploit fix round — see MANIFEST).
 The version bump is the signal: any MAVO file that is NOT at the version below is
 old and must be replaced.
 
 ## Versions — how
-- **46 MAVO jars: 41 @ 3.0.0 + 2 @ 3.0.2 + 1 @ 3.0.3 + 2 @ 3.0.4** (file name + internal `plugin.yml` —
+- **46 MAVO jars: 30 @ 3.0.0 + 2 @ 3.0.2 + 1 @ 3.0.3 + 13 @ 3.0.5** (file name + internal `plugin.yml` —
   verified, see MANIFEST):
   - **33 rebuilt from source** by MAVOcraft CI (all hotfixes 35–44, Chest Hunt, gem fix,
     100 recipes, guide v22 + config auto-fix, 15 minibosses at 2 arenas …). 5 of them
-    are at **3.0.2/3.0.3/3.0.4** — they force-upgrade their own old configs at boot, so no
+    are at **3.0.2/3.0.3/3.0.5** — they force-upgrade their own old configs at boot, so no
     config editing/delete is needed:
     - ChestHunt: renames `EXP_BOTTLE`→`EXPERIENCE_BOTTLE` in your `config.yml`
       -> loot pool really loads **20/20 item types** (was 19).
@@ -34,6 +34,13 @@ old and must be replaced.
       copyDefaults seeded `bosses-version` into old configs, so the old
       90k/45% table survived while claiming v2 - merge now runs first + table
       gen 3 re-forces it), Guide (v26 What's New).
+    - **3.0.5:** ChestShops (buyers RECEIVE items, exact-NBT stock match,
+      hopper guard), Miniboss (1/side schedule: 10:00 spawn both sides, 7:00 vanish,
+      slain side rests till next 10:00), Mail (send rejected at 100 unclaimed),
+      Locks (hopper + piston guards), Couples/Guilds (5s warmup + 12-block monster
+      check on home/tp), AuctionHouse (explicit full-inbox destroy messages +
+      escrow pending fallback), Duels/FishComp/Enchants/Curator/Warps hardening,
+      Guide (v27 What's New).
   - **13 had no source code in this repo** (never uploaded before part 1–7:
     ChunkBorders, ChunkPrices, CommunityGoals, Homes, Hud, PersonalVault, PortalRoom,
     Quests, Spawn, Streaks, Tavern, Trades, Vault). Their `plugin.yml` version was
