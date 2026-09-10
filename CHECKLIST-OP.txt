@@ -30,7 +30,7 @@ PART C — THIRD-PARTY (OP SIDE)
 ------------------------------
 C-OP-001 / TAB reload / /tab reload / No errors; sidebar + tablist still correct / [ ]
 C-OP-002 / TAB placeholders live / look at sidebar: day, time, coords, profession placeholders / Values match reality (%mavohud_day/time/coords%, %mavoprof_…%) / [ ]
-C-OP-003 / LuckPerms user check / /lp user <name> parent list / Correct group(s) shown / [ ]
+C-OP-003 / LuckPerms user check / /lp user <name> info / Correct group(s) shown / [ ]
 C-OP-004 / LuckPerms default perms / /lp group default permission info / Default players have NO mav* admin nodes / [ ]
 C-OP-005 / LuckPerms editor / /lp editor (open briefly, close) / Web editor link prints / [ ]
 C-OP-006 / Economy give / /eco give <player> 1000 then /bal <player> / Balance +1000 exactly / [ ]
@@ -44,7 +44,7 @@ C-OP-013 / CoreProtect lookup / /co lookup u:<name> t:1h r:10 / Results listed /
 C-OP-014 / CoreProtect rollback+undo / /co rollback u:<name> t:1h r:5 then /co undo / Blocks restored then undo works / [ ]
 C-OP-015 / Essentials spawn set / /setspawn (only if spawn moved!) / Spawn point set — SKIP unless needed / [ ]
 C-OP-016 / /tpa belongs to MAVOTpa / /tpa <name> as OP / Output says request-style (ours), NOT EssentialsX text / [ ]
-C-OP-017 / BlueMap status / /bluemap then browser mavocraft.my.pebble.host:8156 / Map renders; Mob Farm marker visible / [ ]
+C-OP-017 / BlueMap status / /bluemap then browser mavocraft.my.pebble.host:8156 / /bluemap prints status lines only (no link); map renders in browser; Mob Farm marker visible / [ ]
 C-OP-018 / Geyser status / /geyser list (or console "Started Geyser on UDP port 19132") / Geyser online; Bedrock can join / [ ]
 
 PART D — MAVO PLUGINS (OP COMMANDS)
@@ -69,7 +69,7 @@ D-OP-012 / Ach reload / /ach reload / Reload ok, /ach still opens with 52 catego
 -- MAVOProfessions --
 D-OP-013 / Add XP / /profession addxp <player> <prof> 100 (and farming) / XP added; check with /profession check as that player / [ ]
 D-OP-014 / Prof reload / /profession reload / Reload ok / [ ]
-D-OP-015 / Almost-board / /profession almost <prof> / Shows who's about to level / [ ]
+D-OP-015 / Almost-fill (OP test tool) / /profession almost <prof> as OP / FILLS your XP to just below level-up (it is a test cheat, not a query); level up once to confirm / [ ]
 D-OP-016 / Sleeper tavern link / /sleeper tavernset at the plaza bed / Stored; boot log "tavern rest hooked at world …" after restart / [ ]
 -- MAVOWanderer --
 D-OP-017 / Force trader / /wanderer spawn / Trader + 2 llamas + bell spawn nearby, offers usable / [ ]
@@ -213,8 +213,8 @@ D-OP-117 / Player must be denied / non-OP runs /borders reload / Denied — if N
 D-OP-118 / Chunkprice reload / /chunkprice reload / Reload ok, tier table shown / [ ]
 D-OP-119 / Player must be denied / non-OP runs /chunkprice reload / Denied — if NOT denied, report as PERM HOLE / [ ]
 -- MAVOPersonalVault (no source: test-only) --
-D-OP-120 / PVault admin setpacks / /pvault admin setpacks <player> <n> (restore after) / Packs set then restored / [ ]
-D-OP-121 / Player must be denied / non-OP runs /pvault admin setpacks <self> 200 / Denied — if NOT denied, report as PERM HOLE / [ ]
+D-OP-120 / PVault admin setpacks / /pvault admin setpacks <n> as OP (SELF only - no <player> arg exists; restore after) / Own packs set then restored / [ ]
+D-OP-121 / Player must be denied / non-OP runs /pvault admin setpacks 200 / Denied AND packs unchanged — if NOT denied, report as PERM HOLE / [ ]
 
 PART E — OP EXPLOIT VERIFICATION (after player tests)
 -----------------------------------------------------
