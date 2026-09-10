@@ -31,6 +31,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -381,25 +382,31 @@ public final class MiniBoss extends JavaPlugin implements Listener {
      *  arena centre so a boss always reaches its announced arena. */
     private SpawnSpot pickSpot() {
         if (arenas.isEmpty()) return null;
-        World fallback = Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0);
         for (int round = 0; round < 5; round++) {
-            SpawnArena a = arenas.get(rnd.nextInt(arenas.size()));
-            World w = Bukkit.getWorld(a.world());
-            if (w == null) w = fallback;
-            if (w == null) return null;
-            int ax = a.x(), az = a.z();
-            for (int tries = 0; tries < 40; tries++) {
-                int j = a.jitter();
-                int x = ax + (j > 0 ? rnd.nextInt(j * 2 + 1) - j : 0);
-                int z = az + (j > 0 ? rnd.nextInt(j * 2 + 1) - j : 0);
-                int y = w.getHighestBlockYAt(x, z);
-                if (surfaceOnly && y < 50) continue;
-                return new SpawnSpot(new Location(w, x + 0.5, y + 1, z + 0.5), a);
-            }
-            int y = w.getHighestBlockYAt(ax, az);
-            if (y >= 0)
-                return new SpawnSpot(new Location(w, ax + 0.5, Math.max(50, y) + 1, az + 0.5), a);
+            SpawnSpot s = pickSpot(arenas.get(rnd.nextInt(arenas.size())));
+            if (s != null) return s;
         }
+        return null;
+    }
+
+    /** 3.0.5: pick a spawn point at the GIVEN arena (schedule spawns per side). */
+    private SpawnSpot pickSpot(SpawnArena a) {
+        World fallback = Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0);
+        World w = Bukkit.getWorld(a.world());
+        if (w == null) w = fallback;
+        if (w == null) return null;
+        int ax = a.x(), az = a.z();
+        for (int tries = 0; tries < 40; tries++) {
+            int j = a.jitter();
+            int x = ax + (j > 0 ? rnd.nextInt(j * 2 + 1) - j : 0);
+            int z = az + (j > 0 ? rnd.nextInt(j * 2 + 1) - j : 0);
+            int y = w.getHighestBlockYAt(x, z);
+            if (surfaceOnly && y < 50) continue;
+            return new SpawnSpot(new Location(w, x + 0.5, y + 1, z + 0.5), a);
+        }
+        int y = w.getHighestBlockYAt(ax, az);
+        if (y >= 0)
+            return new SpawnSpot(new Location(w, ax + 0.5, Math.max(50, y) + 1, az + 0.5), a);
         return null;
     }
 
@@ -471,7 +478,15 @@ public final class MiniBoss extends JavaPlugin implements Listener {
         LivingEntity en = e.getEntity();
         if (!en.getPersistentDataContainer().has(tag, PersistentDataType.BYTE)) return;
         alive.remove(en.getUniqueId());
-        arenaOf.remove(en.getUniqueId());
+        String deadArena = arenaOf.remove(en.getUniqueId());
+        // 3.0.5: a slain side stays empty until the next 10:00 (persisted, restart-proof)
+        if (deadArena != null) {
+            World dw = scheduleWorld();
+            if (dw != null) {
+                sideKillDay.put(deadArena, dw.getFullTime() / 24000L);
+                saveScheduleState();
+            }
+        }
         String key = en.getPersistentDataContainer().get(bossType, PersistentDataType.STRING);
         BossDef d = defs.get(key);
         if (d == null) return;
