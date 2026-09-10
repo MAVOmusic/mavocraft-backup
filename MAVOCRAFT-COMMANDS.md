@@ -222,18 +222,22 @@ Gems also drop from mining ores — **exact per-action rolls** (Hotfix 43, tiers
 
 ---
 
-## MAVOMiniboss 1.0.0 (Hotfix 44: 15 types, 2 fixed arenas)
+## MAVOMiniboss 3.0.5 (schedule: 1 per side, 10:00 spawn / 7:00 vanish)
 | Command | Who | What it does |
 |---|---|---|
 | `/hunt` | Players | Teleport **outside spawn**; ~200 blocks from a live boss if one is up (30s cooldown) |
-| `/miniboss status` | Players | Bosses alive, types, interval, /hunt + broadcast state, **both arenas**, where each live boss is |
+| `/miniboss status` | Players | Bosses alive, types, per-side state (**HUNTABLE NOW** / slain-back-next-10:00 / spawns-10:00), /hunt + broadcast state |
 | `/miniboss locate` | Players | Exact coords of live bosses (with their arena) |
-| `/miniboss broadcast` | Players | Force a boss location broadcast now (**spawns a boss first if none is alive**) |
-| `/miniboss reload` | OP (`mavominiboss.admin`) | Reload boss list + arenas from config |
+| `/miniboss broadcast` | Players | Force a boss location broadcast now (**never spawns**; 60s per-player cooldown) |
+| `/miniboss reload` | OP (`mavominiboss.admin`) | Reload boss list + arenas + schedule from config |
 
 **Spawn arenas (Hotfix 44):** bosses no longer appear at random wild spots — they spawn at
 **2 fixed arenas** from `spawn-locations` in config.yml: `NORTHERN ARENA (-2700, 560)` and
 `SOUTHERN ARENA (340, 1470)` (each a random point inside its `jitter` radius, surface only).
+**Schedule (3.0.5, replaces the old 45-min interval):** max **1 boss per side (2 total)**;
+fresh bosses spawn on BOTH sides at **MC 10:00** (tick 4000); every boss **vanishes at MC 7:00**
+(tick 1000, no loot); a side whose boss was **slain** stays empty until the next 10:00
+(persisted in `schedule-state`, restart-proof); spawns only happen while ≥1 player is online.
 Change the coords in config (reload with `/miniboss reload`) — no code edit needed.
 The spawn broadcast and the 5-min broadcast **name the arena** + exact coords.
 

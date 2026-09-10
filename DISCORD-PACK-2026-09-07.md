@@ -1121,6 +1121,15 @@ One block per work item so they stand out. Sentences short. `✅ = done · 🔜 
 ⏳ CI build + deploy all 3.0.0 jars, restart, then in-game verify
 ```
 
+### 🎉 v36 — 3.0.5 EXPLOIT FIX ROUND (shops pay out + boss schedule)
+```
+🛠 Chest shops FIXED: buying used to take coins and give NOTHING - now you get the item!
+⚔️ Boss SCHEDULE: 1 per side, fresh hunts 10:00 both sides, vanish 7:00, slain side rests!
+🔒 Locks: hoppers can't drain + pistons can't push. Mail: full inbox rejects (nothing lost).
+⏳ Teleports: /couple home|tp + /guild home now 5s warmup + monster check (like /tpa).
+📖 Guide v27 documents it all. 13 jars: shops/boss/mail/locks/couples/guilds/AH/duels/fish/gems/museum/warps/guide.
+```
+
 ## 5. NEXT IDEAS — paste into `💡┃ideas`
 
 One block per idea. `💡 = proposal · ✅ = approved · 🔨 = building`.

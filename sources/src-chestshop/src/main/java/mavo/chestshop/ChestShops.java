@@ -28,6 +28,7 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -644,19 +645,10 @@ public final class ChestShops extends JavaPlugin implements Listener {
         for (Block b : e.getBlocks()) if (shopAt(b) != null) { e.setCancelled(true); return; }
     }
 
-    private static boolean isChest(Material m) { return m == Material.CHEST || m == Material.TRAPPED_CHEST; }
-
-    private long parsePrice(String s) {
-        try { return Long.parseLong(s.replaceAll("[^0-9]", "")); } catch (Exception e) { return -1; }
-    }
-}
-onExtendEvent e) {
-        for (Block b : e.getBlocks()) if (shopAt(b) != null) { e.setCancelled(true); return; }
-    }
-
+    // 3.0.5: shop chests can't be drained by hoppers (stock is only sold via the GUI)
     @EventHandler
-    public void onPistonRetract(BlockPistonRetractEvent e) {
-        for (Block b : e.getBlocks()) if (shopAt(b) != null) { e.setCancelled(true); return; }
+    public void onHopperMove(InventoryMoveItemEvent e) {
+        if (e.getSource().getHolder() instanceof Chest c && shopAt(c.getBlock()) != null) e.setCancelled(true);
     }
 
     private static boolean isChest(Material m) { return m == Material.CHEST || m == Material.TRAPPED_CHEST; }
