@@ -1113,3 +1113,14 @@ CI run 33814070963 SUCCESS. Commit chain: f6a14d7 (sources) -> 7a0c525 (ci: rebu
   player's feet with no random scatter, glowing/invulnerable before spawn, explicit
   pickup warning. Normal despawn retained; no mailbox/storage cap bypass.
 - See MAVOCRAFT-CHECKLIST-3.0.7.md for deployment and regression tests.
+
+## 3.0.8 — crate stack consumption fix (2026-09-11)
+- User: two common keys -> one reward, both keys removed. Confirmed root cause:
+  takeKey cleared the entire slot and roll only checked nonzero.
+- Crates 3.0.8 consumes one matching key via clone/decrement or clears a singleton,
+  including offhand. Stops at first stack. Cooldown check remains before spending.
+- All crate defaults 30s; separate cooldown-version=1 disk migration updates existing
+  and custom crate sections once, preserving rewards, odds and data.yml. Pool-version
+  stays 2. Main-hand-only preview; cooldown display rounds up.
+- Added automated inventory/config regression tests and enabled Maven tests in CI.
+- See MAVOCRAFT-CHECKLIST-3.0.8.md. Live checks/reimbursement remain manual.

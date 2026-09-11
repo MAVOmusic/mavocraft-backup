@@ -4,6 +4,8 @@
 # Right-click a crate = GUI with every drop + its % chance, and an OPEN button.
 # Keys also drop from FARMING (mature crops), MINING (ores) and FISHING (see key-drops).
 pool-version: 2
+# Separate one-time migration: changes only cooldowns in existing configs.
+cooldown-version: 1
 crates:
   common:
     display: "&a&lCOMMON CRATE"
@@ -15,7 +17,7 @@ crates:
     key-lore:
       - "&7Right-click a &aCommon&7 crate."
       - "&7Found while farming, mining or fishing."
-    cooldown-seconds: 60
+    cooldown-seconds: 30
     rewards:
       - "coins:2500:30"
       - "COAL:16:15"
@@ -37,7 +39,7 @@ crates:
     key-lore:
       - "&7Right-click a &9Rare&7 crate."
       - "&7Found while farming, mining or fishing."
-    cooldown-seconds: 120
+    cooldown-seconds: 30
     rewards:
       - "coins:15000:25"
       - "DIAMOND:8:12"
@@ -59,7 +61,7 @@ crates:
     key-lore:
       - "&7Right-click a &dMythic&7 crate."
       - "&7Found while farming, mining or fishing."
-    cooldown-seconds: 300
+    cooldown-seconds: 30
     rewards:
       - "coins:100000:25"
       - "lucky:5:12"

@@ -94,6 +94,7 @@ public final class Crates extends JavaPlugin implements Listener {
         inst = this;
         saveDefaultConfig();
         mergeMissingDefaults();              // HOTFIX 42: rebalanced pools reach existing configs
+        upgradeCooldowns();                  // 3.0.8: existing crate cooldowns -> 30s, once
         dataFile = new File(getDataFolder(), "data.yml");
         data = YamlConfiguration.loadConfiguration(dataFile);
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
@@ -133,6 +134,20 @@ public final class Crates extends JavaPlugin implements Listener {
         }
     }
 
+    /** Read disk directly: bundled defaults must not hide a missing migration marker. */
+    private void upgradeCooldowns() {
+        File f = new File(getDataFolder(), "config.yml");
+        try {
+            YamlConfiguration disk = YamlConfiguration.loadConfiguration(f);
+            if (!CrateRules.upgradeCooldowns(disk)) return;
+            disk.save(f);
+            reloadConfig();
+            getLogger().info("3.0.8: all crate cooldowns upgraded to 30 seconds (rewards/keys/blocks kept).");
+        } catch (java.io.IOException ex) {
+            getLogger().warning("Crate cooldown upgrade failed: " + ex.getMessage());
+        }
+    }
+
     private void loadPools() {
         defs.clear();
         ConfigurationSection cs = getConfig().getConfigurationSection("crates");
@@ -161,7 +176,7 @@ public final class Crates extends JavaPlugin implements Listener {
                     c.getString("display", "&e" + id + " Crate"),
                     c.getStringList("holo"), km,
                     c.getString("key-name", "&e" + id + " Key"),
-                    c.getStringList("key-lore"), Math.max(0, c.getLong("cooldown-seconds", 0)), rewards));
+                    c.getStringList("key-lore"), Math.max(0, c.getLong("cooldown-seconds", CrateRules.COOLDOWN_SECONDS)), rewards));
         }
         ConfigurationSection kd = getConfig().getConfigurationSection("key-drops");
         keyDrops = kd == null || kd.getBoolean("enabled", true);
@@ -292,16 +307,8 @@ public final class Crates extends JavaPlugin implements Listener {
                 && id.equals(it.getItemMeta().getPersistentDataContainer().get(keyTag, PersistentDataType.STRING));
     }
 
-    private int takeKey(Player p, String id) {
-        ItemStack[] inv = p.getInventory().getContents();
-        for (int i = 0; i < inv.length; i++)
-            if (isKey(inv[i], id)) {
-                ItemStack it = inv[i];
-                int got = it.getAmount();
-                p.getInventory().setItem(i, null);
-                return got;
-            }
-        return 0;
+    private boolean takeKey(Player p, String id) {
+        return CrateRules.takeOneKey(p.getInventory(), item -> isKey(item, id));
     }
 
     // ---------------- key drops from actions (Hotfix 42) ----------------
@@ -615,12 +622,12 @@ public final class Crates extends JavaPlugin implements Listener {
             long last = data.getLong("players." + p.getUniqueId() + "." + id, 0);
             long left = last + cd - System.currentTimeMillis();
             if (left > 0) {
-                p.sendMessage(C + "cThis crate is recharging - wait " + C + "e" + (left / 1000) + "s" + C + "c.");
+                p.sendMessage(C + "cThis crate is recharging - wait " + C + "e" + ((left + 999) / 1000) + "s" + C + "c.");
                 p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.8f);
                 return;
             }
         }
-        if (takeKey(p, id) == 0) {
+        if (!takeKey(p, id)) {
             p.sendMessage(C + "cYou need a " + cc(d.keyName) + C + "c to open this crate.");
             return;
         }
@@ -694,6 +701,8 @@ public final class Crates extends JavaPlugin implements Listener {
         String id = blocks.get(e.getClickedBlock().getLocation());
         if (id == null) return;
         e.setCancelled(true);
+        // Bukkit may send both hand events for one click; open the preview only once.
+        if (e.getHand() != org.bukkit.inventory.EquipmentSlot.HAND) return;
         openGui(e.getPlayer(), id, e.getClickedBlock().getLocation());   // HOTFIX 42: GUI first
     }
 
@@ -801,7 +810,7 @@ public final class Crates extends JavaPlugin implements Listener {
             }
             case "reload" -> {
                 if (!sender.hasPermission("mavocrate.admin")) { sender.sendMessage("OP only."); return true; }
-                reloadConfig(); loadPools();
+                reloadConfig(); upgradeCooldowns(); loadPools();
                 spawnHolos();
                 sender.sendMessage(C + "aCrate pools reloaded (" + defs.size() + " types).");
             }

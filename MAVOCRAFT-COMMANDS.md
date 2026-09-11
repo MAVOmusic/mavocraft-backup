@@ -268,6 +268,11 @@ crate-chance % Crate Key) plus the boss **HP**. Those chances are rolled indepen
 | `/crate resholo` | OP | Rebuild all crate holograms |
 | `/crate reload` | OP | Reload pools/key-drop chances |
 
+**3.0.8:** each opening consumes exactly **one** matching key, not the stack.
+All crate cooldowns default to **30 seconds per player, per type**; existing configs
+are upgraded once without resetting pools or key-drop odds. Cooldown attempts
+consume no keys; previewing without opening is free.
+
 Every crate block has a floating hologram (name + "right-click to open"). Keys drop from
 **farming (mature crops), mining (ores) and fishing**: Common 1% / Rare 0.05% / Mythic
 0.01% per action. Open GUI shows each reward's exact % (pools sum to 100).
