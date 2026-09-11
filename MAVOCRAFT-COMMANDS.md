@@ -205,7 +205,12 @@ Custom recipes craft in a normal crafting table. `/workbench` + `/e craft` still
 
 ---
 
-## MAVOEnchants 1.0.0
+## MAVOEnchants 3.0.7
+
+Gems from mining, gemshop or admin grants go into inventory first. Overflow drops
+at the recipient's feet with no sideways scatter, glowing + damage-protected, and
+a pickup warning. Free a slot promptly: normal floor-item despawn still applies.
+No automatic mail delivery or mailbox-cap bypass.
 | Command | Who | What it does |
 |---|---|---|
 | `/gemshop` | Players | Buy enchant gems with coins — **page 1 = tool gems, page 2 = armor gems** (Next/Prev arrows). Tiers I–X = 1M / 2M / 4M / 8M / 16M / 32M / 64M / 128M / 256M / 512M |

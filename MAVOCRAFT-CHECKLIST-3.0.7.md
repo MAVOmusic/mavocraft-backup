@@ -39,3 +39,11 @@ migration v26 -> v28; gameplay tests remain pending.
 ## Replacement for the reported loss (run ONCE, after freeing a slot)
 `/maenchant gem MAVOmusicYT AQUA 1`
 This is an operator replacement, not automatic reimbursement.
+
+## Build/package verification
+- GitHub Actions run 34591518653: successful JDK 25 build.
+- Source checks: all three grant paths use the shared helper; only leftovers drop;
+  purchase delivery remains behind the successful-payment guard.
+- Built Enchants class contains the helper/protection/warning; plugin.yml is 3.0.7.
+- Pack: 59 jars; 26 MAVO @3.0.0, 2 @3.0.2, 11 @3.0.5, 6 @3.0.6, 1 @3.0.7.
+- Build is compilation verification, not a gameplay test; live checks above pending.

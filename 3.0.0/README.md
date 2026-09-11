@@ -6,14 +6,14 @@ plus `live-configs/` (the config/data snapshot running on the server) and
 `MANIFEST.md` (every jar checked: file ↔ `plugin.yml` name ↔ version ↔ sha256).
 
 **Current state: 26 MAVO jars at 3.0.0, 2 MAVO jars at 3.0.2
-(MAVOChestHunt, MAVOLuckyCoins — config-heal round), 12 MAVO jars at 3.0.5
-(exploit fix round) and 6 MAVO jars at 3.0.6
-(live-test fix round — see MANIFEST).
+(MAVOChestHunt, MAVOLuckyCoins — config-heal round), 11 MAVO jars at 3.0.5
+(exploit fix round), 6 MAVO jars at 3.0.6 (live-test fix round),
+and 1 at 3.0.7 (Enchants gem overflow — see MANIFEST).**
 The version bump is the signal: any MAVO file that is NOT at the version below is
 old and must be replaced.
 
 ## Versions — how
-- **46 MAVO jars: 26 @ 3.0.0 + 2 @ 3.0.2 + 12 @ 3.0.5 + 6 @ 3.0.6** (file name + internal `plugin.yml` —
+- **46 MAVO jars: 26 @ 3.0.0 + 2 @ 3.0.2 + 11 @ 3.0.5 + 6 @ 3.0.6 + 1 @ 3.0.7** (file name + internal `plugin.yml` —
   verified, see MANIFEST):
   - **33 rebuilt from source** by MAVOcraft CI (all hotfixes 35–44, Chest Hunt, gem fix,
     100 recipes, guide v22 + config auto-fix, 15 minibosses at 2 arenas …). 5 of them
@@ -46,6 +46,9 @@ old and must be replaced.
       BossRaid (stuck-bossbar cleanup + self-heal), Events (start refused
       while one runs), Crates (inspect offline message + case-insensitive
       match), Guide (v28 What's New).
+    - **3.0.7:** Enchants full-inventory gems drop at player feet, glowing and
+      damage-protected, with a pickup warning (normal despawn retained). Covers
+      mining, purchases and admin grants; no mail cap bypass or odds changes.
   - **13 had no source code in this repo** (never uploaded before part 1–7:
     ChunkBorders, ChunkPrices, CommunityGoals, Homes, Hud, PersonalVault, PortalRoom,
     Quests, Spawn, Streaks, Tavern, Trades, Vault). Their `plugin.yml` version was
