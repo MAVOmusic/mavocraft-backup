@@ -1,4 +1,4 @@
-## build log Thu Sep 10 05:23:17 UTC 2026
+## build log Fri Sep 11 11:56:47 UTC 2026
 == sources/src-achievements ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -27,7 +27,7 @@
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
 [INFO] Total time:  1.085 s
-[INFO] Finished at: 2026-09-10T05:23:19Z
+[INFO] Finished at: 2026-09-11T11:56:49Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-auction ==
 [INFO] Scanning for projects...
@@ -56,14 +56,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.130 s
-[INFO] Finished at: 2026-09-10T05:23:21Z
+[INFO] Total time:  1.121 s
+[INFO] Finished at: 2026-09-11T11:56:52Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-bossraid ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------------------< mavo:mavo-bossraid >-------------------------
-[INFO] Building mavo-bossraid 3.0.0
+[INFO] Building mavo-bossraid 3.0.6
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -86,8 +86,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.139 s
-[INFO] Finished at: 2026-09-10T05:23:24Z
+[INFO] Total time:  1.109 s
+[INFO] Finished at: 2026-09-11T11:56:54Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-casino ==
 [INFO] Scanning for projects...
@@ -116,8 +116,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.089 s
-[INFO] Finished at: 2026-09-10T05:23:26Z
+[INFO] Total time:  1.093 s
+[INFO] Finished at: 2026-09-11T11:56:56Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-chesthunt ==
 [INFO] Scanning for projects...
@@ -146,8 +146,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.106 s
-[INFO] Finished at: 2026-09-10T05:23:28Z
+[INFO] Total time:  1.079 s
+[INFO] Finished at: 2026-09-11T11:56:59Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-chestshop ==
 [INFO] Scanning for projects...
@@ -176,8 +176,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.078 s
-[INFO] Finished at: 2026-09-10T05:23:31Z
+[INFO] Total time:  1.139 s
+[INFO] Finished at: 2026-09-11T11:57:01Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-couples ==
 [INFO] Scanning for projects...
@@ -206,14 +206,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.206 s
-[INFO] Finished at: 2026-09-10T05:23:33Z
+[INFO] Total time:  1.100 s
+[INFO] Finished at: 2026-09-11T11:57:03Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-crafting ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------------------< mavo:mavo-crafting >-------------------------
-[INFO] Building mavo-crafting 3.0.1
+[INFO] Building mavo-crafting 3.0.6
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -236,14 +236,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.157 s
-[INFO] Finished at: 2026-09-10T05:23:35Z
+[INFO] Total time:  1.082 s
+[INFO] Finished at: 2026-09-11T11:57:06Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-crates ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] --------------------------< mavo:mavo-crates >--------------------------
-[INFO] Building mavo-crates 3.0.0
+[INFO] Building mavo-crates 3.0.8
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -254,20 +254,21 @@
 [INFO] Nothing to compile - all classes are up to date.
 [INFO] 
 [INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-crates ---
-[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crates/src/test/resources
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
 [INFO] 
 [INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-crates ---
-[INFO] No sources to compile
+[INFO] Nothing to compile - all classes are up to date.
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-crates ---
 [INFO] Tests are skipped.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-crates ---
+[INFO] Building jar: /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crates/target/MAVOCrates-3.0.8.jar
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.160 s
-[INFO] Finished at: 2026-09-10T05:23:38Z
+[INFO] Total time:  1.242 s
+[INFO] Finished at: 2026-09-11T11:57:08Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-curator ==
 [INFO] Scanning for projects...
@@ -296,8 +297,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.154 s
-[INFO] Finished at: 2026-09-10T05:23:40Z
+[INFO] Total time:  1.137 s
+[INFO] Finished at: 2026-09-11T11:57:10Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-deathchest ==
 [INFO] Scanning for projects...
@@ -326,8 +327,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.068 s
-[INFO] Finished at: 2026-09-10T05:23:43Z
+[INFO] Total time:  1.090 s
+[INFO] Finished at: 2026-09-11T11:57:13Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-doublexp ==
 [INFO] Scanning for projects...
@@ -356,8 +357,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.166 s
-[INFO] Finished at: 2026-09-10T05:23:45Z
+[INFO] Total time:  1.080 s
+[INFO] Finished at: 2026-09-11T11:57:15Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-duels ==
 [INFO] Scanning for projects...
@@ -386,14 +387,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.101 s
-[INFO] Finished at: 2026-09-10T05:23:47Z
+[INFO] Total time:  1.130 s
+[INFO] Finished at: 2026-09-11T11:57:17Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-enchants ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] -------------------------< mavo:mavo-enchants >-------------------------
-[INFO] Building mavo-enchants 3.0.5
+[INFO] Building mavo-enchants 3.0.7
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -416,14 +417,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.077 s
-[INFO] Finished at: 2026-09-10T05:23:50Z
+[INFO] Total time:  1.172 s
+[INFO] Finished at: 2026-09-11T11:57:20Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-events ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] --------------------------< mavo:mavo-events >--------------------------
-[INFO] Building mavo-events 3.0.0
+[INFO] Building mavo-events 3.0.6
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -446,8 +447,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.119 s
-[INFO] Finished at: 2026-09-10T05:23:52Z
+[INFO] Total time:  1.126 s
+[INFO] Finished at: 2026-09-11T11:57:22Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-fishcomp ==
 [INFO] Scanning for projects...
@@ -476,14 +477,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.141 s
-[INFO] Finished at: 2026-09-10T05:23:54Z
+[INFO] Total time:  1.130 s
+[INFO] Finished at: 2026-09-11T11:57:25Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-guide ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] --------------------------< mavo:mavo-guide >---------------------------
-[INFO] Building mavo-guide 3.0.5
+[INFO] Building mavo-guide 3.0.6
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -506,8 +507,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.083 s
-[INFO] Finished at: 2026-09-10T05:23:57Z
+[INFO] Total time:  1.111 s
+[INFO] Finished at: 2026-09-11T11:57:27Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-guilds ==
 [INFO] Scanning for projects...
@@ -536,8 +537,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.076 s
-[INFO] Finished at: 2026-09-10T05:23:59Z
+[INFO] Total time:  1.117 s
+[INFO] Finished at: 2026-09-11T11:57:29Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-locks ==
 [INFO] Scanning for projects...
@@ -566,8 +567,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.097 s
-[INFO] Finished at: 2026-09-10T05:24:01Z
+[INFO] Total time:  1.117 s
+[INFO] Finished at: 2026-09-11T11:57:32Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-lucky ==
 [INFO] Scanning for projects...
@@ -596,8 +597,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.060 s
-[INFO] Finished at: 2026-09-10T05:24:03Z
+[INFO] Total time:  1.113 s
+[INFO] Finished at: 2026-09-11T11:57:34Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-mail ==
 [INFO] Scanning for projects...
@@ -626,8 +627,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.106 s
-[INFO] Finished at: 2026-09-10T05:24:06Z
+[INFO] Total time:  1.087 s
+[INFO] Finished at: 2026-09-11T11:57:36Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-miniboss ==
 [INFO] Scanning for projects...
@@ -641,43 +642,24 @@
 [INFO] Copying 2 resources from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.15.0:compile (default-compile) @ mavo-miniboss ---
-[INFO] Recompiling the module because of changed source code.
-[INFO] Compiling 1 source file with javac [debug release 21] to target/classes
-[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java: /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java uses or overrides a deprecated API.
-[INFO] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java: Recompile with -Xlint:deprecation for details.
-[INFO] -------------------------------------------------------------
-[ERROR] COMPILATION ERROR : 
-[INFO] -------------------------------------------------------------
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java:[307,24] cannot find symbol
-  symbol:   class PlayerJoinEvent
-  location: class mavo.miniboss.MiniBoss
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java:[328,26] method pickSpot in class mavo.miniboss.MiniBoss cannot be applied to given types;
-  required: no arguments
-  found:    mavo.miniboss.MiniBoss.SpawnArena
-  reason: actual and formal argument lists differ in length
-[INFO] 2 errors 
-[INFO] -------------------------------------------------------------
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mavo-miniboss ---
+[INFO] skip non existing resourceDirectory /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ mavo-miniboss ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mavo-miniboss ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-miniboss ---
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
+[INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.904 s
-[INFO] Finished at: 2026-09-10T05:24:09Z
+[INFO] Total time:  1.093 s
+[INFO] Finished at: 2026-09-11T11:57:38Z
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (default-compile) on project mavo-miniboss: Compilation failure: Compilation failure: 
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java:[307,24] cannot find symbol
-[ERROR]   symbol:   class PlayerJoinEvent
-[ERROR]   location: class mavo.miniboss.MiniBoss
-[ERROR] /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-miniboss/src/main/java/mavo/miniboss/MiniBoss.java:[328,26] method pickSpot in class mavo.miniboss.MiniBoss cannot be applied to given types;
-[ERROR]   required: no arguments
-[ERROR]   found:    mavo.miniboss.MiniBoss.SpawnArena
-[ERROR]   reason: actual and formal argument lists differ in length
-[ERROR] -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
 == sources/src-mobfarm ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -705,14 +687,14 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.145 s
-[INFO] Finished at: 2026-09-10T05:24:11Z
+[INFO] Total time:  1.100 s
+[INFO] Finished at: 2026-09-11T11:57:41Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-pets ==
 [INFO] Scanning for projects...
 [INFO] 
 [INFO] ---------------------------< mavo:mavo-pets >---------------------------
-[INFO] Building mavo-pets 3.0.0
+[INFO] Building mavo-pets 3.0.6
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
@@ -735,8 +717,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.093 s
-[INFO] Finished at: 2026-09-10T05:24:14Z
+[INFO] Total time:  1.160 s
+[INFO] Finished at: 2026-09-11T11:57:43Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-professions ==
 [INFO] Scanning for projects...
@@ -765,8 +747,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.166 s
-[INFO] Finished at: 2026-09-10T05:24:16Z
+[INFO] Total time:  1.198 s
+[INFO] Finished at: 2026-09-11T11:57:46Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-seasonal ==
 [INFO] Scanning for projects...
@@ -795,8 +777,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.116 s
-[INFO] Finished at: 2026-09-10T05:24:18Z
+[INFO] Total time:  1.088 s
+[INFO] Finished at: 2026-09-11T11:57:48Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-shopnpc ==
 [INFO] Scanning for projects...
@@ -825,8 +807,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.130 s
-[INFO] Finished at: 2026-09-10T05:24:21Z
+[INFO] Total time:  1.097 s
+[INFO] Finished at: 2026-09-11T11:57:50Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-spawners ==
 [INFO] Scanning for projects...
@@ -855,8 +837,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.104 s
-[INFO] Finished at: 2026-09-10T05:24:23Z
+[INFO] Total time:  1.135 s
+[INFO] Finished at: 2026-09-11T11:57:53Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-timber ==
 [INFO] Scanning for projects...
@@ -885,8 +867,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.124 s
-[INFO] Finished at: 2026-09-10T05:24:25Z
+[INFO] Total time:  1.098 s
+[INFO] Finished at: 2026-09-11T11:57:55Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-tpa ==
 [INFO] Scanning for projects...
@@ -915,8 +897,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.111 s
-[INFO] Finished at: 2026-09-10T05:24:28Z
+[INFO] Total time:  1.108 s
+[INFO] Finished at: 2026-09-11T11:57:57Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wanderer ==
 [INFO] Scanning for projects...
@@ -945,8 +927,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.153 s
-[INFO] Finished at: 2026-09-10T05:24:30Z
+[INFO] Total time:  1.090 s
+[INFO] Finished at: 2026-09-11T11:58:00Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-warps ==
 [INFO] Scanning for projects...
@@ -975,8 +957,8 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.139 s
-[INFO] Finished at: 2026-09-10T05:24:33Z
+[INFO] Total time:  1.133 s
+[INFO] Finished at: 2026-09-11T11:58:02Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wild ==
 [INFO] Scanning for projects...
@@ -1005,6 +987,6 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.164 s
-[INFO] Finished at: 2026-09-10T05:24:35Z
+[INFO] Total time:  1.101 s
+[INFO] Finished at: 2026-09-11T11:58:04Z
 [INFO] ------------------------------------------------------------------------
