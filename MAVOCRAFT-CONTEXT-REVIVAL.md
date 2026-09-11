@@ -1124,3 +1124,7 @@ CI run 33814070963 SUCCESS. Commit chain: f6a14d7 (sources) -> 7a0c525 (ci: rebu
   stays 2. Main-hand-only preview; cooldown display rounds up.
 - Added automated inventory/config regression tests and enabled Maven tests in CI.
 - See MAVOCRAFT-CHECKLIST-3.0.8.md. Live checks/reimbursement remain manual.
+- 3.0.8 CI run 34597018188 passed with all 8 regression tests. Pack/jar checksums
+  verified; updated zip includes Crates 3.0.8 and Enchants 3.0.7. Not yet confirmed
+  deployed. Earlier build.log is retained historical failure diagnostics (fixture
+  error fixed); latest successful run is the verification source.

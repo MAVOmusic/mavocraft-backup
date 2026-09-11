@@ -43,3 +43,14 @@ replace live server inventory checks below.
 ## Optional replacement for the reported extra key (run once)
 `/crate givekey MAVOmusicYT common 1`
 One extra common key was reported consumed. No automatic reimbursement is made.
+
+## Build/package verification
+- Successful GitHub Actions run: 34597018188 (JDK 25, Maven tests enabled).
+- All 8 CrateRulesTest regression tests passed. Initial test fixture stubbing error
+  was corrected; no tests disabled or skipped to obtain the passing build.
+- Built jar verified: plugin.yml 3.0.8, CrateRules present, three 30-second bundled
+  cooldowns, migration marker 1; test classes are not packaged.
+- Source guard-order check confirms cooldown -> key consumption -> reward.
+- Pack: 59 jars, all checksums verified. MAVO mix: 26 @3.0.0, 2 @3.0.2,
+  11 @3.0.5, 5 @3.0.6, 1 @3.0.7 (Enchants), 1 @3.0.8 (Crates).
+- Live deployment/gameplay checks above remain pending.
