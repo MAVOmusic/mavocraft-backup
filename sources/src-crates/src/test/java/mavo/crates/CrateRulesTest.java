@@ -61,7 +61,8 @@ public class CrateRulesTest {
 
     @Test public void noMatchingKeyChangesNothing() {
         PlayerInventory inv = mock(PlayerInventory.class);
-        when(inv.getContents()).thenReturn(new ItemStack[]{null, stack(3), stack(0)});
+        ItemStack wrongTier = stack(3), empty = stack(0);
+        when(inv.getContents()).thenReturn(new ItemStack[]{null, wrongTier, empty});
         assertFalse(CrateRules.takeOneKey(inv, item -> false));
         verify(inv, never()).setItem(anyInt(), nullable(ItemStack.class));
     }
