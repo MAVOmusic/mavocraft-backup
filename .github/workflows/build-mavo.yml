@@ -53,7 +53,7 @@ jobs:
             echo "## build log $(date -u)"
             for d in sources/src-*; do
               echo "== $d =="
-              (cd "$d" && mvn -B package -DskipTests) 2>&1 || true
+              (cd "$d" && mvn -B package) 2>&1 || true
             done
           } > build.log
           git add build.log
