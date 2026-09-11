@@ -174,6 +174,9 @@ public final class BossRaid extends JavaPlugin implements Listener {
             Bukkit.broadcastMessage(C + "cThe raid timed out after 45 minutes - ending it.");
             endRaid(false);
         }
+        // 3.0.6 self-heal: a bar with no running raid is a leak (boss lost
+        // without its death event) - clear it instead of haunting screens.
+        if (bar != null && !isRunning()) { bar.removeAll(); bar = null; }
         if (isRunning() && bar != null && boss != null) {
             double frac = Math.max(0, boss.getHealth() / boss.getMaxHealth());
             bar.setProgress((float) Math.min(1.0, frac));
@@ -222,6 +225,10 @@ public final class BossRaid extends JavaPlugin implements Listener {
         b.setRemoveWhenFarAway(false);
         if (noAi) b.setAI(false);
         try { b.getAttribute(Attribute.MAX_HEALTH).setBaseValue(hp); b.setHealth(hp); } catch (Throwable t) { }
+        // 3.0.6: a previous bar/boss left over (boss lost without death event)
+        // used to be orphaned here - the old bar stayed on screens forever.
+        if (bar != null) { bar.removeAll(); bar = null; }
+        if (boss != null && boss != b) { try { boss.remove(); } catch (Throwable ignored) { } }
         boss = b;
         damage.clear();
         raidEndAt = System.currentTimeMillis() + 45L * 60_000L;

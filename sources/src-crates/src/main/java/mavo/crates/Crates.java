@@ -779,7 +779,17 @@ public final class Crates extends JavaPlugin implements Listener {
                 if (!(sender instanceof Player admin)) { sender.sendMessage("Players only."); return true; }
                 if (args.length < 2) { sender.sendMessage(C + "cUsage: /crate inspect <player>"); return true; }
                 Player target = Bukkit.getPlayerExact(args[1]);
-                if (target == null) { sender.sendMessage(C + "cPlayer offline (names are case-sensitive)."); return true; }
+                // 3.0.6: case-insensitive fallback for online players
+                if (target == null)
+                    for (Player pl : Bukkit.getOnlinePlayers())
+                        if (pl.getName().equalsIgnoreCase(args[1])) { target = pl; break; }
+                // 3.0.6: an offline player's inventory/ender chest is unreadable
+                // (no server API exposes it) - say so instead of failing silently.
+                if (target == null) {
+                    sender.sendMessage(C + "c" + args[1] + " is offline - inspect needs them online "
+                            + "(offline inventories can't be read).");
+                    return true;
+                }
                 openInspect(admin, target);
                 admin.sendMessage(C + "7Inspecting " + C + "e" + target.getName() + C + "7 - use the buttons to "
                         + "remove exploited crate keys. Enchanted/spent items are never touched.");

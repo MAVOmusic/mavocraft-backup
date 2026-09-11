@@ -319,6 +319,13 @@ public final class Events extends JavaPlugin implements Listener {
                     s.sendMessage(ChatColor.RED + "Zombie Siege only runs at night (18:30-06:00).");
                     return true;
                 }
+                // 3.0.6: one event at a time - starting used to silently kill the
+                // running event, so stacked starts looked "stuck" with no drops.
+                if (active != null) {
+                    s.sendMessage(ChatColor.RED + pretty(active) + ChatColor.RESET + ChatColor.RED
+                            + " is already running - /event stop it first.");
+                    return true;
+                }
                 startEvent(a[1].toLowerCase(Locale.ROOT));
             }
             case "stop" -> {

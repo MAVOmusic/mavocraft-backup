@@ -177,7 +177,9 @@ public final class Pets extends JavaPlugin implements Listener {
         LivingEntity e = (LivingEntity) w.spawnEntity(loc, d.type);
         e.setCustomName(colorName(p.getUniqueId(), id));
         e.setCustomNameVisible(true);
-        e.setAI(false);
+        // 3.0.6: AI ON so pets look alive (wander, idle, pathfind) - they stay
+        // invulnerable + damage-cancelled + non-collidable, so still untouchable.
+        e.setAI(true);
         e.setInvulnerable(true);
         e.setSilent(true);
         e.setPersistent(true);
@@ -286,6 +288,7 @@ public final class Pets extends JavaPlugin implements Listener {
                 "&7(click &dDiamond&7 to toggle xorb, &dGold Ingot&7 for carry)"));
         h.inv.setItem(16, gui(Material.COMPASS, "&aRecall", "&7Teleport your pet back to you."));
         h.inv.setItem(22, gui(Material.CHEST, "&e/ p e t s", "&7Switch pets or buy more."));
+        h.inv.setItem(24, gui(Material.RED_BED, "&cRest", "&7Send your pet away.", "&7Pick it again in /pets anytime."));
         p.openInventory(h.inv);
     }
 
@@ -370,6 +373,12 @@ public final class Pets extends JavaPlugin implements Listener {
             LivingEntity pet = active.get(u);
             if (pet != null) pet.teleport(p.getLocation());
             p.sendMessage(C + "aPet recalled.");
+        } else if (slot == 24) {
+            // 3.0.6: Rest = deactivate (re-pick in /pets anytime)
+            setActive(u, "");
+            removePet(u);
+            p.closeInventory();
+            p.sendMessage(C + "7Your pet rests. Pick it again in " + C + "e/pets" + C + "7 anytime.");
         } else p.closeInventory();
     }
 
@@ -385,7 +394,7 @@ public final class Pets extends JavaPlugin implements Listener {
     // ---------------- commands ----------------
     @Override public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("pet") && args.length == 1)
-            return List.of("menu", "recall", "xp");
+            return List.of("menu", "recall", "xp", "off");
         if (cmd.getName().equalsIgnoreCase("pet") && args.length == 2 && args[0].equalsIgnoreCase("give"))
             return new ArrayList<>(defs.keySet());
         return List.of();
@@ -426,7 +435,16 @@ public final class Pets extends JavaPlugin implements Listener {
                     spawnActive(target);
                     p.sendMessage(C + "aGave " + target.getName() + " a " + cc(defs.get(id).display) + C + "a.");
                 }
-                default -> p.sendMessage(C + "7/pet menu | recall | xp");
+                case "off", "rest" -> {
+                    if (activeId(p.getUniqueId()).isEmpty())
+                        p.sendMessage(C + "7No active pet.");
+                    else {
+                        setActive(p.getUniqueId(), "");
+                        removePet(p.getUniqueId());
+                        p.sendMessage(C + "7Your pet rests. Pick it again in " + C + "e/pets" + C + "7 anytime.");
+                    }
+                }
+                default -> p.sendMessage(C + "7/pet menu | recall | xp | off");
             }
             return true;
         }

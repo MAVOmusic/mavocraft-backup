@@ -45,6 +45,7 @@ public final class Crafting extends JavaPlugin implements Listener {
 
     private static final char C = '\u00a7';
     private final Map<String, NamespacedKey> keys = new LinkedHashMap<>();
+    private final Map<String, ShapedRecipe> customRecipes = new LinkedHashMap<>(); // 3.0.6: /craft customs browser
     private final Map<String, RecipeDef> beginners = new LinkedHashMap<>();
     private final NamespacedKey recipeKey = new NamespacedKey("mavocrafting", "recipe");
     private final NamespacedKey navKey = new NamespacedKey("mavocrafting", "nav");
@@ -204,6 +205,7 @@ public final class Crafting extends JavaPlugin implements Listener {
     private void loadRecipes() {
         for (NamespacedKey k : keys.values()) Bukkit.removeRecipe(k);
         keys.clear();
+        customRecipes.clear();
         ConfigurationSection cs = getConfig().getConfigurationSection("recipes");
         if (cs == null) return;
         for (String id : cs.getKeys(false)) {
@@ -243,6 +245,7 @@ public final class Crafting extends JavaPlugin implements Listener {
                 if (!ok) continue;
                 Bukkit.addRecipe(r);
                 keys.put(id, key);
+                customRecipes.put(id, r);
             } catch (Throwable t) {
                 getLogger().warning("recipe " + id + ": " + t.getMessage() + " - skipped.");
             }
@@ -324,6 +327,8 @@ public final class Crafting extends JavaPlugin implements Listener {
             inv.setItem(i, it);
         }
         if (page > 0) inv.setItem(45, nav(Material.ARROW, "prev", "Previous page"));
+        if (!customRecipes.isEmpty()) inv.setItem(47, nav(Material.CRAFTING_TABLE, "customs",
+                "Custom recipes (" + customRecipes.size() + ")"));
         inv.setItem(49, nav(Material.BOOK, "close", "Close"));
         if (page < pages - 1) inv.setItem(53, nav(Material.ARROW, "next", "Next page"));
         openGuis.put(p.getUniqueId(), inv);   // HOTFIX 38: remember which inventory is ours
@@ -369,6 +374,7 @@ public final class Crafting extends JavaPlugin implements Listener {
             if (nav.startsWith("back:")) openBeginner(p, Integer.parseInt(nav.substring(5)));
             else if (nav.equals("prev")) openBeginner(p, pageOf(e.getView().getTitle()) - 2);
             else if (nav.equals("next")) openBeginner(p, pageOf(e.getView().getTitle()));
+            else if (nav.equals("customs")) openCustoms(p);
             else if (nav.equals("close")) p.closeInventory();
             return;
         }
@@ -377,6 +383,16 @@ public final class Crafting extends JavaPlugin implements Listener {
         String id = recipeOf(it);
         if (id == null) return;
         e.setCancelled(true);
+        // 3.0.6: custom recipes open their exact registered shape
+        if (id.startsWith("custom:")) {
+            Long lastC = lastCraft.get(p.getUniqueId());
+            long nowC = System.currentTimeMillis();
+            if (lastC != null && nowC - lastC < 300) return;
+            lastCraft.put(p.getUniqueId(), nowC);
+            openCustomRecipe(p, id.substring(7));
+            p.playSound(p.getLocation(), org.bukkit.Sound.ITEM_BOOK_PAGE_TURN, 1f, 1.2f);
+            return;
+        }
         RecipeDef r = beginners.get(id);
         if (r == null) return;
         Long last = lastCraft.get(p.getUniqueId());
@@ -477,24 +493,135 @@ public final class Crafting extends JavaPlugin implements Listener {
         p.openInventory(inv);
     }
 
+    // ---------------- 3.0.6: customs browser + direct /craft <name> ----------------
+    /** "/craft has options to select from" - the 7 customs finally open from the GUI. */
+    private void openCustoms(Player p) {
+        List<String> ids = new ArrayList<>(customRecipes.keySet());
+        Inventory inv = Bukkit.createInventory(null, 27, C + "1\u2692 Craft - customs (" + ids.size() + ")");
+        for (int idx = 0; idx < ids.size() && idx < 21; idx++) {
+            String id = ids.get(idx);
+            ShapedRecipe sr = customRecipes.get(id);
+            if (sr == null) continue;
+            ItemStack it = sr.getResult().clone();
+            ItemMeta m = it.getItemMeta();
+            m.setDisplayName(C + "a" + pretty(id));
+            List<String> lore = new ArrayList<>();
+            for (Map.Entry<Material, Integer> en : customAmounts(sr).entrySet())
+                lore.add(C + "7  " + en.getValue() + "x " + pretty2(en.getKey()));
+            lore.add(C + "eClick to see how to craft it (guide - no auto craft)");
+            m.setLore(lore);
+            m.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            m.getPersistentDataContainer().set(recipeKey, PersistentDataType.STRING, "custom:" + id);
+            it.setItemMeta(m);
+            inv.setItem(idx, it);
+        }
+        inv.setItem(22, nav(Material.ARROW, "back:0", "Back to basics"));
+        inv.setItem(26, nav(Material.BOOK, "close", "Close"));
+        openGuis.put(p.getUniqueId(), inv);
+        p.openInventory(inv);
+    }
+
+    private static Map<Material, Integer> customAmounts(ShapedRecipe sr) {
+        Map<Material, Integer> out = new LinkedHashMap<>();
+        Map<Character, ItemStack> map = sr.getIngredientMap();
+        for (String row : sr.getShape())
+            for (int k = 0; k < row.length(); k++) {
+                ItemStack ing = map.get(row.charAt(k));
+                if (ing != null) out.merge(ing.getType(), 1, Integer::sum);
+            }
+        return out;
+    }
+
+    /** The EXACT registered custom shape (not the registry-first match - a custom
+     *  lead must show string+slime, never the vanilla slime-ball recipe). */
+    private void openCustomRecipe(Player p, String id) {
+        ShapedRecipe sr = customRecipes.get(id);
+        if (sr == null) { openCustoms(p); return; }
+        Inventory inv = Bukkit.createInventory(null, 45, C + "1\u2692 " + pretty(id) + " - how to craft");
+        int[] slots = {10, 11, 12, 19, 20, 21, 28, 29, 30};
+        String[] shape = sr.getShape();
+        Map<Character, ItemStack> map = sr.getIngredientMap();
+        for (int row = 0; row < shape.length && row < 3; row++) {
+            String s = shape[row];
+            for (int col = 0; col < s.length() && col < 3; col++) {
+                ItemStack ing = map.get(s.charAt(col));
+                if (ing == null) continue;
+                ItemStack show = ing.clone();
+                ItemMeta m = show.getItemMeta();
+                m.setLore(List.of(C + "7" + pretty2(show.getType())));
+                show.setItemMeta(m);
+                inv.setItem(slots[row * 3 + col], show);
+            }
+        }
+        ItemStack arrow = new ItemStack(Material.ARROW);
+        ItemMeta am = arrow.getItemMeta();
+        am.setDisplayName(C + "7Craft in a crafting table");
+        arrow.setItemMeta(am);
+        inv.setItem(24, arrow);
+        ItemStack result = sr.getResult().clone();
+        ItemMeta rm = result.getItemMeta();
+        rm.setDisplayName(C + "a" + pretty(id) + (result.getAmount() > 1 ? " x" + result.getAmount() : ""));
+        rm.setLore(List.of(C + "7Custom MAVO recipe - works in any crafting table."));
+        result.setItemMeta(rm);
+        inv.setItem(26, result);
+        try {
+            NamespacedKey k = keys.get(id);
+            if (k != null) p.discoverRecipe(k);
+        } catch (Throwable ignored) { }
+        inv.setItem(40, nav(Material.ARROW, "customs", "Back to customs"));
+        inv.setItem(44, nav(Material.BOOK, "close", "Close"));
+        openGuis.put(p.getUniqueId(), inv);
+        p.openInventory(inv);
+    }
+
+    private RecipeDef findRecipe(String q) {
+        if (beginners.containsKey(q)) return beginners.get(q);
+        for (Map.Entry<String, RecipeDef> en : beginners.entrySet()) {
+            String id = en.getKey();
+            if (id.contains(q) || pretty(id).toLowerCase(Locale.ROOT).contains(q)) return en.getValue();
+        }
+        return null;
+    }
+
+    private String findCustom(String q) {
+        if (customRecipes.containsKey(q)) return q;
+        for (String id : customRecipes.keySet())
+            if (id.contains(q) || pretty(id).toLowerCase(Locale.ROOT).contains(q)) return id;
+        return null;
+    }
+
+    private int pageOfRecipe(RecipeDef r) {
+        List<RecipeDef> all = new ArrayList<>(beginners.values());
+        for (int idx = 0; idx < all.size(); idx++)
+            if (all.get(idx).id().equalsIgnoreCase(r.id())) return idx / 45;
+        return 0;
+    }
+
     // ---------------- commands ----------------
     @Override public List<String> onTabComplete(CommandSender s, Command c, String l, String[] a) {
-        if (c.getName().equalsIgnoreCase("craft") && a.length == 1) return new ArrayList<>(beginners.keySet());
+        if (c.getName().equalsIgnoreCase("craft") && a.length == 1) {
+            List<String> out = new ArrayList<>(beginners.keySet());
+            out.addAll(customRecipes.keySet());   // 3.0.6: customs complete too
+            out.sort(String::compareTo);
+            return out;
+        }
         return List.of("list", "reload");
     }
 
     @Override public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("craft")) {
             if (!(sender instanceof Player p)) { sender.sendMessage("Player command only."); return true; }
-            String q = args.length > 0 ? args[0].toLowerCase(Locale.ROOT) : null;
-            int page = 0;
-            if (q != null && beginners.containsKey(q)) {
-                List<RecipeDef> all = new ArrayList<>(beginners.values());
-                int idx = 0;
-                for (int i = 0; i < all.size(); i++) if (all.get(i).id().equalsIgnoreCase(q)) { idx = i; break; }
-                page = idx / 45;
+            // 3.0.6: /craft <name> opens the recipe directly (exact, then
+            // contains-match on id or display name, beginners + customs).
+            if (args.length > 0) {
+                String q = args[0].toLowerCase(Locale.ROOT);
+                RecipeDef direct = findRecipe(q);
+                if (direct != null) { openRecipe(p, direct, pageOfRecipe(direct)); return true; }
+                String custom = findCustom(q);
+                if (custom != null) { openCustomRecipe(p, custom); return true; }
+                p.sendMessage(C + "cNo recipe matches '" + args[0] + "' - browse /craft.");
             }
-            openBeginner(p, page);
+            openBeginner(p, 0);
             return true;
         }
         // /crafting

@@ -1,5 +1,5 @@
 name: MAVOPets
-version: 3.0.0
+version: 3.0.6
 main: mavo.pets.Pets
 api-version: '1.21'
 description: "Pets 2.0 - companions with abilities: carry a stack, attract XP orbs, level up (MAVOcraft)"

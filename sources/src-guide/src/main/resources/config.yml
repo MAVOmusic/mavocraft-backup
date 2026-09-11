@@ -1,10 +1,19 @@
 # MAVOGuide - server guide + tutorial + update showcase
 # Bump 'version' every time you change something and the GUI will
 # auto-open ONCE for every player next time they log in.
-version: 27
+version: 28
 
 # Shown when clicking the "What's New" star (newest first, keep it short)
 whatsnew:
+  - title: "&e&lv28 &7- live-test fix round: customs browser, lively pets (3.0.6)"
+    icon: CRAFTING_TABLE
+    lines:
+      - "&7&e/CRAFT CUSTOMS:&7 the 7 custom recipes (saddle, name tag, lead,"
+      - "&7chainmail...) finally have a browser - button on every /craft page."
+      - "&7&e/CRAFT <NAME>:&7 jumps straight to the recipe now (fuzzy match)."
+      - "&7&ePETS:&7 AI on - they wander + look alive (still untouchable)."
+      - "&7/pet off (or Rest in /pet menu) sends them away."
+      - "&7&eBOSS RAID:&7 stuck bossbars fixed. &eEVENTS:&7 one at a time."
   - title: "&e&lv27 &7- exploit fix round: shops pay out, boss schedule (3.0.5)"
     icon: EMERALD
     lines:

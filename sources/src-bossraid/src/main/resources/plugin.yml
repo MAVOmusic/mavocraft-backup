@@ -1,5 +1,5 @@
 name: MAVOBossRaid
-version: 3.0.0
+version: 3.0.6
 main: mavo.bossraid.BossRaid
 api-version: '1.21'
 description: Weekly server-wide boss raid - join the queue, fight together, share the loot (MAVOcraft)
