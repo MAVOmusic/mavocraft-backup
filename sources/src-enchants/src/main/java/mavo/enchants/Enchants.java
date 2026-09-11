@@ -518,14 +518,33 @@ public final class Enchants extends JavaPlugin implements Listener {
                 int tier = Math.min(level, mineMaxTier);
                 String type = new ArrayList<>(DESCR.keySet()).get(rnd.nextInt(DESCR.size()));
                 ItemStack gem = makeGem(type, tier);
-                var left = p.getInventory().addItem(gem);
-                for (ItemStack it : left.values()) p.getWorld().dropItemNaturally(b.getLocation(), it);
+                giveGem(p, gem);
                 p.sendMessage(C + "b\u2726 A " + friendly(type) + " " + roman(tier)
                         + " gem dropped from the ore! (" + ch + "% chance)");
                 p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
                 return;
             }
         }
+    }
+
+    /** 3.0.7: only inventory leftovers go to the floor, never a second whole gem.
+     * Drop at the player's feet rather than the ore's corner (possibly inside rock).
+     * Configure before spawning so damage protection is active immediately.
+     * Normal item despawn still applies: this is not unlimited free storage. */
+    private static void giveGem(Player player, ItemStack gem) {
+        var leftovers = player.getInventory().addItem(gem);
+        if (leftovers.isEmpty()) return;
+        Location feet = player.getLocation().clone().add(0, 0.1, 0);
+        for (ItemStack leftover : leftovers.values()) {
+            player.getWorld().dropItem(feet, leftover, item -> {
+                item.setVelocity(new org.bukkit.util.Vector(0, 0, 0));
+                item.setPickupDelay(10);
+                item.setInvulnerable(true);
+                item.setGlowing(true);
+            });
+        }
+        player.sendMessage(C + "eInventory full - gem dropped at your feet (glowing)! "
+                + "Free a slot and pick it up before it despawns.");
     }
 
     private static Material smeltedOf(Material m) {
@@ -731,8 +750,7 @@ public final class Enchants extends JavaPlugin implements Listener {
             return;
         }
         ItemStack gem = makeGem(parts[0], tier);
-        var left = p.getInventory().addItem(gem);
-        for (ItemStack l : left.values()) p.getWorld().dropItemNaturally(p.getLocation(), l);
+        giveGem(p, gem);
         p.sendMessage(C + "aBought a " + friendly(parts[0]) + " " + roman(tier) + " gem for "
                 + String.format("%,.0f", price) + " coins (" + chargesLine(tier) + ").");
         p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.1f);
@@ -802,8 +820,7 @@ public final class Enchants extends JavaPlugin implements Listener {
                 if (!DESCR.containsKey(type)) { sender.sendMessage(C + "cUnknown enchant: " + args[2]); return true; }
                 int tier = args.length >= 4 ? Math.max(1, Math.min(maxTier, Integer.parseInt(args[3]))) : 1;
                 ItemStack gem = makeGem(type, tier);
-                var left = t.getInventory().addItem(gem);
-                for (ItemStack it : left.values()) t.getWorld().dropItemNaturally(t.getLocation(), it);
+                giveGem(t, gem);
                 sender.sendMessage(C + "aGiven " + t.getName() + " a " + friendly(type) + " " + roman(tier)
                         + " gem (" + chargesLine(tier) + ").");
             }

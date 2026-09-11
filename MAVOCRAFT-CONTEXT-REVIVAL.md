@@ -1103,3 +1103,13 @@ CI run 33814070963 SUCCESS. Commit chain: f6a14d7 (sources) -> 7a0c525 (ci: rebu
 - **Fixes:** Events start-guard (refuse while running); Crates inspect offline explanation + case-insensitive online match; BossRaid orphan-bar cleanup at start + tick self-heal; Crafting customs browser in /craft + `/craft <name>` direct fuzzy jump + sorted tab incl. customs; Pets AI on (invulnerable kept) + `/pet off`/Rest (+ menu button); Guide v28.
 - **Open:** D-OP-081 Warps (code looks right - suspect Essentials /warp shadow; asked user for exact msg + data.yml + /setwarp history); D-OP-038c `/craft bed` tab (bed IS a key - asked Java vs Bedrock); 🔁 retests after deploy; Seasonal restore decision; D-OP-026 blank; D-OP-068 Saturday.
 - **Infra scare:** sandbox .git + some worktree files reverted mid-turn (HEAD back to 1ec4e3d, stale src-crafting). Recovered via fetch + reset --hard to origin (bd900af) + re-applied edits. Lesson: origin is the only durable store - commit+push fast, re-verify anchors after any reset.
+
+## 3.0.7 — gem overflow hotfix (2026-09-11)
+- User's 08:09 boot log confirms 3.0.6 pack deployed, all 59 initialized; Guide
+  migrated v26 -> v28. No MAVO enable failures. Off-stream gameplay tests pending.
+- Report: Diving I mining gem lost with full inventory. Old Enchants code already
+  dropped leftovers at ore corner; actual loss cause not confirmed.
+- Enchants 3.0.7: shared mining/shop/admin delivery, inventory first, leftovers at
+  player's feet with no random scatter, glowing/invulnerable before spawn, explicit
+  pickup warning. Normal despawn retained; no mailbox/storage cap bypass.
+- See MAVOCRAFT-CHECKLIST-3.0.7.md for deployment and regression tests.
