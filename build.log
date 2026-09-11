@@ -1,4 +1,4 @@
-## build log Fri Sep 11 11:56:47 UTC 2026
+## build log Fri Sep 11 12:01:57 UTC 2026
 == sources/src-achievements ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -20,14 +20,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-achievements ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-achievements ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.085 s
-[INFO] Finished at: 2026-09-11T11:56:49Z
+[INFO] Total time:  1.152 s
+[INFO] Finished at: 2026-09-11T12:01:59Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-auction ==
 [INFO] Scanning for projects...
@@ -50,14 +50,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-auction ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-auction ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.121 s
-[INFO] Finished at: 2026-09-11T11:56:52Z
+[INFO] Total time:  1.192 s
+[INFO] Finished at: 2026-09-11T12:02:01Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-bossraid ==
 [INFO] Scanning for projects...
@@ -80,14 +80,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-bossraid ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-bossraid ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.109 s
-[INFO] Finished at: 2026-09-11T11:56:54Z
+[INFO] Total time:  1.197 s
+[INFO] Finished at: 2026-09-11T12:02:04Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-casino ==
 [INFO] Scanning for projects...
@@ -110,14 +110,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-casino ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-casino ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.093 s
-[INFO] Finished at: 2026-09-11T11:56:56Z
+[INFO] Total time:  1.228 s
+[INFO] Finished at: 2026-09-11T12:02:06Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-chesthunt ==
 [INFO] Scanning for projects...
@@ -140,14 +140,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-chesthunt ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-chesthunt ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.079 s
-[INFO] Finished at: 2026-09-11T11:56:59Z
+[INFO] Total time:  1.207 s
+[INFO] Finished at: 2026-09-11T12:02:09Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-chestshop ==
 [INFO] Scanning for projects...
@@ -170,14 +170,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-chestshop ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-chestshop ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.139 s
-[INFO] Finished at: 2026-09-11T11:57:01Z
+[INFO] Total time:  1.178 s
+[INFO] Finished at: 2026-09-11T12:02:11Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-couples ==
 [INFO] Scanning for projects...
@@ -200,14 +200,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-couples ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-couples ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.100 s
-[INFO] Finished at: 2026-09-11T11:57:03Z
+[INFO] Total time:  1.223 s
+[INFO] Finished at: 2026-09-11T12:02:14Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-crafting ==
 [INFO] Scanning for projects...
@@ -230,14 +230,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-crafting ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-crafting ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.082 s
-[INFO] Finished at: 2026-09-11T11:57:06Z
+[INFO] Total time:  1.197 s
+[INFO] Finished at: 2026-09-11T12:02:16Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-crates ==
 [INFO] Scanning for projects...
@@ -260,16 +260,101 @@
 [INFO] Nothing to compile - all classes are up to date.
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-crates ---
-[INFO] Tests are skipped.
+[INFO] Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider
 [INFO] 
-[INFO] --- jar:3.5.0:jar (default-jar) @ mavo-crates ---
-[INFO] Building jar: /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crates/target/MAVOCrates-3.0.8.jar
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running mavo.crates.CrateRulesTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/home/runner/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.7/byte-buddy-agent-1.17.7.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[ERROR] Tests run: 8, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 1.066 s <<< FAILURE! -- in mavo.crates.CrateRulesTest
+[ERROR] mavo.crates.CrateRulesTest.noMatchingKeyChangesNothing -- Time elapsed: 0.009 s <<< ERROR!
+org.mockito.exceptions.misusing.UnfinishedStubbingException: 
+
+Unfinished stubbing detected here:
+-> at mavo.crates.CrateRulesTest.noMatchingKeyChangesNothing(CrateRulesTest.java:64)
+
+E.g. thenReturn() may be missing.
+Examples of correct stubbing:
+    when(mock.isOk()).thenReturn(true);
+    when(mock.isOk()).thenThrow(exception);
+    doThrow(exception).when(mock).someVoidMethod();
+Hints:
+ 1. missing thenReturn()
+ 2. you are trying to stub a final method, which is not supported
+ 3. you are stubbing the behaviour of another mock inside before 'thenReturn' instruction is completed, possibly on another thread
+
+	at mavo.crates.CrateRulesTest.stack(CrateRulesTest.java:14)
+	at mavo.crates.CrateRulesTest.noMatchingKeyChangesNothing(CrateRulesTest.java:64)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)
+	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:316)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:240)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:214)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:155)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   CrateRulesTest.noMatchingKeyChangesNothing:64->stack:14 UnfinishedStubbing 
+Unfinished stubbing detected here:
+-> at mavo.crates.CrateRulesTest.noMatchingKeyChangesNothing(CrateRulesTest.java:64)
+
+E.g. thenReturn() may be missing.
+Examples of correct stubbing:
+    when(mock.isOk()).thenReturn(true);
+    when(mock.isOk()).thenThrow(exception);
+    doThrow(exception).when(mock).someVoidMethod();
+Hints:
+ 1. missing thenReturn()
+ 2. you are trying to stub a final method, which is not supported
+ 3. you are stubbing the behaviour of another mock inside before 'thenReturn' instruction is completed, possibly on another thread
+
+[INFO] 
+[ERROR] Tests run: 8, Failures: 0, Errors: 1, Skipped: 0
+[INFO] 
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
+[INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.242 s
-[INFO] Finished at: 2026-09-11T11:57:08Z
+[INFO] Total time:  2.487 s
+[INFO] Finished at: 2026-09-11T12:02:20Z
 [INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project mavo-crates: 
+[ERROR] 
+[ERROR] See /home/runner/work/mavocraft-backup/mavocraft-backup/sources/src-crates/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
 == sources/src-curator ==
 [INFO] Scanning for projects...
 [INFO] 
@@ -291,14 +376,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-curator ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-curator ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.137 s
-[INFO] Finished at: 2026-09-11T11:57:10Z
+[INFO] Total time:  1.184 s
+[INFO] Finished at: 2026-09-11T12:02:22Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-deathchest ==
 [INFO] Scanning for projects...
@@ -321,14 +406,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-deathchest ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-deathchest ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.090 s
-[INFO] Finished at: 2026-09-11T11:57:13Z
+[INFO] Total time:  1.158 s
+[INFO] Finished at: 2026-09-11T12:02:25Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-doublexp ==
 [INFO] Scanning for projects...
@@ -351,14 +436,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-doublexp ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-doublexp ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.080 s
-[INFO] Finished at: 2026-09-11T11:57:15Z
+[INFO] Total time:  1.197 s
+[INFO] Finished at: 2026-09-11T12:02:27Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-duels ==
 [INFO] Scanning for projects...
@@ -381,14 +466,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-duels ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-duels ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.130 s
-[INFO] Finished at: 2026-09-11T11:57:17Z
+[INFO] Total time:  1.190 s
+[INFO] Finished at: 2026-09-11T12:02:30Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-enchants ==
 [INFO] Scanning for projects...
@@ -411,14 +496,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-enchants ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-enchants ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.172 s
-[INFO] Finished at: 2026-09-11T11:57:20Z
+[INFO] Total time:  1.155 s
+[INFO] Finished at: 2026-09-11T12:02:32Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-events ==
 [INFO] Scanning for projects...
@@ -441,14 +526,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-events ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-events ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.126 s
-[INFO] Finished at: 2026-09-11T11:57:22Z
+[INFO] Total time:  1.188 s
+[INFO] Finished at: 2026-09-11T12:02:35Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-fishcomp ==
 [INFO] Scanning for projects...
@@ -471,14 +556,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-fishcomp ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-fishcomp ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.130 s
-[INFO] Finished at: 2026-09-11T11:57:25Z
+[INFO] Total time:  1.174 s
+[INFO] Finished at: 2026-09-11T12:02:37Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-guide ==
 [INFO] Scanning for projects...
@@ -501,14 +586,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-guide ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-guide ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.111 s
-[INFO] Finished at: 2026-09-11T11:57:27Z
+[INFO] Total time:  1.159 s
+[INFO] Finished at: 2026-09-11T12:02:39Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-guilds ==
 [INFO] Scanning for projects...
@@ -531,14 +616,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-guilds ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-guilds ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.117 s
-[INFO] Finished at: 2026-09-11T11:57:29Z
+[INFO] Total time:  1.114 s
+[INFO] Finished at: 2026-09-11T12:02:42Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-locks ==
 [INFO] Scanning for projects...
@@ -561,14 +646,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-locks ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-locks ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.117 s
-[INFO] Finished at: 2026-09-11T11:57:32Z
+[INFO] Total time:  1.214 s
+[INFO] Finished at: 2026-09-11T12:02:44Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-lucky ==
 [INFO] Scanning for projects...
@@ -591,14 +676,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-lucky ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-lucky ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.113 s
-[INFO] Finished at: 2026-09-11T11:57:34Z
+[INFO] Total time:  1.173 s
+[INFO] Finished at: 2026-09-11T12:02:47Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-mail ==
 [INFO] Scanning for projects...
@@ -621,14 +706,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-mail ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-mail ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.087 s
-[INFO] Finished at: 2026-09-11T11:57:36Z
+[INFO] Total time:  1.202 s
+[INFO] Finished at: 2026-09-11T12:02:49Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-miniboss ==
 [INFO] Scanning for projects...
@@ -651,14 +736,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-miniboss ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-miniboss ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.093 s
-[INFO] Finished at: 2026-09-11T11:57:38Z
+[INFO] Total time:  1.176 s
+[INFO] Finished at: 2026-09-11T12:02:51Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-mobfarm ==
 [INFO] Scanning for projects...
@@ -681,14 +766,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-mobfarm ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-mobfarm ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.100 s
-[INFO] Finished at: 2026-09-11T11:57:41Z
+[INFO] Total time:  1.210 s
+[INFO] Finished at: 2026-09-11T12:02:54Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-pets ==
 [INFO] Scanning for projects...
@@ -711,14 +796,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-pets ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-pets ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.160 s
-[INFO] Finished at: 2026-09-11T11:57:43Z
+[INFO] Total time:  1.132 s
+[INFO] Finished at: 2026-09-11T12:02:56Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-professions ==
 [INFO] Scanning for projects...
@@ -741,14 +826,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-professions ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-professions ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.198 s
-[INFO] Finished at: 2026-09-11T11:57:46Z
+[INFO] Total time:  1.208 s
+[INFO] Finished at: 2026-09-11T12:02:59Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-seasonal ==
 [INFO] Scanning for projects...
@@ -771,14 +856,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-seasonal ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-seasonal ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.088 s
-[INFO] Finished at: 2026-09-11T11:57:48Z
+[INFO] Total time:  1.135 s
+[INFO] Finished at: 2026-09-11T12:03:01Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-shopnpc ==
 [INFO] Scanning for projects...
@@ -801,14 +886,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-shopnpc ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-shopnpc ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.097 s
-[INFO] Finished at: 2026-09-11T11:57:50Z
+[INFO] Total time:  1.105 s
+[INFO] Finished at: 2026-09-11T12:03:04Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-spawners ==
 [INFO] Scanning for projects...
@@ -831,14 +916,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-spawners ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-spawners ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.135 s
-[INFO] Finished at: 2026-09-11T11:57:53Z
+[INFO] Total time:  1.143 s
+[INFO] Finished at: 2026-09-11T12:03:06Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-timber ==
 [INFO] Scanning for projects...
@@ -861,14 +946,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-timber ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-timber ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.098 s
-[INFO] Finished at: 2026-09-11T11:57:55Z
+[INFO] Total time:  1.140 s
+[INFO] Finished at: 2026-09-11T12:03:08Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-tpa ==
 [INFO] Scanning for projects...
@@ -891,14 +976,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-tpa ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-tpa ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.108 s
-[INFO] Finished at: 2026-09-11T11:57:57Z
+[INFO] Total time:  1.181 s
+[INFO] Finished at: 2026-09-11T12:03:11Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wanderer ==
 [INFO] Scanning for projects...
@@ -921,14 +1006,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-wanderer ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-wanderer ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.090 s
-[INFO] Finished at: 2026-09-11T11:58:00Z
+[INFO] Total time:  1.135 s
+[INFO] Finished at: 2026-09-11T12:03:13Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-warps ==
 [INFO] Scanning for projects...
@@ -951,14 +1036,14 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-warps ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-warps ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.133 s
-[INFO] Finished at: 2026-09-11T11:58:02Z
+[INFO] Total time:  1.104 s
+[INFO] Finished at: 2026-09-11T12:03:15Z
 [INFO] ------------------------------------------------------------------------
 == sources/src-wild ==
 [INFO] Scanning for projects...
@@ -981,12 +1066,12 @@
 [INFO] No sources to compile
 [INFO] 
 [INFO] --- surefire:3.5.4:test (default-test) @ mavo-wild ---
-[INFO] Tests are skipped.
+[INFO] No tests to run.
 [INFO] 
 [INFO] --- jar:3.5.0:jar (default-jar) @ mavo-wild ---
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.101 s
-[INFO] Finished at: 2026-09-11T11:58:04Z
+[INFO] Total time:  1.136 s
+[INFO] Finished at: 2026-09-11T12:03:18Z
 [INFO] ------------------------------------------------------------------------
