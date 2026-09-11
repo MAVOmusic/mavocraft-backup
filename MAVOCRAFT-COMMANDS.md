@@ -47,10 +47,10 @@ persists restarts inside its lifetime, and the spawn callout always broadcasts t
 |---|---|---|
 | `/event` | Players | Show what's live right now (aliases: `/events`) |
 | `/event list` | Players | List all 10 events |
-| `/event start <name>` | OP (`mavoevents.admin`) | Force-start an event |
+| `/event start <name>` | OP (`mavoevents.admin`) | Force-start an event (refused while one runs — `/event stop` first, 3.0.6) |
 | `/event stop` | OP (`mavoevents.admin`) | Stop the current event |
 
-10 events: `luckyhour, coinrain, mobhunt, fishingfrenzy, minersrush, harvestbonus, buildbonus, zombiesiege, giftdrop, farmfrenzy` (auto ~1 every 45–90 min while players are online).
+10 events: `luckyhour, coinrain, mobhunt, fishingfrenzy, minersrush, harvestbonus, buildbonus, zombiesiege, giftdrop, farmfrenzy` (auto ~1 every 45–90 min while players are online). Only ONE event runs at a time (manual start refuses while one is live; the scheduler skips).
 
 ---
 
@@ -196,7 +196,8 @@ Felling: axe + break bottom log → up to **10 logs** per tree (anti-exploit; sh
 | Command | Who | What it does |
 |---|---|---|
 | `/craft` | **Everyone** | Open the **beginner recipe GUIDE** (100 REAL vanilla basics, 45 per page). Click a recipe = **display-only 3×3 preview** built from the verified vanilla grid (right materials, amounts, layout - 3.0.3) + unlocks it in your vanilla recipe book (press E) — nothing is auto-crafted or consumed. Replaces the op-only Essentials workbench for this label. |
-| `/craft <recipe>` | Everyone | Jump to that recipe's page (e.g. `/craft stone_pickaxe`) |
+| `/craft <recipe>` | Everyone | Open that recipe DIRECTLY (exact, then fuzzy on id/display name, e.g. `/craft barrel`, `/craft sad` → saddle); no match = hint + page 1. TAB-completes all 100 + 7 customs, sorted (3.0.6) |
+| `/craft` customs button | Everyone | Bottom-row button opens the **Custom recipes (7)** browser — click any custom for its exact 3x3 grid (3.0.6) |
 | `/crafting list` | Everyone | Lists the 7 custom recipes (name tag, saddle, lead, chainmail set) |
 | `/crafting reload` | OP (`mavocrafting.admin`) | Re-register custom + beginner recipes |
 
@@ -258,10 +259,26 @@ crate-chance % Crate Key) plus the boss **HP**. Those chances are rolled indepen
 | `/crate unset` | OP | Remove the crate block you look at (holo cleaned) |
 | `/crate clear <name>` | OP | Remove all blocks of that crate type |
 | `/crate givekey <p> <name> [n]` | OP | Give crate keys |
-| `/crate inspect <player>` | OP (`mavocrate.admin`) | **Read-only inventory view of an online player** with every MAVOCrate key marked; buttons take all keys or one tier (common/rare/mythic) out of their inventory + ender chest — only keys are ever removed, enchanted/spent items stay untouched |
+| `/crate inspect <player>` | OP (`mavocrate.admin`) | **Read-only inventory view of an ONLINE player** (offline players are refused with an explanation — offline inventories are unreadable; names match case-insensitively, 3.0.6) with every MAVOCrate key marked; buttons take all keys or one tier (common/rare/mythic) out of their inventory + ender chest — only keys are ever removed, enchanted/spent items stay untouched |
 | `/crate resholo` | OP | Rebuild all crate holograms |
 | `/crate reload` | OP | Reload pools/key-drop chances |
 
 Every crate block has a floating hologram (name + "right-click to open"). Keys drop from
 **farming (mature crops), mining (ores) and fishing**: Common 1% / Rare 0.05% / Mythic
 0.01% per action. Open GUI shows each reward's exact % (pools sum to 100).
+
+---
+
+## MAVOPets 3.0.6
+| Command | Who | What it does |
+|---|---|
+| `/pets` | Players | Pet shop: buy (coins) or click an owned pet to make it active |
+| `/pet` | Players | Active-pet menu: carry slot, XP, abilities, Recall, **Rest** |
+| `/pet recall` | Players | Teleport your pet to you |
+| `/pet xp` | Players | Level + XP of the active pet (+1 XP per active survival minute) |
+| `/pet off` (alias `/pet rest`) | Players | Send your pet away (re-pick in `/pets` anytime) (3.0.6) |
+| `/pet give <p> <pet>` | OP (`mavopet.admin`) | Give a pet |
+
+Pets (cat, wolf, fox, parrot, axolotl…) follow you, can't be damaged or
+ stolen from, and level up while active. Since 3.0.6 their AI is ON (they
+wander + idle like real animals) — right-click your pet to open its menu.

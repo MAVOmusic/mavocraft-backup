@@ -1130,6 +1130,14 @@ One block per work item so they stand out. Sentences short. `✅ = done · 🔜 
 📖 Guide v27 documents it all. 13 jars: shops/boss/mail/locks/couples/guilds/AH/duels/fish/gems/museum/warps/guide.
 ```
 
+### 🎉 v37 — 3.0.6 LIVE-TEST FIX ROUND (/craft customs + lively pets)
+```
+📖 /craft grew up: Custom recipes button (saddle! name tag! chainmail!) + /craft <name> jumps straight to it!
+🐾 Pets feel ALIVE: they wander + idle around you (still invincible). /pet off to rest them.
+⚔️ Boss raids: stuck bossbars fixed. 🎪 Events: one at a time, clean starts/stops.
+📖 Guide v28 has the notes. 6 jars: events/crates/bossraid/crafting/pets/guide.
+```
+
 ## 5. NEXT IDEAS — paste into `💡┃ideas`
 
 One block per idea. `💡 = proposal · ✅ = approved · 🔨 = building`.

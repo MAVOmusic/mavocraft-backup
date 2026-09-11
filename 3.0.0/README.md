@@ -5,19 +5,19 @@ It contains **59 jars** in `plugins/`, numbered so they always load in a safe or
 plus `live-configs/` (the config/data snapshot running on the server) and
 `MANIFEST.md` (every jar checked: file ↔ `plugin.yml` name ↔ version ↔ sha256).
 
-**Current state: 30 MAVO jars at 3.0.0, 2 MAVO jars at 3.0.2
-(MAVOChestHunt, MAVOLuckyCoins — config-heal round), 1 MAVO jar at 3.0.3
-(MAVOCrafting — balance round) and 13 MAVO jars at 3.0.5
-(exploit fix round — see MANIFEST).
+**Current state: 26 MAVO jars at 3.0.0, 2 MAVO jars at 3.0.2
+(MAVOChestHunt, MAVOLuckyCoins — config-heal round), 12 MAVO jars at 3.0.5
+(exploit fix round) and 6 MAVO jars at 3.0.6
+(live-test fix round — see MANIFEST).
 The version bump is the signal: any MAVO file that is NOT at the version below is
 old and must be replaced.
 
 ## Versions — how
-- **46 MAVO jars: 30 @ 3.0.0 + 2 @ 3.0.2 + 1 @ 3.0.3 + 13 @ 3.0.5** (file name + internal `plugin.yml` —
+- **46 MAVO jars: 26 @ 3.0.0 + 2 @ 3.0.2 + 12 @ 3.0.5 + 6 @ 3.0.6** (file name + internal `plugin.yml` —
   verified, see MANIFEST):
   - **33 rebuilt from source** by MAVOcraft CI (all hotfixes 35–44, Chest Hunt, gem fix,
     100 recipes, guide v22 + config auto-fix, 15 minibosses at 2 arenas …). 5 of them
-    are at **3.0.2/3.0.3/3.0.5** — they force-upgrade their own old configs at boot, so no
+    are at **3.0.2/3.0.5/3.0.6** — they force-upgrade their own old configs at boot, so no
     config editing/delete is needed:
     - ChestHunt: renames `EXP_BOTTLE`→`EXPERIENCE_BOTTLE` in your `config.yml`
       -> loot pool really loads **20/20 item types** (was 19).
@@ -41,6 +41,11 @@ old and must be replaced.
       check on home/tp), AuctionHouse (explicit full-inbox destroy messages +
       escrow pending fallback), Duels/FishComp/Enchants/Curator/Warps hardening,
       Guide (v27 What's New).
+    - **3.0.6:** Crafting (/craft customs browser + direct /craft <name>
+      jump + sorted tab-complete), Pets (AI on, /pet off + Rest button),
+      BossRaid (stuck-bossbar cleanup + self-heal), Events (start refused
+      while one runs), Crates (inspect offline message + case-insensitive
+      match), Guide (v28 What's New).
   - **13 had no source code in this repo** (never uploaded before part 1–7:
     ChunkBorders, ChunkPrices, CommunityGoals, Homes, Hud, PersonalVault, PortalRoom,
     Quests, Spawn, Streaks, Tavern, Trades, Vault). Their `plugin.yml` version was

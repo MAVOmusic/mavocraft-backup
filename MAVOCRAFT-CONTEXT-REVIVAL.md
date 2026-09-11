@@ -1097,3 +1097,9 @@ CI run 33814070963 SUCCESS. Commit chain: f6a14d7 (sources) -> 7a0c525 (ci: rebu
 - **LOWs:** duels second-withdraw refund, fishcomp pending fallback, withdraw-result checks in gemshop/extras/warps.
 - **Guide 3.0.5 (v27):** What's New v27 + miniboss schedule page rewrite + stale 3.0.3 line fixed.
 - **Note:** guide pom version had lagged at 3.0.1 (only plugin.yml/finalName were bumped before) - corrected to 3.0.5.
+## 2026-09-10/11 3.0.6 — live-test fix round (OP checklist run, 6 jars)
+- **Trigger:** user ran CHECKLIST-OP.txt live (3.0.4 server): mostly green; 5 checklist rows were factually wrong (fixed: `lp user info`, bluemap status-only, `almost` = XP-fill cheat, pvault `setpacks` SELF-only `/pvault admin setpacks <n>` per jar strings - no <player> arg exists, no source to add one).
+- **Not bugs:** BossRaid "19/1024 HP" = live bossbar HP display working as designed; single zombie boss = config choice; Events "stop announces one" = single-active design (start silently replaced).
+- **Fixes:** Events start-guard (refuse while running); Crates inspect offline explanation + case-insensitive online match; BossRaid orphan-bar cleanup at start + tick self-heal; Crafting customs browser in /craft + `/craft <name>` direct fuzzy jump + sorted tab incl. customs; Pets AI on (invulnerable kept) + `/pet off`/Rest (+ menu button); Guide v28.
+- **Open:** D-OP-081 Warps (code looks right - suspect Essentials /warp shadow; asked user for exact msg + data.yml + /setwarp history); D-OP-038c `/craft bed` tab (bed IS a key - asked Java vs Bedrock); 🔁 retests after deploy; Seasonal restore decision; D-OP-026 blank; D-OP-068 Saturday.
+- **Infra scare:** sandbox .git + some worktree files reverted mid-turn (HEAD back to 1ec4e3d, stale src-crafting). Recovered via fetch + reset --hard to origin (bd900af) + re-applied edits. Lesson: origin is the only durable store - commit+push fast, re-verify anchors after any reset.
